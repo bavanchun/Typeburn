@@ -44,12 +44,11 @@
 
 ### High Priority (Post-1.0 Correctness Fixes)
 
-#### M1: Timer Re-arm on restartSame (1-line fix)
-- **Issue:** After Tab restart in Time mode, header WPM/elapsed frozen until next keystroke
-- **Root cause:** restartSame() returns bare model; should return tickCmd() like newTest()
-- **Fix location:** `internal/ui/screen_typing.go:137`
-- **Effort:** 5 minutes
-- **Status:** Recommended fast-follow before wider 1.0 release
+#### M1: Timer Re-arm on restartSame — ✅ FIXED (commit d6369de)
+- **Issue:** After Tab restart in Time mode, header WPM/elapsed froze until next keystroke
+- **Root cause:** restartSame() returned bare model; now returns tickCmd() like newTest()
+- **Fix location:** `internal/ui/screen_typing.go` (RestartSame branch)
+- **Status:** Shipped in v1.0 (guard-verified safe: tick idles harmlessly while startMs==0)
 
 #### M2: New-Best Precision (sub-WPM rounding)
 - **Issue:** New-best detection compares rounded int WPM; loses sub-WPM precision
@@ -131,7 +130,7 @@
 
 | ID | Title | Severity | Impact | Recommended | Status |
 |----|-------|----------|--------|-------------|--------|
-| M1 | Timer tick re-arm on restartSame | MAJOR | Header frozen after Tab restart (Time mode) | Pre-1.0 fix | Backlog |
+| M1 | Timer tick re-arm on restartSame | MAJOR | Header frozen after Tab restart (Time mode) | Fixed | ✅ Shipped (d6369de) |
 | M2 | New-best precision (rounded int WPM) | MAJOR | Occasional missed ★ badge | Fast-follow | Backlog |
 | m3 | Parent dir not fsync'd on atomic write | MINOR | Power loss durability (acceptable for local data) | Document trade-off | Accepted |
 | m4 | MissedChars field always 0 | MINOR | Field advertised but unusable (no target delivery) | Remove field or pass target | v2 |
@@ -166,11 +165,10 @@
 - ✅ All phases complete
 - ✅ Tests green (-race)
 - ✅ README + design-guidelines + system-architecture docs complete
-- ✅ Code review DONE_WITH_CONCERNS (M1/M2 noted for fast-follow)
+- ✅ Code review SHIP verdict; M1 fixed in v1.0 (d6369de), M2 accepted as documented v1 decision
 
 ### Next 30 Days (Optional Post-1.0)
-1. **Deploy M1 fix** (timer re-arm): 5 minutes → tag v1.0.1
-2. **Evaluate M2 fix** (new-best precision): confirm if product decision or fast-follow → v1.0.2 or v1.1
+1. **Evaluate M2 fix** (new-best precision): accepted v1 trade-off; revisit only if user feedback shows it matters → v1.1
 3. **Gather user feedback** on missing features (Code mode? Vim motions? More themes?)
 4. **Consider theme pipeline:** if multiple theme requests → prioritize Solarized > others
 
@@ -204,4 +202,4 @@
 
 **monkeytype-tui v1.0 is feature-complete and production-ready.** The codebase is clean, tested, and well-documented. Post-1.0 work is purely additive (new themes, new modes, new integrations) with zero breaking changes to existing users.
 
-The highest-impact fast-follow is **M1 (timer re-arm)** — a one-line correctness fix that should ship before wider adoption.
+M1 (timer re-arm) — the one identified correctness bug — was fixed within v1.0 (commit d6369de). Remaining backlog is additive or cosmetic.
