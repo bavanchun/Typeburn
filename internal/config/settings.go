@@ -1,0 +1,73 @@
+// Package config holds user settings, key bindings, and platform paths.
+// It has no UI or persistence dependencies; storage (Phase 7) marshals these
+// types to disk.
+package config
+
+// Mode identifies a test mode. Stored as a string for forward-compatible JSON.
+type Mode string
+
+const (
+	ModeTime  Mode = "time"
+	ModeWords Mode = "words"
+	ModeQuote Mode = "quote"
+)
+
+// LengthsFor returns the selectable length options for a mode. Quote mode has
+// no numeric length (the quote itself bounds the test) so it returns nil.
+func LengthsFor(m Mode) []int {
+	switch m {
+	case ModeWords:
+		return []int{10, 25, 50, 100}
+	case ModeQuote:
+		return nil
+	default: // ModeTime
+		return []int{15, 30, 60, 120}
+	}
+}
+
+// Settings is the persisted user configuration. v1 exposes exactly these four
+// controls; nothing else is configurable.
+type Settings struct {
+	Theme         string `json:"theme"`          // "default" | "mono"
+	DefaultMode   Mode   `json:"default_mode"`   // seeds the Home screen
+	DefaultLength int    `json:"default_length"` // valid for DefaultMode
+	BlinkCursor   bool   `json:"blink_cursor"`   // typing-screen cursor blink
+}
+
+// Defaults returns the baseline configuration used on first run or whenever
+// the settings file is missing or unreadable.
+func Defaults() Settings {
+	return Settings{
+		Theme:         "default",
+		DefaultMode:   ModeTime,
+		DefaultLength: 30,
+		BlinkCursor:   false,
+	}
+}
+
+// Normalize repairs out-of-range or unknown values in place, keeping a loaded
+// (possibly hand-edited or stale) settings file safe to use.
+func (s *Settings) Normalize() {
+	switch s.Theme {
+	case "default", "mono":
+	default:
+		s.Theme = "default"
+	}
+	switch s.DefaultMode {
+	case ModeTime, ModeWords, ModeQuote:
+	default:
+		s.DefaultMode = ModeTime
+	}
+	if lens := LengthsFor(s.DefaultMode); lens != nil && !containsInt(lens, s.DefaultLength) {
+		s.DefaultLength = lens[len(lens)/2-1] // sensible mid default (30 / 25)
+	}
+}
+
+func containsInt(xs []int, v int) bool {
+	for _, x := range xs {
+		if x == v {
+			return true
+		}
+	}
+	return false
+}
