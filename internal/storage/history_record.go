@@ -21,7 +21,13 @@ type Record struct {
 	Length int `json:"length"`
 
 	// WPM is the rounded net WPM (NetWPM rounded to nearest integer).
+	// Kept for compact display and JSON back-compat with v1.0.0 records.
 	WPM int `json:"wpm"`
+
+	// NetWPM is the unrounded net WPM used for precise new-best comparison.
+	// Legacy records (written before this field existed) unmarshal as 0.0;
+	// callers must fall back to float64(WPM) when NetWPM is zero.
+	NetWPM float64 `json:"net_wpm"`
 
 	// RawWPM is the raw WPM (all typed chars / 5 / minutes).
 	RawWPM float64 `json:"raw_wpm"`

@@ -33,23 +33,39 @@ func itoa(n int) string {
 	return string(buf[pos:])
 }
 
+// effWPM returns the effective WPM for new-best comparison as a float64.
+// Post-fix records carry NetWPM directly. Legacy records (written before this
+// field existed) unmarshal NetWPM as 0.0, so we fall back to float64(WPM) to
+// keep the same integer scale — otherwise a new 60.x run would falsely beat a
+// stored legacy 80.
+func effWPM(r Record) float64 {
+	if r.NetWPM == 0 {
+		return float64(r.WPM)
+	}
+	return r.NetWPM
+}
+
 // IsNewBest reports whether r represents a new personal best for its mode+length
 // bucket compared to all records in hist.
 //
 // Rules:
 //   - First-ever result for the bucket (no prior records) → true.
-//   - r.WPM strictly greater than every prior record's WPM in the same bucket → true.
-//   - r.WPM equal to or less than the existing maximum → false.
+//   - Effective WPM of r strictly greater than every prior record's effective WPM
+//     in the same bucket → true.
+//   - Effective WPM of r equal to or less than the existing maximum → false.
+//
+// Effective WPM uses the stored NetWPM float when present, falling back to
+// float64(WPM) for legacy records so scale comparison stays consistent.
 //
 // hist must NOT already contain r; call IsNewBest before AppendHistory.
 // This function is pure and does not mutate hist.
 func IsNewBest(hist []Record, r Record) bool {
 	key := modeKey(r.Mode, r.Length)
-	best := -1
+	best := -1.0
 	for _, h := range hist {
 		if modeKey(h.Mode, h.Length) == key {
-			if h.WPM > best {
-				best = h.WPM
+			if eff := effWPM(h); eff > best {
+				best = eff
 			}
 		}
 	}
@@ -57,5 +73,5 @@ func IsNewBest(hist []Record, r Record) bool {
 	if best < 0 {
 		return true
 	}
-	return r.WPM > best
+	return effWPM(r) > best
 }

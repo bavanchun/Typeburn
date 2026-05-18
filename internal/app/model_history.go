@@ -22,6 +22,7 @@ func buildRecord(msg ui.ResultMsg) storage.Record {
 		Mode:        mode,
 		Length:      length,
 		WPM:         int(math.Round(msg.Result.NetWPM)),
+		NetWPM:      msg.Result.NetWPM,
 		RawWPM:      msg.Result.RawWPM,
 		Accuracy:    msg.Result.Accuracy,
 		Consistency: msg.Result.Consistency,

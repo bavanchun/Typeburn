@@ -257,3 +257,96 @@ func TestIsNewBest_QuoteBucket(t *testing.T) {
 		t.Error("85 < 90: quote lower should NOT be new best")
 	}
 }
+
+// TestIsNewBest_SubWPMWin checks that a new run with a higher NetWPM but the
+// same rounded WPM is correctly flagged as a new best. Without float comparison
+// 75.4 and 75.0 both round to 75 and the faster run would be missed.
+func TestIsNewBest_SubWPMWin(t *testing.T) {
+	hist := []Record{{
+		Time:   baseTime,
+		Mode:   "time",
+		Length: 30,
+		WPM:    75,
+		NetWPM: 75.0,
+	}}
+	newRec := Record{
+		Time:   baseTime.Add(time.Second),
+		Mode:   "time",
+		Length: 30,
+		WPM:    75,
+		NetWPM: 75.4,
+	}
+	if !IsNewBest(hist, newRec) {
+		t.Error("75.4 > 75.0: sub-WPM gain should be a new best")
+	}
+}
+
+// TestIsNewBest_SubWPMTie checks that equal NetWPM values do not trigger a new best.
+func TestIsNewBest_SubWPMTie(t *testing.T) {
+	hist := []Record{{
+		Time:   baseTime,
+		Mode:   "time",
+		Length: 30,
+		WPM:    75,
+		NetWPM: 75.0,
+	}}
+	newRec := Record{
+		Time:   baseTime.Add(time.Second),
+		Mode:   "time",
+		Length: 30,
+		WPM:    75,
+		NetWPM: 75.0,
+	}
+	if IsNewBest(hist, newRec) {
+		t.Error("75.0 == 75.0: tie should NOT be a new best")
+	}
+}
+
+// TestIsNewBest_LegacyFallback checks that a legacy record (NetWPM==0) is
+// compared by its rounded WPM so a new slower run cannot beat it. Without the
+// fallback, effWPM of the legacy record would return 0 and any new run would
+// always win.
+func TestIsNewBest_LegacyFallback(t *testing.T) {
+	// Legacy record: WPM=80, NetWPM absent → stored as 0 after unmarshal.
+	hist := []Record{{
+		Time:   baseTime,
+		Mode:   "time",
+		Length: 30,
+		WPM:    80,
+		NetWPM: 0, // simulates pre-NetWPM JSON record
+	}}
+	// New run is genuinely slower (NetWPM 60.4 → WPM 60), must NOT beat legacy 80.
+	newRec := Record{
+		Time:   baseTime.Add(time.Second),
+		Mode:   "time",
+		Length: 30,
+		WPM:    60,
+		NetWPM: 60.4,
+	}
+	if IsNewBest(hist, newRec) {
+		t.Error("legacy 80 (WPM fallback) should beat new 60.4: should NOT be a new best")
+	}
+}
+
+// TestIsNewBest_FirstInBucket checks that the first result for a mode/length
+// bucket is always a new best regardless of other buckets.
+func TestIsNewBest_FirstInBucket(t *testing.T) {
+	// Only a words/30 record exists; time/30 bucket is empty.
+	hist := []Record{{
+		Time:   baseTime,
+		Mode:   "words",
+		Length: 30,
+		WPM:    100,
+		NetWPM: 100.0,
+	}}
+	newRec := Record{
+		Time:   baseTime.Add(time.Second),
+		Mode:   "time",
+		Length: 30,
+		WPM:    50,
+		NetWPM: 50.0,
+	}
+	if !IsNewBest(hist, newRec) {
+		t.Error("first result for time/30 bucket should always be a new best")
+	}
+}

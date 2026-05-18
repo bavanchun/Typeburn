@@ -20,14 +20,28 @@ const (
 	colConsW = 7
 )
 
-// bestWPMPerBucket returns the highest WPM for each mode+length bucket across
-// all provided records. The key format matches storage.IsNewBest scoping.
-func bestWPMPerBucket(rows []storage.Record) map[string]int {
-	bests := make(map[string]int)
+// effWPM returns the effective WPM for new-best comparison as a float64.
+// Records written before the NetWPM field was added unmarshal as 0.0; the
+// fallback to float64(WPM) keeps the same integer scale so an old record's
+// best is not unfairly overridden by any new run with a lower rounded WPM.
+func effWPM(r storage.Record) float64 {
+	if r.NetWPM == 0 {
+		return float64(r.WPM)
+	}
+	return r.NetWPM
+}
+
+// bestWPMPerBucket returns the highest effective WPM for each mode+length bucket
+// across all provided records. The key format matches storage.IsNewBest scoping.
+// Effective WPM uses the persisted NetWPM float when present, falling back to
+// float64(WPM) for legacy records so the scale comparison is consistent.
+func bestWPMPerBucket(rows []storage.Record) map[string]float64 {
+	bests := make(map[string]float64)
 	for _, r := range rows {
 		key := histBucketKey(r.Mode, r.Length)
-		if wpm, ok := bests[key]; !ok || r.WPM > wpm {
-			bests[key] = r.WPM
+		eff := effWPM(r)
+		if prev, ok := bests[key]; !ok || eff > prev {
+			bests[key] = eff
 		}
 	}
 	return bests

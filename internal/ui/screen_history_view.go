@@ -55,7 +55,11 @@ func (m HistoryModel) View() string {
 		for i := m.top; i < end; i++ {
 			r := rows[i]
 			key := histBucketKey(r.Mode, r.Length)
-			isBestRow := bests[key] == r.WPM
+			// Compare effective WPM against the persisted bucket best.
+			// Float equality is safe here: we compare the same stored value
+			// (effWPM(r)) against what bestWPMPerBucket already derived from
+			// the same records — no recomputation drift possible.
+			isBestRow := effWPM(r) == bests[key]
 			body.WriteString(renderHistoryRow(r, i == m.sel, isBestRow, m.th))
 			body.WriteString("\n")
 		}
