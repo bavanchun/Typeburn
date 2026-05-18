@@ -1,10 +1,11 @@
 ---
 phase: 7
-title: "Settings & persistence"
-status: pending
+title: Settings & persistence
+status: completed
 priority: P1
 effort: ~5h
-dependencies: [6]
+dependencies:
+  - 6
 ---
 
 # Phase 7: Settings & persistence

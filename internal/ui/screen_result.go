@@ -46,6 +46,13 @@ func (m ResultModel) SetSize(w, h int) ResultModel {
 	return m
 }
 
+// WithBest sets the isBest flag, enabling the ★ new best badge in the View.
+// Called by the root after history persistence (Phase 8).
+func (m ResultModel) WithBest(best bool) ResultModel {
+	m.isBest = best
+	return m
+}
+
 // Update handles key events for the result screen per design §8.4.
 //
 //   - tab / enter  → restart SAME test (same mode, length, quoteLen)

@@ -33,6 +33,7 @@ type Model struct {
 	typing   ui.TypingModel
 	result   ui.ResultModel
 	sett     ui.SettingsModel
+	hist     ui.HistoryModel
 }
 
 // New builds the root model loading persisted settings from disk.
@@ -66,16 +67,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
-	// ResultMsg: test completed → construct real ResultModel (Phase 6).
+	// ResultMsg: test completed → persist record, detect new-best, show result.
 	if rm, ok := msg.(ui.ResultMsg); ok {
-		m.result = ui.NewResult(rm, m.theme, m.keys).SetSize(m.w, m.h)
-		m.screen = ScreenResult
+		m = m.handleResultMsg(rm)
 		return m, nil
 	}
 
-	// NavHistoryMsg: navigate to History screen.
+	// NavHistoryMsg: navigate to History screen (load fresh from disk).
 	if _, ok := msg.(ui.NavHistoryMsg); ok {
-		m.screen = ScreenHistory
+		m = m.handleNavHistory()
 		return m, nil
 	}
 
@@ -90,6 +90,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.w, m.h = msg.Width, msg.Height
 		m.home = m.home.SetSize(msg.Width, msg.Height)
 		m.sett = m.sett.SetSize(msg.Width, msg.Height)
+		m.hist = m.hist.SetSize(msg.Width, msg.Height)
 		if m.screen == ScreenTyping {
 			m.typing = m.typing.SetSize(msg.Width, msg.Height)
 		}
@@ -116,6 +117,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.screen == ScreenSettings {
 		var cmd tea.Cmd
 		m.sett, cmd = m.sett.Update(msg)
+		return m, cmd
+	}
+	if m.screen == ScreenHistory {
+		var cmd tea.Cmd
+		m.hist, cmd = m.hist.Update(msg)
 		return m, cmd
 	}
 
@@ -147,7 +153,7 @@ func (m Model) handleKey(key tea.Key) (tea.Model, tea.Cmd) {
 		m.screen = ScreenSettings
 		return m, nil
 	case m.keys.NavHistory.Matches(key):
-		m.screen = ScreenHistory
+		m = m.handleNavHistory()
 		return m, nil
 	case m.keys.Back.Matches(key):
 		if m.screen == ScreenHome {
@@ -170,6 +176,10 @@ func (m Model) handleKey(key tea.Key) (tea.Model, tea.Cmd) {
 	case ScreenHome:
 		var cmd tea.Cmd
 		m.home, cmd = m.home.Update(tea.KeyPressMsg(key))
+		return m, cmd
+	case ScreenHistory:
+		var cmd tea.Cmd
+		m.hist, cmd = m.hist.Update(tea.KeyPressMsg(key))
 		return m, cmd
 	}
 

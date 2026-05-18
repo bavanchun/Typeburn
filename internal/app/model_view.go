@@ -31,6 +31,12 @@ func (m Model) View() tea.View {
 		if m.w > 0 && m.h > 0 {
 			return tea.NewView(body)
 		}
+	case ScreenHistory:
+		// HistoryModel.View() calls lipgloss.Place internally.
+		body = m.hist.View()
+		if m.w > 0 && m.h > 0 {
+			return tea.NewView(body)
+		}
 	default:
 		body = placeholderView(m.screen, m.theme)
 	}
