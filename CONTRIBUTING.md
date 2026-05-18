@@ -33,7 +33,16 @@ make clean       # remove ./bin/
 All of `build`, `vet`, `gofmt -l` (empty), and `go test ./... -race -count=1`
 must pass before a change is merged — these are exactly what CI enforces.
 
-## Commit & PR conventions
+## Branch & PR workflow (protected main)
+
+`main` is protected — **no direct commits or pushes**. Enforced by GitHub
+branch protection (PR required, `ci.yml` must pass, linear history, admins
+included) and squash-only merges with automatic branch deletion.
+
+1. Branch off `main`: `feat/…`, `fix/…`, or `chore/…`.
+2. Commit on the branch; push it; open a PR to `main`.
+3. CI green → **squash-merge** the PR.
+4. Tags are cut on `main` only after the PR merges (see *Releasing* below).
 
 - **Conventional Commits**: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`,
   `build:`, `ci:`, `chore:` (with optional scope). Use `!` / `BREAKING CHANGE:`
@@ -41,6 +50,21 @@ must pass before a change is merged — these are exactly what CI enforces.
 - **No AI / assistant references** in commit messages or PR descriptions.
 - Update `CHANGELOG.md` under `[Unreleased]` for any user-visible change.
 - One logical change per PR; keep the diff focused.
+
+## Releasing
+
+Releases are fix-forward and PR-based:
+
+1. Land all release changes via a branch → PR → squash-merge into `main`.
+2. From the merged `main` commit, run the disposable-tag dry-run (below),
+   verify, delete it.
+3. `git tag -a vX.Y.Z <merged-SHA> -m "Typeburn vX.Y.Z"` then
+   `git push origin vX.Y.Z` (separate push — never `git push --follow-tags`).
+4. `release.yml` self-gates (`ci.yml` does not run on tags) and publishes.
+
+Never delete-and-re-tag a version that reached the module proxy/sumdb (it is
+append-only — the version becomes permanently uninstallable). Fix forward to
+the next patch instead.
 
 ## Testing a release
 
