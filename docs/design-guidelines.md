@@ -56,12 +56,24 @@ Slate-dark base + green accent ("code dark + run green"), red error, amber warni
 
 > Rule: any text the user must read *right now* ≥ 4.5:1. Deliberately receded text (`text-faint`) may go lower **only** when it is not yet actionable and will brighten before it matters.
 
-### 2.2 Future themes (names reserved, not fully specced)
+### 2.2 Theme packs (shipped v1.1.0)
 
-- `mono` — single-hue greyscale; accent = bold white, error = underline-only. For strict/mono terminals & purists.
-- `solarized-dark` — map roles onto Solarized base03..base3 + green/red/yellow accents.
+`mono` — single-hue greyscale; accent = bold white, error = underline-only. For strict/mono terminals & purists.
 
-Theme contract: a theme = a `map[Role]lipgloss.Color`. Screens reference **roles only**, never literals. Adding a theme = one map.
+Six community palettes mapped onto the 16 roles (one `internal/theme/<name>-theme.go` file each). Role order below: Bg · Surface · SurfaceAlt · TextPrimary · TextMuted · TextFaint · Accent · AccentDim · Error · ErrorBg · Warning · Success · CursorBg · CursorFg · Border · BorderFocus.
+
+| Theme | Bg | Surface | SurfaceAlt | TextPrimary | TextMuted | TextFaint | Accent | AccentDim | Error | ErrorBg | Warning | Success | CursorBg | CursorFg | Border | BorderFocus |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| `solarized-dark` | `#002b36` | `#073642` | `#094d5c` | `#93a1a1` | `#839496` | `#586e75` | `#268bd2` | `#1f6a9e` | `#dc322f` | `#4a1715` | `#b58900` | `#859900` | `#268bd2` | `#002b36` | `#586e75` | `#268bd2` |
+| `solarized-light` | `#fdf6e3` | `#eee8d5` | `#ded8c5` | `#586e75` | `#657b83` | `#93a1a1` | `#268bd2` | `#3a7ca5` | `#dc322f` | `#f5d0cd` | `#b58900` | `#859900` | `#268bd2` | `#fdf6e3` | `#93a1a1` | `#268bd2` |
+| `dracula` | `#282a36` | `#343746` | `#44475a` | `#f8f8f2` | `#c9c9d1` | `#6272a4` | `#bd93f9` | `#7d5bbe` | `#ff5555` | `#5c1a1a` | `#f1fa8c` | `#50fa7b` | `#bd93f9` | `#282a36` | `#6272a4` | `#bd93f9` |
+| `nord` | `#2e3440` | `#3b4252` | `#434c5e` | `#eceff4` | `#d8dee9` | `#4c566a` | `#88c0d0` | `#5e81ac` | `#bf616a` | `#4a2326` | `#ebcb8b` | `#a3be8c` | `#88c0d0` | `#2e3440` | `#4c566a` | `#88c0d0` |
+| `gruvbox-dark` | `#282828` | `#3c3836` | `#504945` | `#ebdbb2` | `#a89984` | `#665c54` | `#fabd2f` | `#b57614` | `#fb4934` | `#4a1f1c` | `#fe8019` | `#b8bb26` | `#fabd2f` | `#282828` | `#665c54` | `#fabd2f` |
+| `gruvbox-light` | `#fbf1c7` | `#ebdbb2` | `#d5c4a1` | `#3c3836` | `#7c6f64` | `#bdae93` | `#b57614` | `#79740e` | `#9d0006` | `#f2d0cd` | `#af3a03` | `#79740e` | `#b57614` | `#fbf1c7` | `#bdae93` | `#b57614` |
+
+Sources: Solarized (ethanschoonover.com/solarized), Dracula (draculatheme.com), Nord (nordtheme.com), Gruvbox (github.com/morhetz/gruvbox). `solarized-light` / `gruvbox-light` are the first light themes — their Bg/Surface/Text roles are intentionally inverted vs the dark default; `palette_luminance_test.go` guards against accidental inversion, and per-screen contrast was reviewed manually.
+
+Theme contract: a theme = a `map[Role]lipgloss.Color`. Screens reference **roles only**, never literals. Adding a theme = one map. `theme.Available()` is the single display-order source; `config.Settings.Normalize` duplicates the accepted-name set (core layering forbids importing `theme`) and `theme_available_sync_test.go` keeps them in lockstep.
 
 ---
 

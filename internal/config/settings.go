@@ -28,7 +28,7 @@ func LengthsFor(m Mode) []int {
 // Settings is the persisted user configuration. v1 exposes exactly these four
 // controls; nothing else is configurable.
 type Settings struct {
-	Theme         string `json:"theme"`          // "default" | "mono"
+	Theme         string `json:"theme"`          // one of theme.Available()
 	DefaultMode   Mode   `json:"default_mode"`   // seeds the Home screen
 	DefaultLength int    `json:"default_length"` // valid for DefaultMode
 	BlinkCursor   bool   `json:"blink_cursor"`   // typing-screen cursor blink
@@ -48,8 +48,14 @@ func Defaults() Settings {
 // Normalize repairs out-of-range or unknown values in place, keeping a loaded
 // (possibly hand-edited or stale) settings file safe to use.
 func (s *Settings) Normalize() {
+	// Intentional duplication of theme.Available(): the core layering rule
+	// forbids importing internal/theme here. theme_available_sync_test.go
+	// asserts this accepted set stays in lockstep with theme.Available().
 	switch s.Theme {
-	case "default", "mono":
+	case "default", "mono",
+		"solarized-dark", "solarized-light",
+		"dracula", "nord",
+		"gruvbox-dark", "gruvbox-light":
 	default:
 		s.Theme = "default"
 	}

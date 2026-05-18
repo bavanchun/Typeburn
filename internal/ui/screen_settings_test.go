@@ -65,34 +65,42 @@ func TestDownClampsAtLastRow(t *testing.T) {
 	}
 }
 
-// TestThemeCyclesRightAndWraps verifies → cycles Theme {default→mono→default}.
+// TestThemeCyclesRightAndWraps verifies → advances through every theme in
+// theme.Available() order and wraps back to the first. Asserted generically
+// so adding/removing a theme pack does not require touching this test.
 func TestThemeCyclesRightAndWraps(t *testing.T) {
 	m, _ := newTestSettings(nil)
-	// sel=0 = Theme; initial = "default"
-	if m.rows[rowTheme].values[m.rows[rowTheme].idx] != "default" {
-		t.Fatalf("initial theme should be 'default'")
+	vals := m.rows[rowTheme].values
+	if len(vals) < 2 {
+		t.Fatalf("expected ≥2 themes, got %v", vals)
+	}
+	if vals[m.rows[rowTheme].idx] != vals[0] {
+		t.Fatalf("initial theme should be the first entry %q", vals[0])
 	}
 
-	// → once → "mono"
+	// → once → second theme.
 	m, _ = m.Update(pressSettKey(tea.KeyRight))
-	if got := m.rows[rowTheme].values[m.rows[rowTheme].idx]; got != "mono" {
-		t.Fatalf("after 1 →: want 'mono', got %q", got)
+	if got := m.rows[rowTheme].values[m.rows[rowTheme].idx]; got != vals[1] {
+		t.Fatalf("after 1 →: want %q, got %q", vals[1], got)
 	}
 
-	// → again → wraps to "default"
-	m, _ = m.Update(pressSettKey(tea.KeyRight))
-	if got := m.rows[rowTheme].values[m.rows[rowTheme].idx]; got != "default" {
-		t.Fatalf("after 2 →: want 'default' (wrap), got %q", got)
+	// → the remaining len-1 times → wraps back to the first.
+	for range len(vals) - 1 {
+		m, _ = m.Update(pressSettKey(tea.KeyRight))
+	}
+	if got := m.rows[rowTheme].values[m.rows[rowTheme].idx]; got != vals[0] {
+		t.Fatalf("after a full cycle →: want %q (wrap), got %q", vals[0], got)
 	}
 }
 
-// TestThemeCyclesLeft verifies ← wraps from first to last.
+// TestThemeCyclesLeft verifies ← from the first entry wraps to the last.
 func TestThemeCyclesLeft(t *testing.T) {
 	m, _ := newTestSettings(nil)
-	// Default is index 0; ← should wrap to "mono".
+	vals := m.rows[rowTheme].values
+	last := vals[len(vals)-1]
 	m, _ = m.Update(pressSettKey(tea.KeyLeft))
-	if got := m.rows[rowTheme].values[m.rows[rowTheme].idx]; got != "mono" {
-		t.Fatalf("← from 'default': want 'mono', got %q", got)
+	if got := m.rows[rowTheme].values[m.rows[rowTheme].idx]; got != last {
+		t.Fatalf("← from first: want %q (wrap to last), got %q", last, got)
 	}
 }
 

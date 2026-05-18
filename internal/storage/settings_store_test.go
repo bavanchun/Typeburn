@@ -82,7 +82,7 @@ func TestUnknownThemeNormalized(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	raw := `{"theme":"solarized-dark","default_mode":"time","default_length":30,"blink_cursor":false}`
+	raw := `{"theme":"totally-unknown-theme","default_mode":"time","default_length":30,"blink_cursor":false}`
 	if err := os.WriteFile(path, []byte(raw), 0600); err != nil {
 		t.Fatal(err)
 	}
