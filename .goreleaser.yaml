@@ -51,10 +51,18 @@ checksum:
   algorithm: sha256
 
 changelog:
-  # Repo history has zero conventional feat:/fix: commits, so a git-derived
-  # changelog would be empty/misleading. Release notes come from the curated
-  # CHANGELOG.md (Phase 4), passed via --release-notes in release.yml (Phase 5).
-  disable: true
+  # Release notes come from the curated CHANGELOG.md (.github/release-notes.md),
+  # passed via `--release-notes` in release.yml. That flag makes GoReleaser use
+  # the file and skip its own git-derived generation.
+  #
+  # Do NOT set `disable: true` here: GoReleaser's docs are explicit that
+  # disabling the changelog ALSO ignores any `--release-notes` file and renders
+  # an EMPTY release body. The exclude-everything filter below is a
+  # belt-and-suspenders fallback so a hand-run `goreleaser release` without
+  # `--release-notes` still never leaks raw git log into release notes.
+  filters:
+    exclude:
+      - ".*"
 
 release:
   github:
