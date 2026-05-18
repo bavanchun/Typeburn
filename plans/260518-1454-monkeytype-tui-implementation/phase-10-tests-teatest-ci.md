@@ -1,10 +1,11 @@
 ---
 phase: 10
-title: "Tests teatest & CI"
+title: Tests teatest & CI
 status: completed
 priority: P2
 effort: ~4h
-dependencies: [9]
+dependencies:
+  - 9
 ---
 
 # Phase 10: Tests teatest & CI

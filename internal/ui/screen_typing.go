@@ -134,7 +134,10 @@ func (m TypingModel) handleKey(k tea.Key) (TypingModel, tea.Cmd) {
 	case m.keys.Back.Matches(k):
 		return m, func() tea.Msg { return AbortMsg{} }
 	case m.keys.RestartSame.Matches(k):
-		return m.restartSame(), nil
+		// Re-arm the tick so the Time-mode header/timer stays live after a
+		// restart; the loop idles harmlessly until the first keystroke sets
+		// startMs (elapsedMs/ completion are guarded on startMs).
+		return m.restartSame(), tickCmd()
 	case m.keys.NewTest.Matches(k):
 		return m.newTest(), tickCmd()
 	}
