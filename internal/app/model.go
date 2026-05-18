@@ -38,6 +38,12 @@ type Model struct {
 	// quitPrompt is non-nil when the esc-on-Home quit confirmation overlay is
 	// active. ctrl+c always hard-quits regardless of this field.
 	quitPrompt *quitPromptModel
+
+	// persistErr holds a transient, user-visible message when a history or
+	// settings disk write failed. Empty = nothing to show. It is set at the
+	// failing persist site and cleared on the next keypress (any key) so the
+	// notice behaves like a dismissible toast; it never blocks input.
+	persistErr string
 }
 
 // New builds the root model loading persisted settings from disk.

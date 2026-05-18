@@ -73,17 +73,19 @@
 - **Dependencies:** Settings addition (keybinding style selector)
 - **Scope:** Centralized keymap already supports easy extension
 
-#### Solarized-Dark Theme
-- **Description:** Map roles to Solarized base03/base2 + accent colors
-- **Effort:** ~2 hours (theme = one color map)
-- **Dependencies:** None (theme system already extensible)
-- **Status:** Name reserved in v1; awaiting color palette confirmation
+#### Theme Packs — ✅ SHIPPED (v1.1.0)
+- **Description:** Six community palettes mapped onto the 16 roles —
+  `solarized-dark`, `solarized-light`, `dracula`, `nord`, `gruvbox-dark`,
+  `gruvbox-light`. First light themes; `palette_luminance_test.go` guards
+  against inverted palettes; `theme_available_sync_test.go` keeps the
+  `config.Normalize` accepted-set in lockstep with `theme.Available()`.
+- **Status:** Shipped in v1.1.0 (2026-05-19). Palettes documented in
+  `design-guidelines.md` §2.2.
 
-#### Additional Themes
-- Dracula
-- Nord
-- Gruvbox
+#### Additional Themes (future, if requested)
 - One Dark Pro
+- Catppuccin
+- Tokyo Night
 
 ### Lower Priority (Nice-to-Have)
 
@@ -167,10 +169,14 @@
 - ✅ README + design-guidelines + system-architecture docs complete
 - ✅ Code review SHIP verdict; M1 fixed in v1.0 (d6369de), M2 accepted as documented v1 decision
 
-### Next 30 Days (Optional Post-1.0)
-1. **Evaluate M2 fix** (new-best precision): accepted v1 trade-off; revisit only if user feedback shows it matters → v1.1
-3. **Gather user feedback** on missing features (Code mode? Vim motions? More themes?)
-4. **Consider theme pipeline:** if multiple theme requests → prioritize Solarized > others
+### Shipped Post-1.0
+- ✅ **v1.0.1:** M2 new-best sub-WPM precision fixed; always-zero `missed` stat removed.
+- ✅ **v1.1.0:** Six theme packs (Solarized D/L, Dracula, Nord, Gruvbox D/L);
+  non-blocking persistence-failure notice; post-1.0 doc corrections.
+
+### Next (Optional)
+1. **Gather user feedback** on missing features (Code mode? Vim motions? more themes?)
+2. **Code mode / custom text input** — next-most-valuable product upgrade if requested.
 
 ### v2.0 Planning (Future)
 - M4: Add target delivery mechanism; remove MissedChars 0-stub or make it meaningful

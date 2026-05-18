@@ -20,8 +20,11 @@ func NewFromDisk() Model {
 // so that theme swap, blink toggle, and default mode/length apply live.
 func (m *Model) onSettingsChange(s config.Settings) {
 	m.settings = s
-	// Persist best-effort; ignore error to avoid crashing the UI on disk issues.
-	_ = storage.SaveSettings(s)
+	// Persist best-effort: a disk failure must not crash the UI, but it must
+	// not be silent either — surface a dismissible notice.
+	if err := storage.SaveSettings(s); err != nil {
+		m.persistErr = "Couldn't save settings to disk"
+	}
 	// Rebuild theme from the new name, then propagate to every sub-model.
 	m.theme = theme.Load(s.Theme, theme.EnvNoColor())
 	m.home = ui.NewHome(s, m.theme, m.keys).SetSize(m.w, m.h)

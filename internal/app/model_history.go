@@ -36,8 +36,11 @@ func (m Model) handleResultMsg(msg ui.ResultMsg) Model {
 	rec := buildRecord(msg)
 	hist := storage.LoadHistory()
 	isBest := storage.IsNewBest(hist, rec)
-	// Persist regardless of IsNewBest result; ignore write errors (non-fatal).
-	_, _ = storage.AppendHistory(rec)
+	// Persist regardless of IsNewBest result. A write failure is non-fatal to
+	// the session but must not be silent — surface a dismissible notice.
+	if _, err := storage.AppendHistory(rec); err != nil {
+		m.persistErr = "Couldn't save result to disk"
+	}
 
 	m.result = ui.NewResult(msg, m.theme, m.keys).WithBest(isBest).SetSize(m.w, m.h)
 	m.screen = ScreenResult

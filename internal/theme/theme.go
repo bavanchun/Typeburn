@@ -19,9 +19,17 @@ type Theme struct {
 // Name returns the theme identifier ("default", "mono", or "no-color").
 func (t Theme) Name() string { return t.name }
 
-// Available lists the user-selectable theme names in v1 order.
-// "solarized-dark" is reserved but not implemented in v1.
-func Available() []string { return []string{"default", "mono"} }
+// Available lists the user-selectable theme names in display order.
+// config.Settings.Normalize duplicates this set (core layering forbids it
+// from importing theme); theme_available_sync_test.go guards them in lockstep.
+func Available() []string {
+	return []string{
+		"default", "mono",
+		"solarized-dark", "solarized-light",
+		"dracula", "nord",
+		"gruvbox-dark", "gruvbox-light",
+	}
+}
 
 // EnvNoColor reports whether the NO_COLOR convention is active. Any non-empty
 // value disables color (https://no-color.org).
@@ -36,6 +44,18 @@ func Load(name string, noColor bool) Theme {
 	switch name {
 	case "mono":
 		return Mono()
+	case "solarized-dark":
+		return SolarizedDark()
+	case "solarized-light":
+		return SolarizedLight()
+	case "dracula":
+		return Dracula()
+	case "nord":
+		return Nord()
+	case "gruvbox-dark":
+		return GruvboxDark()
+	case "gruvbox-light":
+		return GruvboxLight()
 	default:
 		return Default()
 	}

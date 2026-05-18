@@ -6,8 +6,6 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/bavanchun/Typeburn.svg)](https://pkg.go.dev/github.com/bavanchun/Typeburn)
 [![License](https://img.shields.io/github/license/bavanchun/Typeburn)](./LICENSE)
 
-> Release/pkg.go.dev badges 404 until the first tag is published — expected pre-`v1.0.0`.
-
 A Monkeytype-style terminal typing test built with Go and Bubble Tea v2.
 Distraction-free, keyboard-driven, and works on any ANSI terminal.
 

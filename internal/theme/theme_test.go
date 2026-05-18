@@ -2,16 +2,46 @@ package theme
 
 import "testing"
 
-// TestAvailable_ContainsExpectedThemes verifies Available returns the two v1 themes.
+// packThemes is the set of named, fully-colored themes (excludes the
+// attribute-only no-color theme, which is selected via the noColor flag).
+var packThemes = []string{
+	"default", "mono",
+	"solarized-dark", "solarized-light",
+	"dracula", "nord",
+	"gruvbox-dark", "gruvbox-light",
+}
+
+// TestAvailable_ContainsExpectedThemes verifies Available returns exactly the
+// selectable theme set in the expected order.
 func TestAvailable_ContainsExpectedThemes(t *testing.T) {
 	got := Available()
-	want := map[string]bool{"default": true, "mono": true}
-	if len(got) != len(want) {
-		t.Fatalf("Available: want %d entries, got %d: %v", len(want), len(got), got)
+	if len(got) != len(packThemes) {
+		t.Fatalf("Available: want %d entries, got %d: %v", len(packThemes), len(got), got)
 	}
-	for _, name := range got {
-		if !want[name] {
-			t.Errorf("unexpected theme name %q", name)
+	for i, name := range packThemes {
+		if got[i] != name {
+			t.Errorf("Available[%d]: want %q, got %q", i, name, got[i])
+		}
+	}
+}
+
+// TestPacks_NameRoundTripAndAllRolesResolve verifies every selectable theme
+// loads by name and resolves all 16 roles to a non-nil color (colored mode)
+// and to a non-panicking style; under noColor the same name yields no-color.
+func TestPacks_NameRoundTripAndAllRolesResolve(t *testing.T) {
+	for _, name := range packThemes {
+		th := Load(name, false)
+		if th.Name() != name {
+			t.Errorf("Load(%q,false): Name()=%q, want %q", name, th.Name(), name)
+		}
+		for _, r := range allRoles() {
+			if c := th.Color(r); c == nil {
+				t.Errorf("theme %q: Color(role %d) is nil; every role must map", name, r)
+			}
+			_ = th.Style(r) // must not panic
+		}
+		if nc := Load(name, true); nc.Name() != "no-color" {
+			t.Errorf("Load(%q,true): Name()=%q, want no-color", name, nc.Name())
 		}
 	}
 }

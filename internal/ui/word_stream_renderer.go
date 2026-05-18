@@ -13,9 +13,12 @@ import (
 // RenderWordStream renders the typing word-stream as a multi-line string.
 //
 // Each rune in target is styled according to its CharState. Extra typed runes
-// (past the target length) are appended at the end. Hard-wrapping happens at
-// width columns using word-aware boundaries: words are never split mid-rune
-// unless a single word exceeds the full width.
+// (past the target length) are appended at the end. Wrapping is a hard
+// character-cell wrap at `width`: when the next rune would overflow the line
+// it starts a new line, so a word longer than `width` IS split between runes
+// (never within a multi-byte rune). A space landing at/after the boundary
+// also flushes so the following word begins on a fresh line. This is not a
+// word-aware (scan-back) wrap.
 //
 // Rendering is rune-safe: all iteration uses []rune, not byte slices.
 func RenderWordStream(
@@ -81,15 +84,15 @@ func RenderWordStream(
 		tokens[i] = st.Render(ch)
 	}
 
-	// Word-aware hard-wrap at width columns.
-	// We wrap on rune counts because styled strings have ANSI escapes that
-	// inflate byte length. We track the raw rune count of current line.
+	// Hard character-cell wrap at width columns. We wrap on rune counts (not
+	// byte length) because styled tokens carry ANSI escapes that inflate bytes;
+	// the raw rune count of the current line is tracked instead.
 	return wrapTokens(tokens, states, target, typed, width)
 }
 
-// wrapTokens assembles the styled rune tokens into wrapped lines.
-// Word boundaries are determined from the raw runes so wrapping is correct
-// regardless of ANSI escape inflation.
+// wrapTokens assembles the styled rune tokens into wrapped lines using a hard
+// per-cell wrap. Width is accounted from the raw runes (one cell each) so the
+// ANSI escapes in the styled tokens do not distort line length.
 func wrapTokens(
 	tokens []string,
 	states []typing.CharState,
@@ -121,13 +124,13 @@ func wrapTokens(
 		if runeW < 0 {
 			runeW = 1
 		}
-		// Terminal width = 1 per standard ASCII/Latin rune; use 1 for simplicity
-		// (full CJK double-width support deferred to Phase 9).
+		// One terminal cell per rune (ASCII/Latin). CJK double-width is not
+		// handled — deferred (roadmap m5, "CJK width support if quotes added").
 		cellW := 1
 
-		// Word-aware wrap: if this rune would exceed the line width and the
-		// rune is NOT a space, scan back to find the last space in the current
-		// line and break there.
+		// Hard wrap: if this rune would overflow the line, break before it.
+		// There is no scan-back to the last space, so a word wider than the
+		// line is split between runes here.
 		if lineWidth+cellW > width && lineWidth > 0 {
 			flush()
 		}

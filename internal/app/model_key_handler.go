@@ -18,6 +18,11 @@ func (m Model) handleKey(key tea.Key) (tea.Model, tea.Cmd) {
 		return m, tea.Quit
 	}
 
+	// Any other key dismisses the persistence-failure toast (it is purely
+	// informational). The keystroke still proceeds to its normal handling
+	// below; m is a value receiver so this cleared copy propagates out.
+	m.persistErr = ""
+
 	// Quit-prompt overlay: route keys into the prompt; dismiss or quit as needed.
 	// ctrl+c (above) already bypasses this, so only esc/enter/y/n/arrows reach here.
 	if m.quitPrompt != nil && m.screen == ScreenHome {

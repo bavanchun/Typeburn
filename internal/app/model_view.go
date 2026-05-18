@@ -1,6 +1,8 @@
 package app
 
 import (
+	"strings"
+
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 
@@ -27,41 +29,44 @@ func (m Model) View() tea.View {
 		return tea.NewView(m.quitPrompt.view(m.w, m.h, m.theme))
 	}
 
-	var body string
+	// Compute the final frame string in one place (single return) so the
+	// persistence notice can be overlaid uniformly. Home/Result/Settings/
+	// History self-place to w×h inside their own View(); Typing and the
+	// placeholder are placed here. With no notice this yields byte-identical
+	// output to the previous per-branch returns.
+	var out string
 	switch m.screen {
 	case ScreenHome:
-		// HomeModel.View() calls lipgloss.Place internally.
-		body = m.home.View()
-		if m.w > 0 && m.h > 0 {
-			return tea.NewView(body)
-		}
-	case ScreenTyping:
-		body = m.typing.View()
+		out = m.home.View() // self-placed
 	case ScreenResult:
-		// ResultModel.View() calls lipgloss.Place internally.
-		body = m.result.View()
-		if m.w > 0 && m.h > 0 {
-			return tea.NewView(body)
-		}
+		out = m.result.View() // self-placed
 	case ScreenSettings:
-		// SettingsModel.View() calls lipgloss.Place internally.
-		body = m.sett.View()
-		if m.w > 0 && m.h > 0 {
-			return tea.NewView(body)
-		}
+		out = m.sett.View() // self-placed
 	case ScreenHistory:
-		// HistoryModel.View() calls lipgloss.Place internally.
-		body = m.hist.View()
+		out = m.hist.View() // self-placed
+	case ScreenTyping:
+		out = m.typing.View()
 		if m.w > 0 && m.h > 0 {
-			return tea.NewView(body)
+			out = lipgloss.Place(m.w, m.h, lipgloss.Center, lipgloss.Center, out)
 		}
 	default:
-		body = placeholderView(m.screen, m.theme)
+		out = placeholderView(m.screen, m.theme)
+		if m.w > 0 && m.h > 0 {
+			out = lipgloss.Place(m.w, m.h, lipgloss.Center, lipgloss.Center, out)
+		}
 	}
 
-	content := body
-	if m.w > 0 && m.h > 0 {
-		content = lipgloss.Place(m.w, m.h, lipgloss.Center, lipgloss.Center, body)
+	// Transient persistence-failure toast: overlay onto the frame's last row
+	// (normally blank padding) so the line count — and thus every other
+	// screen's layout — is unchanged. Cleared on the next keypress.
+	if m.persistErr != "" && m.w > 0 && m.h > 0 {
+		lines := strings.Split(out, "\n")
+		notice := lipgloss.PlaceHorizontal(
+			m.w, lipgloss.Center, ui.PersistenceNotice(m.persistErr, m.theme),
+		)
+		lines[len(lines)-1] = notice
+		out = strings.Join(lines, "\n")
 	}
-	return tea.NewView(content)
+
+	return tea.NewView(out)
 }
