@@ -1,5 +1,13 @@
 # Typeburn
 
+[![CI](https://github.com/bavanchun/Typeburn/actions/workflows/ci.yml/badge.svg)](https://github.com/bavanchun/Typeburn/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/bavanchun/Typeburn?sort=semver)](https://github.com/bavanchun/Typeburn/releases/latest)
+[![Go](https://img.shields.io/github/go-mod/go-version/bavanchun/Typeburn)](https://go.dev/)
+[![Go Reference](https://pkg.go.dev/badge/github.com/bavanchun/Typeburn.svg)](https://pkg.go.dev/github.com/bavanchun/Typeburn)
+[![License](https://img.shields.io/github/license/bavanchun/Typeburn)](./LICENSE)
+
+> Release/pkg.go.dev badges 404 until the first tag is published — expected pre-`v1.0.0`.
+
 A Monkeytype-style terminal typing test built with Go and Bubble Tea v2.
 Distraction-free, keyboard-driven, and works on any ANSI terminal.
 
@@ -14,27 +22,48 @@ Distraction-free, keyboard-driven, and works on any ANSI terminal.
 - **Minimum terminal**: 60 columns × 20 rows; graceful degraded notice below that
 - **XDG-compliant paths**: settings and history go to `$XDG_CONFIG_HOME` / `$XDG_DATA_HOME`
 
-## Install / Build
+## Installation
 
 Requires **Go 1.26+**.
 
+**1. `go install` (latest tagged release):**
+
 ```sh
-# Build binary into ./bin/
-make build
-
-# Or directly with go
-go build -o typeburn .
-
-# Run without installing
-make run
-# or
-go run .
+go install github.com/bavanchun/Typeburn@latest
 ```
+
+> The module path is **case-sensitive — the capital `T` in `Typeburn` is
+> required**. `go install` installs an executable named `Typeburn` into
+> `$(go env GOPATH)/bin`.
+>
+> A freshly published release may lag the Go module proxy by up to ~1 hour;
+> until the proxy ingests the tag, `go install ...@vX.Y.Z` can 404. Downloading
+> the release binary (below) is immediate and unaffected.
+
+**2. Download a pre-built binary:**
+
+Grab the archive for your OS/arch from the
+[latest release](https://github.com/bavanchun/Typeburn/releases/latest)
+(linux/darwin/windows × amd64/arm64), verify it against `checksums.txt`,
+extract, and run the `Typeburn` binary.
+
+**3. Build from source:**
+
+```sh
+make build            # → ./bin/typeburn (lowercase, local convention)
+# or
+go build -o typeburn .
+make run               # run without installing (or: go run .)
+```
+
+**4. Homebrew:** planned, not yet available (see [CONTRIBUTING.md](./CONTRIBUTING.md)).
 
 ## Usage
 
 ```sh
-./bin/typeburn
+./bin/typeburn            # from `make build`
+Typeburn                  # from `go install` / release archive
+Typeburn --version        # print version, commit, build date, toolchain; then exit
 ```
 
 The minimum usable terminal size is **60 columns × 20 rows**. If the terminal is

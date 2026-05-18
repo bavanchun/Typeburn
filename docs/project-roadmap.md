@@ -5,6 +5,7 @@
 ## v1.0 — Complete (2026-05-18)
 
 **Status:** SHIPPED. All 10 phases implemented, tested, shipped.
+**Released:** Tagged `v1.0.0` (2026-05-18) — see [GitHub Releases](https://github.com/bavanchun/Typeburn/releases/tag/v1.0.0).
 
 ### Shipped Features
 

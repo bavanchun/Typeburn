@@ -1,0 +1,52 @@
+name: Bug report
+description: Report incorrect behavior in Typeburn
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for reporting. Please fill in everything below so it can be reproduced.
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: "Output of `Typeburn --version` (or `./bin/typeburn --version`)"
+      placeholder: "typeburn v1.0.0 (61a4afd, 2026-05-18T21:10:00Z, go1.26.2 darwin/arm64)"
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: OS / architecture
+      placeholder: "macOS 15.5 arm64 / Ubuntu 24.04 amd64"
+    validations:
+      required: true
+  - type: input
+    id: terminal
+    attributes:
+      label: Terminal emulator
+      placeholder: "iTerm2 3.5 / Alacritty 0.13 / Windows Terminal 1.20"
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Launch `Typeburn`
+        2. Select Time 60s
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Include a screenshot or copied terminal output if relevant.
+    validations:
+      required: true
