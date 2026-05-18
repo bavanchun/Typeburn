@@ -1,10 +1,11 @@
 ---
 phase: 5
-title: "Home screen"
-status: pending
+title: Home screen
+status: completed
 priority: P1
 effort: ~4h
-dependencies: [4]
+dependencies:
+  - 4
 ---
 
 # Phase 5: Home screen

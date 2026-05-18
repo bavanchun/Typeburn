@@ -32,6 +32,7 @@ type Model struct {
 	settings config.Settings
 	home     ui.HomeModel
 	typing   ui.TypingModel
+	result   ui.ResultModel
 }
 
 // New builds the root model with the given theme and settings.
@@ -62,9 +63,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
-	// ResultMsg: test completed → placeholder until Phase 6.
-	if _, ok := msg.(ui.ResultMsg); ok {
+	// ResultMsg: test completed → construct real ResultModel (Phase 6).
+	if rm, ok := msg.(ui.ResultMsg); ok {
+		m.result = ui.NewResult(rm, m.theme, m.keys).SetSize(m.w, m.h)
 		m.screen = ScreenResult
+		return m, nil
+	}
+
+	// NavHistoryMsg: navigate to History screen.
+	if _, ok := msg.(ui.NavHistoryMsg); ok {
+		m.screen = ScreenHistory
 		return m, nil
 	}
 
@@ -81,6 +89,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.screen == ScreenTyping {
 			m.typing = m.typing.SetSize(msg.Width, msg.Height)
 		}
+		if m.screen == ScreenResult {
+			m.result = m.result.SetSize(msg.Width, msg.Height)
+		}
 		return m, nil
 
 	case tea.KeyPressMsg:
@@ -91,6 +102,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.screen == ScreenTyping {
 		var cmd tea.Cmd
 		m.typing, cmd = m.typing.Update(msg)
+		return m, cmd
+	}
+	if m.screen == ScreenResult {
+		var cmd tea.Cmd
+		m.result, cmd = m.result.Update(msg)
 		return m, cmd
 	}
 
@@ -108,6 +124,13 @@ func (m Model) handleKey(key tea.Key) (tea.Model, tea.Cmd) {
 	if m.screen == ScreenTyping {
 		var cmd tea.Cmd
 		m.typing, cmd = m.typing.Update(tea.KeyPressMsg(key))
+		return m, cmd
+	}
+
+	// While on result screen, delegate to result sub-model.
+	if m.screen == ScreenResult {
+		var cmd tea.Cmd
+		m.result, cmd = m.result.Update(tea.KeyPressMsg(key))
 		return m, cmd
 	}
 
@@ -154,6 +177,12 @@ func (m Model) View() tea.View {
 		}
 	case ScreenTyping:
 		body = m.typing.View()
+	case ScreenResult:
+		// ResultModel.View() calls lipgloss.Place internally.
+		body = m.result.View()
+		if m.w > 0 && m.h > 0 {
+			return tea.NewView(body)
+		}
 	default:
 		body = placeholderView(m.screen, m.theme)
 	}
