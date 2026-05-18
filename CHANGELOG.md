@@ -11,6 +11,8 @@ release section is extracted verbatim and passed to GoReleaser via
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-05-19
+
 ### Added
 
 - **Theme packs:** six new color themes selectable in Settings —
@@ -83,6 +85,7 @@ terminal typing test built with Go and Bubble Tea v2.
   HTTPS transport and the pipeline-generated `checksums.txt`. See
   [SECURITY.md](./SECURITY.md).
 
-[Unreleased]: https://github.com/bavanchun/Typeburn/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/bavanchun/Typeburn/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/bavanchun/Typeburn/releases/tag/v1.1.0
 [1.0.1]: https://github.com/bavanchun/Typeburn/releases/tag/v1.0.1
 [1.0.0]: https://github.com/bavanchun/Typeburn/releases/tag/v1.0.0

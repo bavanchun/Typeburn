@@ -1,16 +1,21 @@
-## [1.0.1] - 2026-05-18
+## [1.1.0] - 2026-05-19
 
-### Fixed
+### Added
 
-- **New-best precision:** the ★ personal-best badge compared rounded integer
-  WPM, so a strictly faster run that rounded to the same integer (e.g. 75.4 vs
-  75.0) did not earn the badge. New-best detection now compares the full-precision
-  net WPM. History records written by v1.0.0 (which lack the new field) fall
-  back to their stored rounded WPM, so existing personal bests are preserved.
+- **Theme packs:** six new color themes selectable in Settings —
+  `solarized-dark`, `solarized-light`, `dracula`, `nord`, `gruvbox-dark`,
+  `gruvbox-light` (bringing the total to eight, with `default` and `mono`).
+  `solarized-light` and `gruvbox-light` are the first light themes. `NO_COLOR`
+  behavior is unchanged.
+- **Persistence-failure notice:** if saving a result or settings to disk
+  fails, a dismissible one-line notice now appears instead of the failure
+  being silent. It never blocks input and clears on the next keypress.
 
-### Removed
+### Changed
 
-- **`missed` stat:** the result screen showed a `missed` counter that was always
-  `0` (the metrics package never received the target text to compute it). The
-  unusable field and its display were removed; no real metric is affected.
-[1.0.1]: https://github.com/bavanchun/Typeburn/releases/tag/v1.0.1
+- Documentation corrected post-1.0: removed the stale "badges 404 until the
+  first tag" note; the dependency-layering rule now describes the real
+  invariant (`config`/`theme` intentionally bridge to the TUI); the word
+  stream's wrap comment now matches the actual character-cell behavior.
+
+[1.1.0]: https://github.com/bavanchun/Typeburn/releases/tag/v1.1.0
