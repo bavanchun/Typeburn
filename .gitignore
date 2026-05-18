@@ -3,6 +3,9 @@
 *.exe
 *.out
 
+# GoReleaser build/archive output
+/dist/
+
 # Go
 *.test
 *.prof

@@ -1,0 +1,63 @@
+# GoReleaser v2 — cross-platform release pipeline for Typeburn.
+# Pinned tooling: this config is validated against GoReleaser v2.15.4 (the exact
+# version used by .github/workflows/release.yml and documented in CONTRIBUTING.md).
+# Verify locally with `make snapshot`; that proves build+archive ONLY — the
+# publish/auth/release-notes path is exercised by the Phase 5 disposable-tag dry-run.
+version: 2
+
+before:
+  hooks:
+    # Build only. No `go mod tidy` (mutates go.sum, needs network) and no
+    # `go test` (arbitrary code in the privileged publish job) — tests run in
+    # release.yml's separate, least-privilege `test` job before this ever runs.
+    - go build ./...
+
+builds:
+  - env:
+      - CGO_ENABLED=0
+      # Fail loudly on any module drift instead of silently rewriting go.sum.
+      - GOFLAGS=-mod=readonly
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+      # `v`-prefixed so the release-archive banner matches the `go install`
+      # path, where debug.ReadBuildInfo() reports the tag as `vX.Y.Z`.
+      # GoReleaser's {{ .Version }} strips the leading `v`; we re-add it.
+      - -X github.com/bavanchun/Typeburn/internal/version.Version=v{{ .Version }}
+      - -X github.com/bavanchun/Typeburn/internal/version.Commit={{ .Commit }}
+      - -X github.com/bavanchun/Typeburn/internal/version.Date={{ .CommitDate }}
+
+archives:
+  # Plural `formats:` — singular `format:` is removed in this v2 line.
+  - formats: ["tar.gz"]
+    format_overrides:
+      - goos: windows
+        formats: ["zip"]
+    files:
+      - README.md
+      - LICENSE
+      - CHANGELOG.md
+
+checksum:
+  name_template: "checksums.txt"
+  algorithm: sha256
+
+changelog:
+  # Repo history has zero conventional feat:/fix: commits, so a git-derived
+  # changelog would be empty/misleading. Release notes come from the curated
+  # CHANGELOG.md (Phase 4), passed via --release-notes in release.yml (Phase 5).
+  disable: true
+
+release:
+  github:
+    owner: bavanchun
+    name: Typeburn
+  draft: false
