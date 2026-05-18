@@ -1,0 +1,21 @@
+# Binaries
+/bin/
+*.exe
+*.out
+tt
+monkeytype
+
+# Go
+*.test
+*.prof
+coverage.out
+vendor/
+
+# Local data / config (runtime)
+*.local
+
+# OS / editor
+.DS_Store
+*.swp
+.idea/
+.vscode/
