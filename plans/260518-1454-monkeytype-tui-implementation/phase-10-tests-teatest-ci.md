@@ -1,7 +1,7 @@
 ---
 phase: 10
 title: "Tests teatest & CI"
-status: pending
+status: completed
 priority: P2
 effort: ~4h
 dependencies: [9]

@@ -1,10 +1,12 @@
 ---
 phase: 9
-title: "Polish resize & NO_COLOR"
-status: pending
+title: Polish resize & NO_COLOR
+status: completed
 priority: P2
 effort: ~4h
-dependencies: [7, 8]
+dependencies:
+  - 7
+  - 8
 ---
 
 # Phase 9: Polish resize & NO_COLOR
