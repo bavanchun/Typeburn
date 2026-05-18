@@ -23,10 +23,11 @@ go test ./internal/version/ -run TestResolve_LdflagsWin -v
 
 ## Architecture
 
-**Strict dependency layering — do not violate.** The core packages are UI-free and must stay that way (no `bubbletea`/`lipgloss` imports in them):
+**Strict dependency layering — do not violate.** The *pure-logic* packages are UI-free and must stay that way (no `bubbletea`/`lipgloss` imports):
 
-- Pure core: `internal/typing` (keystroke state machine), `internal/metrics` (WPM/accuracy/consistency formulas), `internal/words` (embedded wordlist + quote pack), `internal/config` (settings, keymap, XDG paths), `internal/storage` (atomic JSON persistence), `internal/theme` (semantic colors), `internal/version` (build stamp).
-- `internal/ui` depends on the core packages and implements the five screen sub-models + reusable components.
+- Pure logic (no UI deps): `internal/typing` (keystroke state machine), `internal/metrics` (WPM/accuracy/consistency formulas), `internal/words` (embedded wordlist + quote pack), `internal/storage` (atomic JSON persistence), `internal/version` (build stamp).
+- Styling/input boundary (intentionally not reusable-core): `internal/config` binds Bubble Tea key types for its keymap, and `internal/theme` returns Lip Gloss styles/colors by design. These two depend on `charm.land` libs deliberately — they are the seam between pure logic and the TUI, not general-purpose libraries. Do not "fix" this by removing the imports; do not add new UI deps to the pure-logic packages above.
+- `internal/ui` depends on the packages above and implements the five screen sub-models + reusable components.
 - `internal/app` is the root Bubble Tea Elm model that wires everything together.
 
 **Elm message flow.** `app.Model` owns a `Screen` enum and five sub-models. Screen sub-models in `internal/ui` emit *domain* messages — `StartTestMsg`, `ResultMsg`, `AbortMsg`, `NavHistoryMsg` (defined in `internal/ui/messages.go`). The root model's `Update` routes them, owns screen transitions, and is the *only* place that persists results (`AppendHistory`) and computes new-best. Sub-models never touch storage directly. To add a screen interaction, emit a message from the sub-model and handle routing/side-effects in `internal/app`.
