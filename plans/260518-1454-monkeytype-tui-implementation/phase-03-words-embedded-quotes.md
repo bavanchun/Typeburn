@@ -1,7 +1,7 @@
 ---
 phase: 3
 title: "Words & embedded quotes"
-status: pending
+status: complete
 priority: P1
 effort: ~3h
 dependencies: [2]
@@ -72,11 +72,11 @@ Modify: none. Delete: none.
 
 ## Success Criteria
 
-- [ ] Same seed → byte-identical word output (deterministic).
-- [ ] `Words(N)` returns exactly N words for N ∈ {10,25,50,100}.
-- [ ] All 3 quote buckets non-empty and length-classified correctly.
-- [ ] Embedded data loads with no filesystem/network access at runtime.
-- [ ] `go test ./... -race` passes; build/vet/gofmt clean.
+- [x] Same seed → byte-identical word output (deterministic).
+- [x] `Words(N)` returns exactly N words for N ∈ {10,25,50,100}.
+- [x] All 3 quote buckets non-empty and length-classified correctly.
+- [x] Embedded data loads with no filesystem/network access at runtime.
+- [x] `go test ./... -race` passes; build/vet/gofmt clean.
 
 ## Risk Assessment
 

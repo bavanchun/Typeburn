@@ -1,10 +1,11 @@
 ---
 phase: 2
-title: "Typing engine & metrics (TDD)"
-status: pending
+title: Typing engine & metrics (TDD)
+status: completed
 priority: P1
 effort: ~7h
-dependencies: [1]
+dependencies:
+  - 1
 ---
 
 # Phase 2: Typing engine & metrics (TDD)
