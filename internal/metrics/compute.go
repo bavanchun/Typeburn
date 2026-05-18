@@ -17,7 +17,6 @@ type Result struct {
 	CorrectChars   int // chars in Correct final state
 	IncorrectChars int // chars in Incorrect/IncorrectSpace final state (uncorrected)
 	ExtraChars     int // chars typed past target length
-	MissedChars    int // target chars never reached (cursor never got there)
 	Errors         int // alias for IncorrectChars (uncorrected errors)
 
 	DurationMs int64       // effective test duration (endMs - startMs, after AFK trim)
@@ -69,14 +68,6 @@ func Compute(log []typing.Keystroke, mode config.Mode, endMs int64) Result {
 		}
 	}
 
-	// Missed = target positions never reached (no entry in finalState and cursor
-	// never advanced there). We infer this from positions with no entry.
-	// In practice, the engine only logs keystrokes up to where the user typed,
-	// so positions beyond len(finalState) that exist in target are missed.
-	// MissedChars is informational; it does not affect WPM or accuracy.
-	// (We don't have target here — missed is reported as 0 in this package.)
-	missed := 0
-
 	// Total forward keystrokes (non-backspace) for RawWPM and CPS.
 	var totalTyped int
 	for _, k := range log {
@@ -117,7 +108,6 @@ func Compute(log []typing.Keystroke, mode config.Mode, endMs int64) Result {
 		CorrectChars:   correct,
 		IncorrectChars: incorrect,
 		ExtraChars:     extra,
-		MissedChars:    missed,
 		Errors:         incorrect,
 		DurationMs:     durationMs,
 		PerSecond:      perSec,

@@ -144,7 +144,6 @@ func (m ResultModel) renderCharStats() string {
 		labelStyle.Render("correct") + " " + valueStyle.Render(fmt.Sprintf("%d", m.res.CorrectChars)),
 		labelStyle.Render("incorrect") + " " + incVal,
 		labelStyle.Render("extra") + " " + valueStyle.Render(fmt.Sprintf("%d", m.res.ExtraChars)),
-		labelStyle.Render("missed") + " " + valueStyle.Render(fmt.Sprintf("%d", m.res.MissedChars)),
 	}
 	return strings.Join(parts, "   ")
 }

@@ -22,7 +22,6 @@ func newTestResult() ResultModel {
 		CorrectChars:   142,
 		IncorrectChars: 4,
 		ExtraChars:     1,
-		MissedChars:    0,
 		Errors:         4,
 		DurationMs:     30000,
 		PerSecond: []metrics.PerSecond{
