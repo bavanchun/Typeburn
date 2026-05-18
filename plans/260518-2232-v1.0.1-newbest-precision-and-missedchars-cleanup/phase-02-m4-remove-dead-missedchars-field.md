@@ -1,7 +1,7 @@
 ---
 phase: 2
 title: "m4 remove dead MissedChars field"
-status: pending
+status: completed
 priority: P2
 effort: "0.5h"
 dependencies: []

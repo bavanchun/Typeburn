@@ -1,7 +1,7 @@
 ---
 phase: 1
 title: "M2 sub-WPM new-best precision"
-status: pending
+status: completed
 priority: P1
 effort: "1.5h"
 dependencies: []

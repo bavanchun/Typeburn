@@ -1,7 +1,7 @@
 ---
 phase: 3
 title: "Integration regression and release gate"
-status: pending
+status: completed
 priority: P1
 effort: "1h"
 dependencies: [1, 2]

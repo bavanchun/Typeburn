@@ -1,7 +1,7 @@
 ---
 title: "v1.0.1 — new-best sub-WPM precision (M2) + remove dead MissedChars (m4)"
 description: "Two independent, parallel-safe fixes for v1.0.1: float-precise new-best detection (M2) and removal of the always-zero MissedChars field (m4). Each phase self-commits."
-status: pending
+status: completed
 priority: P2
 branch: "main"
 tags: [v1.0.1, bugfix, refactor, parallel]
@@ -36,9 +36,9 @@ and (on explicit user go-ahead) cuts `v1.0.1`.
 
 | Phase | Name | Status | Parallel group |
 |-------|------|--------|----------------|
-| 1 | [M2 sub-WPM new-best precision](./phase-01-m2-sub-wpm-new-best-precision.md) | Pending | A (parallel with 2) |
-| 2 | [m4 remove dead MissedChars field](./phase-02-m4-remove-dead-missedchars-field.md) | Pending | A (parallel with 1) |
-| 3 | [Integration regression and release gate](./phase-03-integration-regression-and-release-gate.md) | Pending | B (after 1 & 2) |
+| 1 | [M2 sub-WPM new-best precision](./phase-01-m2-sub-wpm-new-best-precision.md) | Completed | A (parallel with 2) |
+| 2 | [m4 remove dead MissedChars field](./phase-02-m4-remove-dead-missedchars-field.md) | Completed | A (parallel with 1) |
+| 3 | [Integration regression and release gate](./phase-03-integration-regression-and-release-gate.md) | Completed | B (after 1 & 2) |
 
 ## File Ownership (parallel safety — non-negotiable)
 
