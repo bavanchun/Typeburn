@@ -1,10 +1,11 @@
 ---
 phase: 6
-title: "Release v1.1.0"
-status: pending
+title: Release v1.1.0
+status: completed
 priority: P1
-effort: "1h"
-dependencies: [5]
+effort: 1h
+dependencies:
+  - 5
 ---
 
 # Phase 6: Release v1.1.0

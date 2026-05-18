@@ -1,14 +1,19 @@
 ---
-title: "v1.1.0 — Theme Packs + Hygiene"
-description: "6 theme packs + bundled hygiene fixes; parallel phases, per-phase commits, protected-main PR flow"
+title: v1.1.0 — Theme Packs + Hygiene
+description: >-
+  6 theme packs + bundled hygiene fixes; parallel phases, per-phase commits,
+  protected-main PR flow
 status: pending
 priority: P2
-branch: "feat/v1.1.0-theme-packs-hygiene"
-tags: [theme, hygiene, release]
+branch: feat/v1.1.0-theme-packs-hygiene
+tags:
+  - theme
+  - hygiene
+  - release
 blockedBy: []
 blocks: []
-created: "2026-05-18T16:50:50.539Z"
-createdBy: "ck:plan"
+created: '2026-05-18T16:50:50.539Z'
+createdBy: 'ck:plan'
 source: skill
 ---
 
@@ -47,7 +52,7 @@ packs + persistence notice + doc fixes). Phases 2 and 3 do **not** touch
 | 3 | [Persistence Notice](./phase-03-persistence-notice.md) | Pending | A ∥ | `internal/app/model_history.go`, `internal/app/model_settings.go`, `internal/ui/persistence-notice.go` (new) + its test |
 | 4 | [Docs Hygiene](./phase-04-docs-hygiene.md) | Pending | A ∥ | `README.md`, `docs/project-roadmap.md`, `docs/system-architecture.md`, `CLAUDE.md`, `CHANGELOG.md` (`[Unreleased]` block), `internal/ui/word_stream_renderer.go` (comment only) |
 | 5 | [Integration Verify](./phase-05-integration-verify.md) | Pending | join | none (read+test only) |
-| 6 | [Release v1.1.0](./phase-06-release-v1-1-0.md) | Pending | release | `CHANGELOG.md` (promote `[Unreleased]`→`[1.1.0]`), `.github/release-notes.md`, `docs/project-roadmap.md` (shipped), tag/PR (sequential after 5 — no parallel conflict) |
+| 6 | [Release v1.1.0](./phase-06-release-v1-1-0.md) | Pending | release | Completed |
 
 **Dependency:** 1 → {2 ∥ 3 ∥ 4} → 5 → 6.
 
