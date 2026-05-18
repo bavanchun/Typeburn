@@ -1,10 +1,12 @@
 ---
 phase: 4
-title: "Typing test screen"
-status: pending
+title: Typing test screen
+status: completed
 priority: P1
 effort: ~7h
-dependencies: [2, 3]
+dependencies:
+  - 2
+  - 3
 ---
 
 # Phase 4: Typing test screen

@@ -10,7 +10,6 @@ import (
 	"monkeytype-tui/internal/config"
 	"monkeytype-tui/internal/theme"
 	"monkeytype-tui/internal/ui"
-	"monkeytype-tui/internal/words"
 )
 
 // Screen enumerates the top-level screens. Routing switches on this value.
@@ -31,42 +30,45 @@ type Model struct {
 	theme    theme.Theme
 	keys     config.Keymap
 	settings config.Settings
+	home     ui.HomeModel
 	typing   ui.TypingModel
 }
 
 // New builds the root model with the given theme and settings.
 func New(th theme.Theme, settings config.Settings) Model {
 	km := config.DefaultKeymap()
-	typing := ui.NewTyping(
-		settings.DefaultMode,
-		settings.DefaultLength,
-		words.QuoteMedium,
-		th,
-		km,
-		settings.BlinkCursor,
-	)
+	home := ui.NewHome(settings, th, km)
 	return Model{
 		screen:   ScreenHome,
 		theme:    th,
 		keys:     km,
 		settings: settings,
-		typing:   typing,
+		home:     home,
 	}
 }
 
-// Init performs no startup command in Phase 1–4 skeleton.
+// Init performs no startup command.
 func (m Model) Init() tea.Cmd { return nil }
 
 // Update handles global concerns (resize, quit, navigation) and delegates to
 // the active screen sub-model.
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	// ResultMsg: test completed → placeholder transition until Phase 6.
+	// StartTestMsg: Home screen requested a test start.
+	if sm, ok := msg.(ui.StartTestMsg); ok {
+		t := ui.NewTyping(sm.Mode, sm.Length, sm.QuoteLen,
+			m.theme, m.keys, m.settings.BlinkCursor).SetSize(m.w, m.h)
+		m.typing = t
+		m.screen = ScreenTyping
+		return m, nil
+	}
+
+	// ResultMsg: test completed → placeholder until Phase 6.
 	if _, ok := msg.(ui.ResultMsg); ok {
 		m.screen = ScreenResult
 		return m, nil
 	}
 
-	// abortMsg from typing screen → return to Home.
+	// AbortMsg from typing screen → return to Home.
 	if _, ok := msg.(ui.AbortMsg); ok {
 		m.screen = ScreenHome
 		return m, nil
@@ -75,6 +77,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.w, m.h = msg.Width, msg.Height
+		m.home = m.home.SetSize(msg.Width, msg.Height)
 		if m.screen == ScreenTyping {
 			m.typing = m.typing.SetSize(msg.Width, msg.Height)
 		}
@@ -108,40 +111,50 @@ func (m Model) handleKey(key tea.Key) (tea.Model, tea.Cmd) {
 		return m, cmd
 	}
 
-	// Non-typing screens: handle global nav.
+	// Non-typing screens: handle global nav first.
 	switch {
 	case m.keys.NavHome.Matches(key):
 		m.screen = ScreenHome
+		return m, nil
 	case m.keys.NavSettings.Matches(key):
 		m.screen = ScreenSettings
+		return m, nil
 	case m.keys.NavHistory.Matches(key):
 		m.screen = ScreenHistory
+		return m, nil
 	case m.keys.Back.Matches(key):
 		if m.screen == ScreenHome {
 			return m, tea.Quit
 		}
 		m.screen = ScreenHome
-	// Space/Enter on Home starts the typing test.
-	case m.screen == ScreenHome && m.keys.Start.Matches(key):
-		m.typing = ui.NewTyping(
-			m.settings.DefaultMode,
-			m.settings.DefaultLength,
-			words.QuoteMedium,
-			m.theme,
-			m.keys,
-			m.settings.BlinkCursor,
-		).SetSize(m.w, m.h)
-		m.screen = ScreenTyping
+		return m, nil
 	}
+
+	// Delegate remaining keys to the Home screen when active.
+	if m.screen == ScreenHome {
+		var cmd tea.Cmd
+		m.home, cmd = m.home.Update(tea.KeyPressMsg(key))
+		return m, cmd
+	}
+
 	return m, nil
 }
 
-// View centers the active screen's content in the terminal.
+// View renders the active screen centered in the terminal.
 func (m Model) View() tea.View {
 	var body string
-	if m.screen == ScreenTyping {
+	switch m.screen {
+	case ScreenHome:
+		// HomeModel.View() already calls lipgloss.Place internally when
+		// dimensions are known; pass the raw string through to avoid
+		// double-placing.
+		body = m.home.View()
+		if m.w > 0 && m.h > 0 {
+			return tea.NewView(body)
+		}
+	case ScreenTyping:
 		body = m.typing.View()
-	} else {
+	default:
 		body = placeholderView(m.screen, m.theme)
 	}
 
