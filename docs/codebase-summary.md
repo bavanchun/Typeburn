@@ -1,0 +1,196 @@
+# Codebase Summary
+
+---
+
+## Package Overview
+
+### `internal/app` — Root Elm Model & Routing
+
+**Purpose:** Bubble Tea root model. Routes global messages (StartTestMsg, ResultMsg, AbortMsg, NavHistoryMsg) to sub-models. Manages screen enum + shared state (theme, keymap, terminal size, quit prompt overlay).
+
+**Key types:**
+- `Model`: root app state (screen enum, five sub-models, theme, keys, settings)
+- `Screen`: enum (Home, Typing, Result, Settings, History)
+- `quitPromptModel`: overlay shown when esc pressed on Home screen
+
+**Entry points:**
+- `NewFromDisk()`: loads settings from XDG, creates root model
+- `(m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd)`: routes StartTestMsg/ResultMsg/AbortMsg/NavHistoryMsg/WindowSizeMsg
+- `(m Model) View() tea.View`: delegates to active screen's View; guards with degraded-mode check
+
+**Files:** model.go (root + Init/Update/View), model_history.go (result persistence), model_settings.go (settings change callback), model_view.go (degraded-mode guard), routing.go (screen delegates), quit_prompt.go (overlay logic), model_key_handler.go, model_time_helpers.go, smoke_test.go, phase09_polish_test.go, model_test.go.
+
+---
+
+### `internal/ui` — Screen Sub-Models & Components
+
+**Purpose:** Bubble Tea sub-models for Home, Typing, Result, Settings, History screens. Emits domain messages (StartTestMsg, ResultMsg, AbortMsg, NavHistoryMsg). Implements rendering via Lip Gloss.
+
+**Key types per screen:**
+- `HomeModel`: mode/length picker, defaults display, best-result badge. Emits StartTestMsg.
+- `TypingModel`: live typing test UI. Arms 100ms tick, delegates to typing.Engine, emits ResultMsg on completion.
+- `ResultModel`: big-digit WPM display, sparkline chart, stat cards, footer navigation.
+- `SettingsModel`: four setting rows (Theme/DefaultMode/DefaultLength/BlinkCursor), arrow navigation, auto-persist.
+- `HistoryModel`: scrollable table of all records, per-mode ★ badge, vim-style navigation.
+
+**Components (reusable):**
+- `statCard`: displays WPM/Accuracy/Consistency with labels and big-digit rendering
+- `wordStreamRenderer`: renders typed vs. untyped text with cursor block, handles rune-based positioning
+- `historyTable`: scrollable table with column headers, best-result badges, mode filtering
+- `sparkline`: mini-chart rendering per-second raw WPM data
+- `timer`: displays elapsed time formatted as MM:SS
+- `footer`: renders keybinds with terminal-width-aware collapse (full → short forms)
+
+**Messages:** StartTestMsg, ResultMsg, AbortMsg, NavHistoryMsg (in messages.go).
+
+**Files (by screen):** screen_home.go, screen_home_view.go, screen_home_test.go; screen_typing.go, screen_typing_view.go, screen_typing_actions.go, screen_typing_test.go; screen_result.go, screen_result_view.go, screen_result_test.go; screen_settings.go, screen_settings_view.go, screen_settings_test.go; screen_history.go, screen_history_view.go, screen_history_test.go. Plus: footer.go, timer.go, stat_card.go, sparkline.go, word_stream_renderer.go, ascii_big_digits.go, ascii_logo.go, degraded_notice.go, selectable_list.go, settings_rows.go, width_tier.go, history_table.go, result_render_helpers.go, typing_log_helpers.go, test_helpers_test.go, phase09_polish_test.go, ui.go.
+
+---
+
+### `internal/typing` — Pure Keystroke Engine
+
+**Purpose:** Record and replay typed characters. Zero Bubble Tea / UI dependencies. All metric computation derives from keystroke log.
+
+**Key types:**
+- `Keystroke`: {TimeMs, Typed, Target, Correct} — one keystroke event (or backspace marker with Typed=0)
+- `Engine`: {target []rune, typed []rune, log []Keystroke, startMs, mode, wordTarget} — mutable state machine
+
+**Entry points:**
+- `New(target string, mode, wordTarget)`: create engine for a test
+- `Apply(rune, nowMs)`: record keystroke; auto-sets startMs on first call
+- `Backspace(nowMs)`: record deletion marker (Typed=0)
+- `IsComplete() bool`: check if test goal met (Time/Words/Quote mode-dependent)
+- `Replay() (final typed/target runes, duration, errors)`: reconstruct final state for metrics
+
+**Files:** engine.go, completion.go, char_state.go, engine_test.go, char_state_test.go.
+
+---
+
+### `internal/metrics` — WPM, Accuracy, Consistency Formulas
+
+**Purpose:** Pure computation of typing test metrics from keystroke log. Zero UI dependencies. Formulas verified against researcher-02-typing-metrics.md.
+
+**Key types:**
+- `Result`: {NetWPM, RawWPM, Accuracy, Consistency, CPS, TimeMs, CharCount, ErrorCount, ErrorHistory, WPMHistory, ...} — final test metrics
+
+**Entry points:**
+- `Compute(log []typing.Keystroke, startMs, durationMs) Result`: compute all metrics post-hoc
+- `AFKTrim(log, durationMs) ([]typing.Keystroke, int64)`: remove trailing AFK seconds (Time mode only, >7s)
+- `Consistency(wpmPerSecond []float64) float64`: 100 × tanh(1 − CV)
+
+**Files:** compute.go, consistency.go, per_second.go, afk_trim.go, compute_test.go, consistency_test.go, afk_trim_test.go.
+
+---
+
+### `internal/words` — Generator & Quote Pack
+
+**Purpose:** Generate test target text. Embedded word list (1000 words) + four quote buckets (short/medium/long/epic). Zero UI / Bubble Tea dependencies.
+
+**Key types:**
+- `QuoteLen`: enum {Short, Medium, Long, Epic} — buckets quotes by character range
+- `quotePack`: {short, medium, long, epic []string} — embedded quotes for each bucket
+
+**Entry points:**
+- `ForMode(mode, length)`: return target string (Time: ~words × 5 chars; Words: exact N words; Quote: random from bucket)
+- `Word(n)`: return n-th word from wordlist (deterministic, seeded)
+- `Quote(len QuoteLen)`: return random quote from bucket (seeded)
+- `TimeBuffer(seconds)`: generate words for Time mode (~5 chars/word avg)
+
+**Files:** generator.go, for_mode.go, quotes.go, generator_test.go, for_mode_test.go, quotes_test.go.
+
+---
+
+### `internal/config` — Settings, Keymap, XDG Paths
+
+**Purpose:** User-facing configuration (theme, mode, length, cursor blink) + centralized keybindings + XDG directory resolution. Zero UI / storage dependencies.
+
+**Key types:**
+- `Mode`: enum {ModeTime, ModeWords, ModeQuote} — stored as string in JSON
+- `Settings`: {Theme, DefaultMode, DefaultLength, BlinkCursor} — loaded from disk or defaults
+- `Keymap`: keybinds per screen (Home/Typing/Result/Settings/History) — maps Bubble Tea key codes to actions
+- `QuoteLen`: enum for quote bucket selection
+
+**Entry points:**
+- `Defaults()`: baseline settings (theme="default", mode="time", length=30, blink=false)
+- `(s *Settings) Normalize()`: repair out-of-range values in place
+- `DefaultKeymap()`: centralized keybindings
+- `ConfigDir(), DataDir()`: resolve XDG paths (fallback to ~/.config, ~/.local/share)
+- `LengthsFor(mode)`: valid length options for a mode
+
+**Files:** settings.go, keymap.go, xdg_paths.go, settings_test.go.
+
+---
+
+### `internal/storage` — Atomic Persistence & New-Best Detection
+
+**Purpose:** Load/save settings + history JSON. Atomic writes (temp+rename). XDG-compliant paths. Corrupt/missing files → safe defaults (never panic). Detect new personal bests.
+
+**Key types:**
+- `Record`: {WPM int, RawWPM, Accuracy, Consistency, Mode, Length, Time, ...} — one test result
+- `HistoryStore`: interface-like functions (LoadHistory, AppendHistory, SaveSettings, LoadSettings)
+
+**Entry points:**
+- `LoadHistory()`: read history.json; return empty slice on any error (missing, corrupt, I/O)
+- `AppendHistory(r Record)`: append + cap to 200 newest + atomic write
+- `LoadSettings()`: read settings.json; return defaults on any error
+- `SaveSettings(s Settings)`: atomic write to XDG_CONFIG
+- `IsNewBest(r Record, history []Record)`: check if WPM is highest for that (mode, length) pair
+
+**Data flow:**
+- Settings loaded at startup in `app.NewFromDisk()`
+- History loaded on demand by HistoryModel + after each test completion
+- Records appended via `AppendHistory()` immediately after test (from ResultMsg handler)
+- New-best flag computed in root model's `handleResultMsg()`
+
+**Files:** history_store.go, settings_store.go, new_best.go, atomic_write.go, history_record.go, history_store_test.go, settings_store_test.go.
+
+---
+
+### `internal/theme` — Color Mapping via Roles
+
+**Purpose:** Semantic color system. Decouple UI code from concrete hex colors. Support NO_COLOR + mono (attribute-only) themes without layout changes.
+
+**Key types:**
+- `Role`: enum {RoleTextPrimary, RoleAccent, RoleError, RoleCursor, ...} — semantic role (12 total)
+- `Theme`: {name, colors map[Role]color.Color, noColor bool} — theme instance
+- Default theme: dark + green accent + red error
+- Mono theme: greyscale attributes (bold, underline, faint)
+
+**Entry points:**
+- `Load(name, noColor)`: return theme by name; respect NO_COLOR env
+- `(t Theme) Style(r Role)`: return lipgloss.Style for role (color + attributes)
+- `(t Theme) Color(r Role)`: return raw color.Color (nil under NO_COLOR)
+- `Available()`: list selectable themes (["default", "mono"])
+
+**Files:** theme.go, roles.go, default_theme.go, mono_theme.go, theme_test.go.
+
+---
+
+## File Naming Convention
+
+**Actual convention used:** Mixed snake_case and kebab-case (Go standard + readability).
+
+**Examples:**
+- `screen_typing.go` (snake_case) — main struct + Update/View
+- `screen_typing_view.go` (snake_case) — View rendering helper
+- `screen_typing_actions.go` (snake_case) — action handlers (newTest, restartSame, etc.)
+- `screen_typing_test.go` (snake_case) — unit tests
+- `ascii-logo.go` (kebab-case) — ASCII art, non-essential utility
+- `ascii_big_digits.go` (snake_case) — big-digit rendering
+- `degraded-notice.go` (kebab-case) — degraded-mode notice, non-essential utility
+- `char_state.go` (snake_case) — CharState type for typing state machine
+- `char-state_test.go` (kebab-case in test) — matches implementation file name
+- `default-theme.go` (kebab-case) — theme definition, semantic name
+- `xdg-paths.go` (kebab-case) — XDG Base Directory Spec
+
+**Pattern:** Core logic uses snake_case (engine, metrics, UI rendering). Utility/output modules use kebab-case (ascii art, theme names, XDG). All files <200 LOC (largest: ~190 LOC).
+
+---
+
+## Test Coverage
+
+- **Unit tests:** metrics, typing, words, config, storage, theme (table-driven, no mocks, real data)
+- **Integration tests:** smoke_test.go (full Home→Typing→Result flow)
+- **UI tests:** teatest golden-file tests per screen (screen_home_test.go, screen_typing_test.go, etc.)
+- **Race detection:** `go test ./... -race -count=1` — GREEN; no goroutine leaks
+- **Format & vet:** `gofmt -l .` and `go vet ./...` — GREEN

@@ -3,7 +3,7 @@ title: monkeytype-tui implementation
 description: >-
   Go terminal typing app (Monkeytype clone) on Bubble Tea v2 — Elm arch, pure
   metrics, XDG persistence.
-status: pending
+status: completed
 priority: P2
 effort: ~46h
 branch: main
@@ -46,16 +46,16 @@ Go 1.26 · Bubble Tea v2 + Lip Gloss v2 + Bubbles v2 (Charm, exact module path v
 
 | Phase | Name | Status | Depends |
 |-------|------|--------|---------|
-| 1 | [Scaffold theme & app skeleton](./phase-01-scaffold-theme-app-skeleton.md) | Pending | Completed |
-| 2 | [Typing engine & metrics (TDD)](./phase-02-typing-engine-metrics-tdd.md) | Pending | Completed |
-| 3 | [Words & embedded quotes](./phase-03-words-embedded-quotes.md) | Pending | Completed |
-| 4 | [Typing test screen](./phase-04-typing-test-screen.md) | Pending | Completed |
-| 5 | [Home screen](./phase-05-home-screen.md) | Pending | Completed |
-| 6 | [Result summary screen](./phase-06-result-summary-screen.md) | Pending | Completed |
-| 7 | [Settings & persistence](./phase-07-settings-persistence.md) | Pending | Completed |
-| 8 | [History & persistence](./phase-08-history-persistence.md) | Pending | Completed |
-| 9 | [Polish resize & NO_COLOR](./phase-09-polish-resize-no-color.md) | Pending | Completed |
-| 10 | [Tests teatest & CI](./phase-10-tests-teatest-ci.md) | Pending | Completed |
+| 1 | [Scaffold theme & app skeleton](./phase-01-scaffold-theme-app-skeleton.md) | Completed | — |
+| 2 | [Typing engine & metrics (TDD)](./phase-02-typing-engine-metrics-tdd.md) | Completed | 1 |
+| 3 | [Words & embedded quotes](./phase-03-words-embedded-quotes.md) | Completed | 2 |
+| 4 | [Typing test screen](./phase-04-typing-test-screen.md) | Completed | 2, 3 |
+| 5 | [Home screen](./phase-05-home-screen.md) | Completed | 4 |
+| 6 | [Result summary screen](./phase-06-result-summary-screen.md) | Completed | 2, 4 |
+| 7 | [Settings & persistence](./phase-07-settings-persistence.md) | Completed | 6 |
+| 8 | [History & persistence](./phase-08-history-persistence.md) | Completed | 6 |
+| 9 | [Polish resize & NO_COLOR](./phase-09-polish-resize-no-color.md) | Completed | 7, 8 |
+| 10 | [Tests teatest & CI](./phase-10-tests-teatest-ci.md) | Completed | 9 |
 
 ## Key Risks
 
