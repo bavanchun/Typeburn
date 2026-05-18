@@ -152,12 +152,14 @@
 
 ## Breaking Changes & Deprecations
 
-**None in v1 → v1.x.** All v1.0 users can upgrade without compatibility issues (JSON schema stable).
+**None across v1.0 → v1.1.x.** All users can upgrade freely; the history/settings JSON schema stays backward-compatible.
 
-**Potential breaking changes for v2:**
-- Adding NetWPM to Record struct (backward-compatible JSON unmarshaling: new field → 0)
-- Removing MissedChars field (breaking; requires migration)
-- Theme API change if roles renamed (unlikely)
+**Already shipped (no user action required):**
+- `NetWPM` added to the history Record in v1.0.1 — backward-compatible: records written by older versions lack the field and fall back to the stored rounded WPM.
+- `MissedChars` removed in v1.0.1 — it was an always-zero stub; no real metric affected, no migration needed.
+
+**Potential breaking changes for v2 (none planned):**
+- Theme `Role` enum change if roles were renamed (unlikely; additive so far — v1.1.0 added 6 themes with zero role changes).
 
 ---
 
@@ -206,6 +208,6 @@
 
 ## Conclusion
 
-**Typeburn v1.0 is feature-complete and production-ready.** The codebase is clean, tested, and well-documented. Post-1.0 work is purely additive (new themes, new modes, new integrations) with zero breaking changes to existing users.
+**Typeburn v1.1.0 is the current release — feature-complete and production-ready.** The codebase is clean, tested, and well-documented. Post-1.0 work has been purely additive (v1.0.1 precision fix + stub removal; v1.1.0 six theme packs + persistence-failure notice + doc hygiene) with zero breaking changes to existing users.
 
-M1 (timer re-arm) — the one identified correctness bug — was fixed within v1.0 (commit d6369de). Remaining backlog is additive or cosmetic.
+M1 (timer re-arm) and M2 (new-best precision) — the identified correctness bugs — were fixed in v1.0 (d6369de) and v1.0.1 respectively. Remaining backlog is additive or cosmetic; the next sizeable feature candidate is Code mode / custom text input.
