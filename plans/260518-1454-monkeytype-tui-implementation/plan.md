@@ -48,7 +48,7 @@ Go 1.26 · Bubble Tea v2 + Lip Gloss v2 + Bubbles v2 (Charm, exact module path v
 |-------|------|--------|---------|
 | 1 | [Scaffold theme & app skeleton](./phase-01-scaffold-theme-app-skeleton.md) | Pending | Completed |
 | 2 | [Typing engine & metrics (TDD)](./phase-02-typing-engine-metrics-tdd.md) | Pending | Completed |
-| 3 | [Words & embedded quotes](./phase-03-words-embedded-quotes.md) | Pending | 2 |
+| 3 | [Words & embedded quotes](./phase-03-words-embedded-quotes.md) | Pending | Completed |
 | 4 | [Typing test screen](./phase-04-typing-test-screen.md) | Pending | 2, 3 |
 | 5 | [Home screen](./phase-05-home-screen.md) | Pending | 4 |
 | 6 | [Result summary screen](./phase-06-result-summary-screen.md) | Pending | 2, 4 |

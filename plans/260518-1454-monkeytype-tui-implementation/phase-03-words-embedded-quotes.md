@@ -1,10 +1,11 @@
 ---
 phase: 3
-title: "Words & embedded quotes"
-status: complete
+title: Words & embedded quotes
+status: completed
 priority: P1
 effort: ~3h
-dependencies: [2]
+dependencies:
+  - 2
 ---
 
 # Phase 3: Words & embedded quotes
