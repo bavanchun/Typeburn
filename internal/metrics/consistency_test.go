@@ -4,7 +4,7 @@ import (
 	"math"
 	"testing"
 
-	"monkeytype-tui/internal/metrics"
+	"github.com/bavanchun/Typeburn/internal/metrics"
 )
 
 // TestConsistency validates the consistency formula: 100*tanh(1-CV), CV=stddev/mean.

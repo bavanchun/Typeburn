@@ -1,6 +1,6 @@
 # Project Overview & Product Development Requirements (PDR)
 
-**monkeytype-tui:** Terminal typing test in Go · Bubble Tea v2 + Lip Gloss v2
+**Typeburn:** Terminal typing test in Go · Bubble Tea v2 + Lip Gloss v2
 
 ---
 
@@ -34,8 +34,8 @@ Distraction-free, keyboard-driven typing test for terminal. Five screens (Home, 
 - **Settings:** Theme, default mode, default length, cursor-blink toggle (4 settings only)
 
 ### Persistence
-- **Settings:** XDG_CONFIG_HOME/monkeytype-tui/settings.json (atomic write, 0600)
-- **History:** XDG_DATA_HOME/monkeytype-tui/history.json (cap 200 newest; atomic write)
+- **Settings:** XDG_CONFIG_HOME/typeburn/settings.json (atomic write, 0600)
+- **History:** XDG_DATA_HOME/typeburn/history.json (cap 200 newest; atomic write)
 
 ### Themes
 - `default`: Dark green accent (Monkeytype-style), red error, amber warning

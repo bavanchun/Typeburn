@@ -51,7 +51,7 @@ monkeytype/
 
 ### Compilation & Tooling
 
-- **go build:** Must compile without errors (`go build -o bin/monkeytype-tui .`)
+- **go build:** Must compile without errors (`go build -o bin/typeburn .`)
 - **go vet:** No warnings (`go vet ./...`)
 - **gofmt:** Automatic formatting enforced (`gofmt -w .` before commit; CI checks with `gofmt -l`)
 - **go test:** All tests PASS (`go test ./... -race -count=1`)
@@ -281,7 +281,7 @@ if mode == ModeTime && lastKeystrokeGap > 7000 {
 }
 ```
 
-- **Saved to:** XDG_CONFIG_HOME/monkeytype-tui/settings.json
+- **Saved to:** XDG_CONFIG_HOME/typeburn/settings.json
 - **On load:** Normalize() repairs out-of-range values
 - **Auto-persist:** Settings change callback saves immediately
 
@@ -303,7 +303,7 @@ if mode == ModeTime && lastKeystrokeGap > 7000 {
 ]
 ```
 
-- **Saved to:** XDG_DATA_HOME/monkeytype-tui/history.json
+- **Saved to:** XDG_DATA_HOME/typeburn/history.json
 - **Capped:** Keep newest 200 records (rotate oldest)
 - **Append-only:** LoadHistory → append → sort → cap → atomic write
 - **Error handling:** Missing/corrupt → empty slice; never panic

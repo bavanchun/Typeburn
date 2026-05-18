@@ -5,7 +5,7 @@ import (
 
 	"charm.land/lipgloss/v2"
 
-	"monkeytype-tui/internal/theme"
+	"github.com/bavanchun/Typeburn/internal/theme"
 )
 
 // View renders the Settings screen as a centered block string.

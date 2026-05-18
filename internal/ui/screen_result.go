@@ -3,10 +3,10 @@ package ui
 import (
 	tea "charm.land/bubbletea/v2"
 
-	"monkeytype-tui/internal/config"
-	"monkeytype-tui/internal/metrics"
-	"monkeytype-tui/internal/theme"
-	"monkeytype-tui/internal/words"
+	"github.com/bavanchun/Typeburn/internal/config"
+	"github.com/bavanchun/Typeburn/internal/metrics"
+	"github.com/bavanchun/Typeburn/internal/theme"
+	"github.com/bavanchun/Typeburn/internal/words"
 )
 
 // ResultModel is the sub-model for the post-test result screen. It renders

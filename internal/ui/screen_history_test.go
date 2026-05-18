@@ -7,9 +7,9 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"monkeytype-tui/internal/config"
-	"monkeytype-tui/internal/storage"
-	"monkeytype-tui/internal/theme"
+	"github.com/bavanchun/Typeburn/internal/config"
+	"github.com/bavanchun/Typeburn/internal/storage"
+	"github.com/bavanchun/Typeburn/internal/theme"
 )
 
 // baseHistTime is a fixed reference used to build deterministic history records.

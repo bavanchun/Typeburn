@@ -3,8 +3,8 @@ package ui
 import (
 	"fmt"
 
-	"monkeytype-tui/internal/config"
-	"monkeytype-tui/internal/theme"
+	"github.com/bavanchun/Typeburn/internal/config"
+	"github.com/bavanchun/Typeburn/internal/theme"
 )
 
 // settingRow is one row in the settings list: a label, a list of possible

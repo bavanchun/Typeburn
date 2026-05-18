@@ -10,10 +10,10 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"monkeytype-tui/internal/config"
-	"monkeytype-tui/internal/metrics"
-	"monkeytype-tui/internal/theme"
-	"monkeytype-tui/internal/ui"
+	"github.com/bavanchun/Typeburn/internal/config"
+	"github.com/bavanchun/Typeburn/internal/metrics"
+	"github.com/bavanchun/Typeburn/internal/theme"
+	"github.com/bavanchun/Typeburn/internal/ui"
 )
 
 // sandboxedModel returns a root Model with storage redirected to a temp dir.
@@ -74,7 +74,7 @@ func TestSmoke_HomeRenders(t *testing.T) {
 	if v == "" {
 		t.Fatal("Home screen: View().Content is empty")
 	}
-	hasLogo := strings.Contains(v, "monkeytype") || strings.Contains(v, "╗")
+	hasLogo := strings.Contains(v, "typeburn") || strings.Contains(v, "╗")
 	hasModes := strings.Contains(v, "Time") || strings.Contains(v, "Words")
 	if !hasLogo && !hasModes {
 		t.Fatalf("Home screen: expected logo or mode labels, got:\n%s", v)

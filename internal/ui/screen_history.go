@@ -3,9 +3,9 @@ package ui
 import (
 	tea "charm.land/bubbletea/v2"
 
-	"monkeytype-tui/internal/config"
-	"monkeytype-tui/internal/storage"
-	"monkeytype-tui/internal/theme"
+	"github.com/bavanchun/Typeburn/internal/config"
+	"github.com/bavanchun/Typeburn/internal/storage"
+	"github.com/bavanchun/Typeburn/internal/theme"
 )
 
 // visibleRows is the number of data rows shown in the history table window.

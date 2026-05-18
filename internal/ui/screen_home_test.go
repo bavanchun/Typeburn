@@ -6,9 +6,9 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"monkeytype-tui/internal/config"
-	"monkeytype-tui/internal/theme"
-	"monkeytype-tui/internal/words"
+	"github.com/bavanchun/Typeburn/internal/config"
+	"github.com/bavanchun/Typeburn/internal/theme"
+	"github.com/bavanchun/Typeburn/internal/words"
 )
 
 // helpers
@@ -232,19 +232,19 @@ func TestEnterEmitsStartTestMsgForQuote(t *testing.T) {
 	}
 }
 
-// TestViewContainsMonkeytype verifies View() includes the logo. The view
+// TestViewContainsLogo verifies View() includes the logo. The view
 // contains ANSI escape codes, so we look for box-drawing characters that
 // appear in the block-art logo lines (never inside an escape sequence) or for
-// the plain "monkeytype" text used in the narrow fallback.
-func TestViewContainsMonkeytype(t *testing.T) {
+// the plain "typeburn" text used in the narrow fallback.
+func TestViewContainsLogo(t *testing.T) {
 	h := newTestHome()
 	h = h.SetSize(80, 24)
 	v := h.View()
 	// Box-drawing ╗ appears in every wide logo line; plain text used narrow.
 	hasWide := strings.Contains(v, "╗")
-	hasNarrow := strings.Contains(v, "monkeytype")
+	hasNarrow := strings.Contains(v, "typeburn")
 	if !hasWide && !hasNarrow {
-		t.Fatalf("view should contain logo (wide: '╗', narrow: 'monkeytype'), got:\n%s", v)
+		t.Fatalf("view should contain logo (wide: '╗', narrow: 'typeburn'), got:\n%s", v)
 	}
 }
 
@@ -271,8 +271,8 @@ func TestNarrowLogoFallback(t *testing.T) {
 	if strings.Contains(logo, "\n") {
 		t.Fatalf("narrow logo (<64) should be single line, got multi-line:\n%s", logo)
 	}
-	if !strings.Contains(logo, "monkeytype") {
-		t.Fatalf("narrow logo should contain 'monkeytype', got: %q", logo)
+	if !strings.Contains(logo, "typeburn") {
+		t.Fatalf("narrow logo should contain 'typeburn', got: %q", logo)
 	}
 }
 

@@ -6,8 +6,8 @@ import (
 
 	"charm.land/lipgloss/v2"
 
-	"monkeytype-tui/internal/storage"
-	"monkeytype-tui/internal/theme"
+	"github.com/bavanchun/Typeburn/internal/storage"
+	"github.com/bavanchun/Typeburn/internal/theme"
 )
 
 // historyColWidths defines the fixed character widths for each table column.

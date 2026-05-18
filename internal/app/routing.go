@@ -3,7 +3,7 @@ package app
 import (
 	"strings"
 
-	"monkeytype-tui/internal/theme"
+	"github.com/bavanchun/Typeburn/internal/theme"
 )
 
 // screenTitle is the human label for a screen, used by the placeholder views
@@ -27,7 +27,7 @@ func screenTitle(s Screen) string {
 // screen replaces this in its own phase; the skeleton only proves routing,
 // theming, and the global key handling work.
 func placeholderView(s Screen, th theme.Theme) string {
-	title := th.Style(theme.RoleAccent).Bold(true).Render("monkeytype-tui")
+	title := th.Style(theme.RoleAccent).Bold(true).Render("Typeburn")
 	screen := th.Style(theme.RoleTextPrimary).Render("[ " + screenTitle(s) + " ]")
 	hint := th.Style(theme.RoleTextFaint).Render(
 		"1 home · 2 settings · 3 history · esc back · ctrl+c quit")

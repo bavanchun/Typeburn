@@ -4,9 +4,9 @@
 package ui
 
 import (
-	"monkeytype-tui/internal/config"
-	"monkeytype-tui/internal/metrics"
-	"monkeytype-tui/internal/words"
+	"github.com/bavanchun/Typeburn/internal/config"
+	"github.com/bavanchun/Typeburn/internal/metrics"
+	"github.com/bavanchun/Typeburn/internal/words"
 )
 
 // ResultMsg is emitted by TypingModel when a test finishes. The root model

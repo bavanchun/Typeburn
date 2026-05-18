@@ -6,17 +6,17 @@ import (
 )
 
 // appDir is the per-app subdirectory used under the XDG roots.
-const appDir = "monkeytype-tui"
+const appDir = "typeburn"
 
 // ConfigDir returns the directory for the settings file:
-// $XDG_CONFIG_HOME/monkeytype-tui, falling back to ~/.config/monkeytype-tui.
+// $XDG_CONFIG_HOME/typeburn, falling back to ~/.config/typeburn.
 // The directory is not created here; the storage layer creates it on write.
 func ConfigDir() (string, error) {
 	return resolveDir("XDG_CONFIG_HOME", ".config")
 }
 
 // DataDir returns the directory for the history file:
-// $XDG_DATA_HOME/monkeytype-tui, falling back to ~/.local/share/monkeytype-tui.
+// $XDG_DATA_HOME/typeburn, falling back to ~/.local/share/typeburn.
 func DataDir() (string, error) {
 	return resolveDir("XDG_DATA_HOME", filepath.Join(".local", "share"))
 }

@@ -1,4 +1,4 @@
-module monkeytype-tui
+module github.com/bavanchun/Typeburn
 
 go 1.26.2
 

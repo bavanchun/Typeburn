@@ -6,9 +6,9 @@ package app
 import (
 	tea "charm.land/bubbletea/v2"
 
-	"monkeytype-tui/internal/config"
-	"monkeytype-tui/internal/theme"
-	"monkeytype-tui/internal/ui"
+	"github.com/bavanchun/Typeburn/internal/config"
+	"github.com/bavanchun/Typeburn/internal/theme"
+	"github.com/bavanchun/Typeburn/internal/ui"
 )
 
 // Screen enumerates the top-level screens. Routing switches on this value.

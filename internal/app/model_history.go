@@ -3,9 +3,9 @@ package app
 import (
 	"math"
 
-	"monkeytype-tui/internal/config"
-	"monkeytype-tui/internal/storage"
-	"monkeytype-tui/internal/ui"
+	"github.com/bavanchun/Typeburn/internal/config"
+	"github.com/bavanchun/Typeburn/internal/storage"
+	"github.com/bavanchun/Typeburn/internal/ui"
 )
 
 // buildRecord converts a ResultMsg into a storage.Record for persistence.

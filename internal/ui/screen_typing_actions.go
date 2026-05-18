@@ -3,10 +3,10 @@ package ui
 import (
 	tea "charm.land/bubbletea/v2"
 
-	"monkeytype-tui/internal/config"
-	"monkeytype-tui/internal/metrics"
-	"monkeytype-tui/internal/theme"
-	"monkeytype-tui/internal/typing"
+	"github.com/bavanchun/Typeburn/internal/config"
+	"github.com/bavanchun/Typeburn/internal/metrics"
+	"github.com/bavanchun/Typeburn/internal/theme"
+	"github.com/bavanchun/Typeburn/internal/typing"
 )
 
 // restartSame resets engine and timer but keeps the same target text.

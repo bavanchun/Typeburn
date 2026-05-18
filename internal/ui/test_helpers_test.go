@@ -1,6 +1,6 @@
 package ui
 
-import "monkeytype-tui/internal/metrics"
+import "github.com/bavanchun/Typeburn/internal/metrics"
 
 // makeTestMetricsResult returns a sample metrics.Result suitable for use
 // across multiple screen test files in this package.

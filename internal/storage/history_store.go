@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"sort"
 
-	"monkeytype-tui/internal/config"
+	"github.com/bavanchun/Typeburn/internal/config"
 )
 
 // historyCapMax is the maximum number of records kept in history.json.
@@ -14,7 +14,7 @@ import (
 const historyCapMax = 200
 
 // HistoryPath returns the absolute path to the history file:
-// $XDG_DATA_HOME/monkeytype-tui/history.json (fallback ~/.local/share/monkeytype-tui/).
+// $XDG_DATA_HOME/typeburn/history.json (fallback ~/.local/share/typeburn/).
 func HistoryPath() (string, error) {
 	dir, err := config.DataDir()
 	if err != nil {

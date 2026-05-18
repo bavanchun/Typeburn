@@ -1,4 +1,4 @@
-# monkeytype-tui
+# Typeburn
 
 A Monkeytype-style terminal typing test built with Go and Bubble Tea v2.
 Distraction-free, keyboard-driven, and works on any ANSI terminal.
@@ -23,7 +23,7 @@ Requires **Go 1.26+**.
 make build
 
 # Or directly with go
-go build -o monkeytype-tui .
+go build -o typeburn .
 
 # Run without installing
 make run
@@ -34,7 +34,7 @@ go run .
 ## Usage
 
 ```sh
-./bin/monkeytype-tui
+./bin/typeburn
 ```
 
 The minimum usable terminal size is **60 columns × 20 rows**. If the terminal is
@@ -103,8 +103,8 @@ Settings and history follow the [XDG Base Directory Specification](https://speci
 
 | File | Default path (macOS / Linux) |
 |---|---|
-| Settings | `~/.config/monkeytype-tui/settings.json` |
-| History | `~/.local/share/monkeytype-tui/history.json` |
+| Settings | `~/.config/typeburn/settings.json` |
+| History | `~/.local/share/typeburn/history.json` |
 
 Override with `$XDG_CONFIG_HOME` and `$XDG_DATA_HOME` respectively.
 
@@ -115,7 +115,7 @@ make test        # go test ./...
 make test-race   # go test ./... -race -count=1
 make lint        # gofmt -l check + go vet
 make fmt         # gofmt -w .
-make build       # ./bin/monkeytype-tui
+make build       # ./bin/typeburn
 make clean       # remove ./bin/
 ```
 

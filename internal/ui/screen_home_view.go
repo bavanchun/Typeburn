@@ -6,8 +6,8 @@ import (
 
 	"charm.land/lipgloss/v2"
 
-	"monkeytype-tui/internal/config"
-	"monkeytype-tui/internal/theme"
+	"github.com/bavanchun/Typeburn/internal/config"
+	"github.com/bavanchun/Typeburn/internal/theme"
 )
 
 // View renders the Home screen as a centered block string. HomeModel does its

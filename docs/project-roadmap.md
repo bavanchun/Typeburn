@@ -184,9 +184,9 @@
 ## Rollout & Support
 
 ### v1.0 Release
-- **Artifact:** Binary in ./bin/monkeytype-tui
+- **Artifact:** Binary in ./bin/typeburn
 - **Distribution:** GitHub Releases (source + pre-built linux/darwin binaries)
-- **Installation:** `go install monkeytype-tui@latest` (via go.mod/go.sum versioning)
+- **Installation:** `go install Typeburn@latest` (via go.mod/go.sum versioning)
 - **Minimum Go:** 1.26+
 - **Minimum terminal:** 60 cols × 20 rows (ANSI 256-color or truecolor recommended)
 
@@ -200,6 +200,6 @@
 
 ## Conclusion
 
-**monkeytype-tui v1.0 is feature-complete and production-ready.** The codebase is clean, tested, and well-documented. Post-1.0 work is purely additive (new themes, new modes, new integrations) with zero breaking changes to existing users.
+**Typeburn v1.0 is feature-complete and production-ready.** The codebase is clean, tested, and well-documented. Post-1.0 work is purely additive (new themes, new modes, new integrations) with zero breaking changes to existing users.
 
 M1 (timer re-arm) — the one identified correctness bug — was fixed within v1.0 (commit d6369de). Remaining backlog is additive or cosmetic.

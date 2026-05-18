@@ -3,7 +3,7 @@ package ui
 import (
 	"strings"
 
-	"monkeytype-tui/internal/theme"
+	"github.com/bavanchun/Typeburn/internal/theme"
 )
 
 // digitGlyphs maps each decimal digit 0-9 to a 5-row ASCII block-art glyph.

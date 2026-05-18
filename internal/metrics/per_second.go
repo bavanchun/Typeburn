@@ -1,7 +1,7 @@
 package metrics
 
 import (
-	"monkeytype-tui/internal/typing"
+	"github.com/bavanchun/Typeburn/internal/typing"
 )
 
 // PerSecond holds a single one-second interval's worth of typing statistics,

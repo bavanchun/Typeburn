@@ -6,10 +6,10 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"monkeytype-tui/internal/config"
-	"monkeytype-tui/internal/metrics"
-	"monkeytype-tui/internal/theme"
-	"monkeytype-tui/internal/words"
+	"github.com/bavanchun/Typeburn/internal/config"
+	"github.com/bavanchun/Typeburn/internal/metrics"
+	"github.com/bavanchun/Typeburn/internal/theme"
+	"github.com/bavanchun/Typeburn/internal/words"
 )
 
 // newTestResult constructs a ResultModel with sample data and 80×24 terminal.

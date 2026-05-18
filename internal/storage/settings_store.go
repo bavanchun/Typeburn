@@ -5,11 +5,11 @@ import (
 	"os"
 	"path/filepath"
 
-	"monkeytype-tui/internal/config"
+	"github.com/bavanchun/Typeburn/internal/config"
 )
 
 // SettingsPath returns the absolute path to the settings file:
-// $XDG_CONFIG_HOME/monkeytype-tui/settings.json (fallback ~/.config/monkeytype-tui/).
+// $XDG_CONFIG_HOME/typeburn/settings.json (fallback ~/.config/typeburn/).
 func SettingsPath() (string, error) {
 	dir, err := config.ConfigDir()
 	if err != nil {

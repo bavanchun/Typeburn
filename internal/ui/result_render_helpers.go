@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"monkeytype-tui/internal/config"
-	"monkeytype-tui/internal/theme"
+	"github.com/bavanchun/Typeburn/internal/config"
+	"github.com/bavanchun/Typeburn/internal/theme"
 )
 
 // accColorRole picks the appropriate theme role for accuracy display.

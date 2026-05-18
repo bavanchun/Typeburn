@@ -1,7 +1,7 @@
 package typing
 
 import (
-	"monkeytype-tui/internal/config"
+	"github.com/bavanchun/Typeburn/internal/config"
 )
 
 // Complete reports whether the test is finished according to the active mode.

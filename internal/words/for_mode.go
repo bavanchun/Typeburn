@@ -1,7 +1,7 @@
 package words
 
 import (
-	"monkeytype-tui/internal/config"
+	"github.com/bavanchun/Typeburn/internal/config"
 )
 
 // ForMode returns the target string for a typing test given the active mode

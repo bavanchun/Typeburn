@@ -1,4 +1,4 @@
-BINARY := monkeytype-tui
+BINARY := typeburn
 BIN_DIR := ./bin
 
 .PHONY: build run test test-race lint fmt clean

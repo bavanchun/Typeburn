@@ -6,8 +6,8 @@ import (
 
 	"charm.land/lipgloss/v2"
 
-	"monkeytype-tui/internal/theme"
-	"monkeytype-tui/internal/typing"
+	"github.com/bavanchun/Typeburn/internal/theme"
+	"github.com/bavanchun/Typeburn/internal/typing"
 )
 
 // RenderWordStream renders the typing word-stream as a multi-line string.

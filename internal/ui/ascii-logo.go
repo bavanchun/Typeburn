@@ -3,47 +3,41 @@ package ui
 import (
 	"strings"
 
-	"monkeytype-tui/internal/theme"
+	"github.com/bavanchun/Typeburn/internal/theme"
 )
 
-// logoLines is the block-art representation of "MONKEY" in accent color.
-// The trailing "type" word is rendered separately in text-muted.
-// Width: each line is ~56 chars (7 chars × 8 wide) for the MONKEY part.
+// logoLines is the block-art ("ANSI Shadow" style) wordmark for "TYPEBURN",
+// rendered in the accent color. Each row is a fixed 69 cells wide so the
+// glyphs always align regardless of terminal color support.
 var logoLines = []string{
-	`███╗   ███╗ ██████╗ ███╗   ██╗██╗  ██╗███████╗██╗   ██╗`,
-	`████╗ ████║██╔═══██╗████╗  ██║██║ ██╔╝██╔════╝╚██╗ ██╔╝`,
-	`██╔████╔██║██║   ██║██╔██╗ ██║█████╔╝ █████╗   ╚████╔╝ `,
-	`██║╚██╔╝██║██║   ██║██║╚██╗██║██╔═██╗ ██╔══╝    ╚██╔╝  `,
-	`██║ ╚═╝ ██║╚██████╔╝██║ ╚████║██║  ██╗███████╗   ██║   `,
-	`╚═╝     ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝╚══════╝   ╚═╝   `,
+	`████████╗██╗   ██╗██████╗ ███████╗██████╗ ██╗   ██╗██████╗ ███╗   ██╗`,
+	`╚══██╔══╝╚██╗ ██╔╝██╔══██╗██╔════╝██╔══██╗██║   ██║██╔══██╗████╗  ██║`,
+	`   ██║    ╚████╔╝ ██████╔╝█████╗  ██████╔╝██║   ██║██████╔╝██╔██╗ ██║`,
+	`   ██║     ╚██╔╝  ██╔═══╝ ██╔══╝  ██╔══██╗██║   ██║██╔══██╗██║╚██╗██║`,
+	`   ██║      ██║   ██║     ███████╗██████╔╝╚██████╔╝██║  ██║██║ ╚████║`,
+	`   ╚═╝      ╚═╝   ╚═╝     ╚══════╝╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝`,
 }
 
-// typeLabel appended to the last logo line, in text-muted.
-const typeLabel = "  t y p e"
+// logoWidth is the fixed cell width of every logoLines row. Below this many
+// usable columns the wordmark is replaced by a plain text fallback.
+const logoWidth = 69
 
-// RenderLogo returns the ASCII block-art logo styled per design §3 + mockups §1.
+// RenderLogo returns the ASCII block-art wordmark styled per design §3.
 //
-// Wide form (width >= 64): full block art in accent with "type" trailing in
-// text-muted on the last line. Narrow form (width < 64): plain Bold accent
-// "monkeytype" (single line) per the Responsive/Degraded rule.
+// Wide form (width >= logoWidth+3): full "TYPEBURN" block art in accent.
+// Narrow form: plain Bold accent "typeburn" on a single line, per the
+// Responsive/Degraded rule (threshold is logoWidth+3 since this 8-letter
+// wordmark is wider than the design's original 64-col assumption).
 func RenderLogo(width int, th theme.Theme) string {
 	accentStyle := th.Style(theme.RoleAccent).Bold(true)
-	mutedStyle := th.Style(theme.RoleTextMuted)
 
-	if width < 64 {
-		// Narrow fallback: plain bold accent text.
-		return accentStyle.Render("monkeytype")
+	if width < logoWidth+3 {
+		return accentStyle.Render("typeburn")
 	}
 
-	// Full block-art logo.
 	lines := make([]string, len(logoLines))
 	for i, line := range logoLines {
-		if i == len(logoLines)-1 {
-			// Last line: MONKEY art + "type" in muted.
-			lines[i] = accentStyle.Render(line) + mutedStyle.Render(typeLabel)
-		} else {
-			lines[i] = accentStyle.Render(line)
-		}
+		lines[i] = accentStyle.Render(line)
 	}
 	return strings.Join(lines, "\n")
 }

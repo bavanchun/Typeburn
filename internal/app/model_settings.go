@@ -1,10 +1,10 @@
 package app
 
 import (
-	"monkeytype-tui/internal/config"
-	"monkeytype-tui/internal/storage"
-	"monkeytype-tui/internal/theme"
-	"monkeytype-tui/internal/ui"
+	"github.com/bavanchun/Typeburn/internal/config"
+	"github.com/bavanchun/Typeburn/internal/storage"
+	"github.com/bavanchun/Typeburn/internal/theme"
+	"github.com/bavanchun/Typeburn/internal/ui"
 )
 
 // NewFromDisk builds the root model loading persisted settings from disk.

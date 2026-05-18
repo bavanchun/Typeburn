@@ -3,8 +3,8 @@ package typing_test
 import (
 	"testing"
 
-	"monkeytype-tui/internal/config"
-	"monkeytype-tui/internal/typing"
+	"github.com/bavanchun/Typeburn/internal/config"
+	"github.com/bavanchun/Typeburn/internal/typing"
 )
 
 // TestCharStates validates all 6 CharState classifications via engine.States().

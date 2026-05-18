@@ -1,6 +1,6 @@
 package ui
 
-import "monkeytype-tui/internal/typing"
+import "github.com/bavanchun/Typeburn/internal/typing"
 
 // liveWPM estimates current WPM from forward keystrokes in the log.
 // Used for the live header display; returns 0 when elapsed < 500ms (too noisy).

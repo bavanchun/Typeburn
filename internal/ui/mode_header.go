@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"monkeytype-tui/internal/config"
-	"monkeytype-tui/internal/theme"
+	"github.com/bavanchun/Typeburn/internal/config"
+	"github.com/bavanchun/Typeburn/internal/theme"
 )
 
 // progressBarWidth is the number of cells in the Quote mode progress bar.

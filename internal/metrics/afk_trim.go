@@ -1,8 +1,8 @@
 package metrics
 
 import (
-	"monkeytype-tui/internal/config"
-	"monkeytype-tui/internal/typing"
+	"github.com/bavanchun/Typeburn/internal/config"
+	"github.com/bavanchun/Typeburn/internal/typing"
 )
 
 const afkThresholdMs int64 = 7000 // strictly greater than this triggers AFK trim

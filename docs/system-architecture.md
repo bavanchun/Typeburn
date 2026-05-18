@@ -268,10 +268,10 @@ Ensures no screen attempts to render below the minimum; user sees a resize promp
 
 ```go
 // Settings
-~/.config/monkeytype-tui/settings.json  [or $XDG_CONFIG_HOME]
+~/.config/typeburn/settings.json  [or $XDG_CONFIG_HOME]
 
 // History
-~/.local/share/monkeytype-tui/history.json  [or $XDG_DATA_HOME]
+~/.local/share/typeburn/history.json  [or $XDG_DATA_HOME]
 ```
 
 ### Error Handling

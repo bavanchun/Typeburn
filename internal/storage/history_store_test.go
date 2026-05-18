@@ -134,7 +134,7 @@ func TestAppendHistory_NoTmpResidue(t *testing.T) {
 	if err != nil {
 		t.Fatalf("AppendHistory: %v", err)
 	}
-	entries, err := os.ReadDir(filepath.Join(dir, "monkeytype-tui"))
+	entries, err := os.ReadDir(filepath.Join(dir, "typeburn"))
 	if err != nil {
 		t.Fatalf("ReadDir: %v", err)
 	}
@@ -153,14 +153,14 @@ func TestAppendHistory_XDGDataHome(t *testing.T) {
 	if err != nil {
 		t.Fatalf("AppendHistory: %v", err)
 	}
-	expectedPath := filepath.Join(dir, "monkeytype-tui", "history.json")
+	expectedPath := filepath.Join(dir, "typeburn", "history.json")
 	if _, err := os.Stat(expectedPath); os.IsNotExist(err) {
 		t.Errorf("history.json not found at XDG path %s", expectedPath)
 	}
 }
 
 // TestAppendHistory_HomeFallback checks that HistoryPath falls back to
-// ~/.local/share/monkeytype-tui/history.json when XDG_DATA_HOME is unset.
+// ~/.local/share/typeburn/history.json when XDG_DATA_HOME is unset.
 func TestAppendHistory_HomeFallback(t *testing.T) {
 	// Unset XDG_DATA_HOME and point HOME to a temp dir.
 	t.Setenv("XDG_DATA_HOME", "")
@@ -171,7 +171,7 @@ func TestAppendHistory_HomeFallback(t *testing.T) {
 	if err != nil {
 		t.Fatalf("HistoryPath: %v", err)
 	}
-	want := filepath.Join(tmpHome, ".local", "share", "monkeytype-tui", "history.json")
+	want := filepath.Join(tmpHome, ".local", "share", "typeburn", "history.json")
 	if path != want {
 		t.Errorf("HistoryPath: want %q, got %q", want, path)
 	}

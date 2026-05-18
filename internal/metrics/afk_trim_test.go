@@ -3,9 +3,9 @@ package metrics_test
 import (
 	"testing"
 
-	"monkeytype-tui/internal/config"
-	"monkeytype-tui/internal/metrics"
-	"monkeytype-tui/internal/typing"
+	"github.com/bavanchun/Typeburn/internal/config"
+	"github.com/bavanchun/Typeburn/internal/metrics"
+	"github.com/bavanchun/Typeburn/internal/typing"
 )
 
 // TestAFKTrim validates AFK trailing-trim behaviour.

@@ -5,10 +5,10 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"monkeytype-tui/internal/config"
-	"monkeytype-tui/internal/theme"
-	"monkeytype-tui/internal/typing"
-	"monkeytype-tui/internal/words"
+	"github.com/bavanchun/Typeburn/internal/config"
+	"github.com/bavanchun/Typeburn/internal/theme"
+	"github.com/bavanchun/Typeburn/internal/typing"
+	"github.com/bavanchun/Typeburn/internal/words"
 )
 
 // TypingModel is the sub-model for the typing test screen. The root app.Model

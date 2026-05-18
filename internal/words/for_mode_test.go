@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"monkeytype-tui/internal/config"
+	"github.com/bavanchun/Typeburn/internal/config"
 )
 
 // TestForMode_TimeReturnsNonEmpty verifies ForMode(ModeTime) returns a

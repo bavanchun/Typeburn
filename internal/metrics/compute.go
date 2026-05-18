@@ -1,8 +1,8 @@
 package metrics
 
 import (
-	"monkeytype-tui/internal/config"
-	"monkeytype-tui/internal/typing"
+	"github.com/bavanchun/Typeburn/internal/config"
+	"github.com/bavanchun/Typeburn/internal/typing"
 )
 
 // Result holds all derived metrics after a completed test.

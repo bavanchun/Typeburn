@@ -6,7 +6,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 
-	"monkeytype-tui/internal/theme"
+	"github.com/bavanchun/Typeburn/internal/theme"
 )
 
 // quitPromptModel is a minimal inline overlay rendered on the Home screen when
@@ -58,7 +58,7 @@ func (q quitPromptModel) view(w, h int, th theme.Theme) string {
 	mutedStyle := th.Style(theme.RoleTextMuted)
 	faintStyle := th.Style(theme.RoleTextFaint)
 
-	question := labelStyle.Render("quit monkeytype-tui?")
+	question := labelStyle.Render("quit Typeburn?")
 
 	var yesPart, noPart string
 	if q.sel == 0 {

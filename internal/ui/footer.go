@@ -3,7 +3,7 @@ package ui
 import (
 	"strings"
 
-	"monkeytype-tui/internal/theme"
+	"github.com/bavanchun/Typeburn/internal/theme"
 )
 
 // Hint is a single key+action pair rendered in the footer.

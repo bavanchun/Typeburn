@@ -2,8 +2,6 @@
 /bin/
 *.exe
 *.out
-tt
-monkeytype
 
 # Go
 *.test
@@ -21,4 +19,4 @@ vendor/
 .vscode/
 
 # Built binary (make build target)
-monkeytype-tui
+typeburn

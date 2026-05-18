@@ -4,7 +4,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 
-	"monkeytype-tui/internal/ui"
+	"github.com/bavanchun/Typeburn/internal/ui"
 )
 
 // View renders the active screen centered in the terminal.

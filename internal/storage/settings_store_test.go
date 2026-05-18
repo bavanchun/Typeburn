@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"monkeytype-tui/internal/config"
+	"github.com/bavanchun/Typeburn/internal/config"
 )
 
 // settingsEqual is a field-by-field comparison (Settings has no unexported fields).
@@ -57,7 +57,7 @@ func TestCorruptJSONReturnsDefaults(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv("XDG_CONFIG_HOME", dir)
 
-	path := filepath.Join(dir, "monkeytype-tui", "settings.json")
+	path := filepath.Join(dir, "typeburn", "settings.json")
 	if err := os.MkdirAll(filepath.Dir(path), 0700); err != nil {
 		t.Fatal(err)
 	}
@@ -77,7 +77,7 @@ func TestUnknownThemeNormalized(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv("XDG_CONFIG_HOME", dir)
 
-	path := filepath.Join(dir, "monkeytype-tui", "settings.json")
+	path := filepath.Join(dir, "typeburn", "settings.json")
 	if err := os.MkdirAll(filepath.Dir(path), 0700); err != nil {
 		t.Fatal(err)
 	}
@@ -98,7 +98,7 @@ func TestUnknownModeNormalized(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv("XDG_CONFIG_HOME", dir)
 
-	path := filepath.Join(dir, "monkeytype-tui", "settings.json")
+	path := filepath.Join(dir, "typeburn", "settings.json")
 	if err := os.MkdirAll(filepath.Dir(path), 0700); err != nil {
 		t.Fatal(err)
 	}
@@ -124,7 +124,7 @@ func TestAtomicNoTempResidueOnSuccess(t *testing.T) {
 		t.Fatalf("SaveSettings: %v", err)
 	}
 
-	path := filepath.Join(dir, "monkeytype-tui", "settings.json")
+	path := filepath.Join(dir, "typeburn", "settings.json")
 	if _, err := os.Stat(path + ".tmp"); !os.IsNotExist(err) {
 		t.Fatal("leftover .tmp file found after successful save")
 	}
@@ -148,7 +148,7 @@ func TestAtomicTargetIntactOnError(t *testing.T) {
 	}
 
 	// Verify the file exists with valid content.
-	path := filepath.Join(dir, "monkeytype-tui", "settings.json")
+	path := filepath.Join(dir, "typeburn", "settings.json")
 	data, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatalf("cannot read initial file: %v", err)
@@ -180,7 +180,7 @@ func TestXDGConfigHomeTakesPrecedence(t *testing.T) {
 	}
 
 	// The file must exist under XDG_CONFIG_HOME, not HOME.
-	expectedPath := filepath.Join(xdgDir, "monkeytype-tui", "settings.json")
+	expectedPath := filepath.Join(xdgDir, "typeburn", "settings.json")
 	if _, err := os.Stat(expectedPath); err != nil {
 		t.Fatalf("settings not written to XDG_CONFIG_HOME: %v", err)
 	}
@@ -208,7 +208,7 @@ func TestHOMEFallbackWhenNoXDG(t *testing.T) {
 		t.Fatalf("SaveSettings (HOME fallback): %v", err)
 	}
 
-	expectedPath := filepath.Join(homeDir, ".config", "monkeytype-tui", "settings.json")
+	expectedPath := filepath.Join(homeDir, ".config", "typeburn", "settings.json")
 	if _, err := os.Stat(expectedPath); err != nil {
 		t.Fatalf("settings not in HOME fallback path: %v", err)
 	}
@@ -228,7 +228,7 @@ func TestFileMode0600(t *testing.T) {
 		t.Fatalf("SaveSettings: %v", err)
 	}
 
-	path := filepath.Join(dir, "monkeytype-tui", "settings.json")
+	path := filepath.Join(dir, "typeburn", "settings.json")
 	info, err := os.Stat(path)
 	if err != nil {
 		t.Fatalf("stat: %v", err)

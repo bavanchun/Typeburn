@@ -1,7 +1,7 @@
 package typing
 
 import (
-	"monkeytype-tui/internal/config"
+	"github.com/bavanchun/Typeburn/internal/config"
 )
 
 // Keystroke records a single typed or deleted character event.

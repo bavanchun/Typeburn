@@ -285,7 +285,7 @@ Consistent scheme across the app. Lowercase; `ctrl+c` always quits anywhere.
 
 1. **Backspace policy vs error mode** — In `stop-on-error`, is backspace still allowed to fix, or is the test locked until the correct char? Assumed: backspace allowed to correct; needs product confirmation.
 2. **Quote mode source** — bundled static quote list vs fetched? Affects whether History stores quote IDs. Assumed bundled for v1.
-3. **History persistence path & cap** — file location (`$XDG_DATA_HOME/monkeytype-tui/`?) and max retained rows before rotation. Assumed XDG + last 200; confirm.
+3. **History persistence path & cap** — file location (`$XDG_DATA_HOME/typeburn/`?) and max retained rows before rotation. Assumed XDG + last 200; confirm.
 4. **Consistency metric formula** — Monkeytype uses coefficient-of-variation of raw WPM samples. Confirm exact formula/sampling interval for parity.
 5. **Sound stub** — listed as setting; is any audio in v1 scope or pure placeholder? Assumed placeholder (no audio backend).
 6. **`esc` on Home** — quit immediately vs confirm prompt? Spec'd as quit-prompt; confirm desired friction.

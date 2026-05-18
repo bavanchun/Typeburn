@@ -4,9 +4,9 @@ import (
 	"math"
 	"testing"
 
-	"monkeytype-tui/internal/config"
-	"monkeytype-tui/internal/metrics"
-	"monkeytype-tui/internal/typing"
+	"github.com/bavanchun/Typeburn/internal/config"
+	"github.com/bavanchun/Typeburn/internal/metrics"
+	"github.com/bavanchun/Typeburn/internal/typing"
 )
 
 // buildLog is a helper that runs an Engine and returns its keystroke log.
