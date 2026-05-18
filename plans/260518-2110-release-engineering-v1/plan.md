@@ -1,7 +1,7 @@
 ---
 title: "Release Engineering v1.0.0"
 description: "Tag v1.0.0 + professional release pipeline: hybrid version, GoReleaser, release CI, CHANGELOG, repo hygiene"
-status: pending
+status: completed
 priority: P2
 branch: "main"
 tags: [release, goreleaser, ci, go, tooling]
@@ -32,11 +32,37 @@ render verification gates (no unit-testable surface — honest).
 
 | Phase | Name | Status |
 |-------|------|--------|
-| 1 | [Version package & --version flag (TDD)](./phase-01-version-package-version-flag-tdd.md) | Pending |
-| 2 | [GoReleaser config & Makefile wiring](./phase-02-goreleaser-config-makefile-wiring.md) | Pending |
-| 3 | [Release CI workflow](./phase-03-release-ci-workflow.md) | Pending |
-| 4 | [CHANGELOG & repo hygiene](./phase-04-changelog-repo-hygiene.md) | Pending |
-| 5 | [Release execution & verification](./phase-05-release-execution-verification.md) | Pending |
+| 1 | [Version package & --version flag (TDD)](./phase-01-version-package-version-flag-tdd.md) | Completed |
+| 2 | [GoReleaser config & Makefile wiring](./phase-02-goreleaser-config-makefile-wiring.md) | Completed |
+| 3 | [Release CI workflow](./phase-03-release-ci-workflow.md) | Completed |
+| 4 | [CHANGELOG & repo hygiene](./phase-04-changelog-repo-hygiene.md) | Completed |
+| 5 | [Release execution & verification](./phase-05-release-execution-verification.md) | Completed |
+
+## Execution Outcome — 2026-05-18
+
+**`v1.0.0` released:** https://github.com/bavanchun/Typeburn/releases/tag/v1.0.0
+(tag on `9f96ff8`, 7 assets = 6 archives + checksums.txt, curated CHANGELOG notes,
+checksum cross-check verified, `go install …@v1.0.0` → `typeburn v1.0.0`).
+
+**Deviation from locked plan (empirically forced, intent preserved):** the locked
+F11 mechanism `changelog.disable: true` + `--release-notes` was proven defective
+by the disposable dry-run — GoReleaser docs confirm `changelog.disable:true`
+*also ignores* `--release-notes` and publishes an EMPTY release body. Fix: dropped
+`disable:true`, added `changelog.filters.exclude: ['.*']`; `--release-notes`
+(always passed by release.yml) now supplies the curated body while git log still
+never leaks. Plan **intent** (curated CHANGELOG = sole notes source, never git
+log) is preserved; only the broken mechanism changed. Caught by the dry-run
+exactly as F10 designed. A second dry-run verified body_len 1→1869 before the
+real tag.
+
+**Other resolved item:** version-banner v-prefix asymmetry (`go install`→`v1.0.0`
+vs archive→`1.0.0`) fixed pre-tag by `version.Version=v{{ .Version }}` in
+`.goreleaser.yaml` (user-approved). Both install paths now report `v1.0.0`.
+
+**Non-blocking observation:** SHA-pinned actions (checkout v4 / setup-go v5 /
+goreleaser-action v6) run on Node20, GitHub-deprecated (forced Node24 by
+2026-06-02). Release unaffected; bump pins deliberately per CONTRIBUTING before
+that date.
 
 ## Locked Decisions (from brainstorm + red-team)
 

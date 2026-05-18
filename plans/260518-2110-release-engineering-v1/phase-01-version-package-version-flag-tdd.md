@@ -1,7 +1,7 @@
 ---
 phase: 1
 title: "Version package & --version flag (TDD)"
-status: pending
+status: completed
 priority: P1
 effort: "2h"
 dependencies: []

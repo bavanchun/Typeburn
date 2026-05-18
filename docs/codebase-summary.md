@@ -4,6 +4,44 @@
 
 ## Package Overview
 
+### `internal/version` — Build-Time Version Injection
+
+**Purpose:** Expose the release version and commit metadata to the `--version` flag and error messages. Supports two injection paths: ldflags-stamped binaries (GoReleaser, `make release`) and fallback to module build info (bare `go install`).
+
+**Key types:**
+- `Info`: {Version, Commit, Date} — resolved version triple
+- Package vars: Version, Commit, Date (linker targets via `-X`)
+
+**Entry points:**
+- `Resolve() Info`: precedence ldflags → debug.ReadBuildInfo() vcs settings → fallback "dev"
+- `String() string`: renders one-line banner (e.g., "typeburn v1.0.0 (61a4afd, 2026-05-18T21:10:00Z, go1.26.2 darwin/arm64)")
+
+**Behavior:**
+- When released (GoReleaser): ldflags inject Version/Commit/Date; banner shows exact tag/SHA
+- When installed via `go install`: ldflags empty; Resolve() pulls from go.mod version + git metadata in the binary
+- Always succeeds; never panics
+
+**Files:** version.go, version_test.go.
+
+---
+
+### Entrypoint — `main.go` & Flag Parsing
+
+**Purpose:** Process command-line args and decide: print version banner or launch the TUI. Single `--version` short-circuits; all other inputs (unknown flags, `-h`, `-v`, or positional args) launch the TUI without error exit.
+
+**Design:**
+- `decide(args []string) bool`: pure function (no os.Exit, no I/O) — testable
+  - Uses `flag.NewFlagSet` with `ContinueOnError` mode and `io.Discard` output
+  - Only `--version` returns true; parse errors (unknown flags, `-h`) return false
+  - Preserves legacy behavior: `typeburn <anything>` starts test, not error exit
+- `main()`: calls decide(); prints version via `version.String()` or launches `tea.NewProgram(app.NewFromDisk())`
+
+**Rationale:** Avoids polluting the TUI with error banners or usage text; unknown input is gracefully treated as "user wants to type."
+
+**Files:** main.go, decide_test.go.
+
+---
+
 ### `internal/app` — Root Elm Model & Routing
 
 **Purpose:** Bubble Tea root model. Routes global messages (StartTestMsg, ResultMsg, AbortMsg, NavHistoryMsg) to sub-models. Manages screen enum + shared state (theme, keymap, terminal size, quit prompt overlay).
@@ -194,3 +232,19 @@
 - **UI tests:** teatest golden-file tests per screen (screen_home_test.go, screen_typing_test.go, etc.)
 - **Race detection:** `go test ./... -race -count=1` — GREEN; no goroutine leaks
 - **Format & vet:** `gofmt -l .` and `go vet ./...` — GREEN
+
+---
+
+## Release Engineering Files
+
+**Build & Version Management:**
+- `Makefile`: VERSION (git tag or "dev"), COMMIT (short SHA), DATE (UTC); LDFLAGS injection; targets: `build`, `test`, `test-race`, `version` (quick ldflags check), `snapshot` (dry-run), `release` (full publish)
+- `.goreleaser.yaml` (v2, pinned v2.15.4): 6-platform matrix (linux/darwin/windows × amd64/arm64), trimpath + ldflags with v-prefixed version, archives (tar.gz for Unix, zip for Windows) include README/LICENSE/CHANGELOG, sha256 checksums, changelog filter excludes all git commits (uses `.github/release-notes.md` instead)
+- `.github/workflows/release.yml`: tag-triggered (`v*`), self-gating `test` job (contents:read) gates `publish` job (contents:write), SHA-pinned GoReleaser v2.15.4, concurrency-guarded, post-publish asset-count assertion (expects 7)
+- `.github/release-notes.md`: curated release notes handoff to GoReleaser (replaces auto-generated git log)
+
+**Supporting Documentation:**
+- `CHANGELOG.md` (Keep a Changelog): semantic versioning, per-release sections with Added/Changed/Deprecated/Removed/Fixed
+- `CONTRIBUTING.md`: build prerequisites (Go 1.26+, GoReleaser v2.15.4 pinned), contribution guidelines, release process (tag-triggered CI)
+- `SECURITY.md`: binary integrity model (SHA-256 verification), unsigned-binary disclosure policy
+- `.github/ISSUE_TEMPLATE/*.md` & `.github/PULL_REQUEST_TEMPLATE.md`: standardized issue/PR submission

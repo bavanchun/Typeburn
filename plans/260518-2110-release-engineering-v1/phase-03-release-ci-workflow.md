@@ -1,7 +1,7 @@
 ---
 phase: 3
 title: "Release CI workflow"
-status: pending
+status: completed
 priority: P1
 effort: "1.5h"
 dependencies: [2]

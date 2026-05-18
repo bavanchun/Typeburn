@@ -1,7 +1,7 @@
 ---
 phase: 4
 title: "CHANGELOG & repo hygiene"
-status: pending
+status: completed
 priority: P2
 effort: "2.5h"
 dependencies: [3]

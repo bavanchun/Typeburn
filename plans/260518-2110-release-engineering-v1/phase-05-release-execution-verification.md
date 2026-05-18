@@ -1,7 +1,7 @@
 ---
 phase: 5
 title: "Release execution & verification"
-status: pending
+status: completed
 priority: P1
 effort: "1.5h"
 dependencies: [4]

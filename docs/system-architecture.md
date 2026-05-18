@@ -341,3 +341,65 @@ No circular imports; pure packages have zero UI dependencies.
 - UI screens tested via `teatest.TestModel()` (drives keyboard input, captures rendered frames)
 - Golden files in `internal/ui/*_test.go` verify rendered output matches baseline
 - `-race` flag verifies no goroutine leaks or data races
+
+---
+
+## Release Engineering & Versioning
+
+### Version Injection
+
+The `internal/version` package supports two injection paths:
+
+1. **GoReleaser (release builds):** Makefile + `.goreleaser.yaml` inject Version/Commit/Date via ldflags (`-X` flags)
+   - Version: `v{MAJOR}.{MINOR}.{PATCH}` (v-prefixed to match `go install` semantics)
+   - Commit: short SHA
+   - Date: UTC RFC3339 timestamp
+
+2. **Fallback (bare `go install`):** When ldflags are not set, `version.Resolve()` reads `debug.ReadBuildInfo()`:
+   - Version: from `go.mod` version (ignores synthetic "(devel)")
+   - Commit/Date: from vcs.revision and vcs.time build settings
+   - Ultimate fallback: version = "dev"
+
+**Entry point:** `--version` flag (parsed in `main.go` via pure `decide()` function) prints a one-line banner:
+```
+typeburn v1.0.0 (61a4afd, 2026-05-18T21:10:00Z, go1.26.2 darwin/arm64)
+```
+
+### Build Pipeline
+
+**Local builds:**
+```bash
+make build         # ldflags-stamped binary with git metadata
+make test-race     # verify no races before release
+make snapshot      # GoReleaser dry-run (builds + archives, no publish)
+```
+
+**Release (CI-only):**
+- Triggered by git tag matching `v*` (e.g., `v1.0.0`)
+- `.github/workflows/release.yml`: 
+  - Separate least-privilege `test` job (contents:read) runs before publish
+  - `publish` job (contents:write) runs GoReleaser v2.15.4 (SHA-pinned) with `--release-notes=.github/release-notes.md`
+  - Post-publish: asserts exactly 7 assets (2 tar.gz + 2 zip + 2 tar.gz arm64 + checksums.txt)
+
+### Artifact Distribution
+
+**Cross-platform binaries:** 6 combinations
+- Linux (amd64, arm64): `.tar.gz` archives include README, LICENSE, CHANGELOG
+- macOS (amd64, arm64): `.tar.gz` archives
+- Windows (amd64, arm64): `.zip` archives
+
+**Integrity:** SHA-256 checksums in `checksums.txt` (GoReleaser native); verify with `sha256sum -c checksums.txt`
+
+**Installation paths:**
+- `go install github.com/bavanchun/Typeburn@v1.0.0` (from GitHub via Go module)
+- Download pre-built binary from [Releases](https://github.com/bavanchun/Typeburn/releases)
+
+### Release Process (Fix-Forward Policy)
+
+Tags are immutable once pushed; releases are never re-tagged or reverted. **Fix-forward policy:**
+1. Identify the bug in v1.0.0
+2. Fix on main branch
+3. Tag as v1.0.1 (next patch version)
+4. Push tag → CI automatically publishes new release with updated CHANGELOG
+
+**Before real tag:** Dry-run with `make snapshot` to verify build + archive paths locally (no publish/auth).
