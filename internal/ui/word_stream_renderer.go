@@ -149,16 +149,3 @@ func wrapTokens(
 
 	return strings.Join(lines, "\n")
 }
-
-// contentWidth calculates the word-stream content width from the terminal width.
-// Per design §4.1: min(termW-8, 80). A minimum of 20 is enforced defensively.
-func contentWidth(termW int) int {
-	w := termW - 8
-	if w > 80 {
-		w = 80
-	}
-	if w < 20 {
-		w = 20
-	}
-	return w
-}

@@ -3,12 +3,30 @@ package app
 import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+
+	"monkeytype-tui/internal/ui"
 )
 
 // View renders the active screen centered in the terminal.
-// Screens that own their own lipgloss.Place call (Home, Result, Settings) are
-// returned directly to avoid double-placing; others are centered here.
+//
+// Single chokepoint: if the terminal is below the 60×20 safe minimum, the
+// degraded notice is shown instead of any screen content. This prevents any
+// screen from partial-painting at small sizes.
+//
+// When the quit-prompt overlay is active (esc pressed on Home), it is rendered
+// instead of the Home screen content.
 func (m Model) View() tea.View {
+	// Degraded gate — must check before any screen delegation.
+	if m.w > 0 && m.h > 0 && (m.w < 60 || m.h < 20) {
+		notice := ui.DegradedNotice(m.w, m.h, m.theme)
+		return tea.NewView(lipgloss.Place(m.w, m.h, lipgloss.Center, lipgloss.Center, notice))
+	}
+
+	// Quit-prompt overlay on Home screen.
+	if m.quitPrompt != nil && m.screen == ScreenHome {
+		return tea.NewView(m.quitPrompt.view(m.w, m.h, m.theme))
+	}
+
 	var body string
 	switch m.screen {
 	case ScreenHome:

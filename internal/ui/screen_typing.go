@@ -97,6 +97,10 @@ func (m TypingModel) Update(msg tea.Msg) (TypingModel, tea.Cmd) {
 		return m.handleTick(msg)
 	case tea.KeyPressMsg:
 		return m.handleKey(msg.Key())
+	case tea.PasteMsg:
+		// Feed paste content as sequential runes through the typing engine.
+		// This is the project-decided paste policy (see charm-v2-api-cheatsheet.md).
+		return m.applyText(msg.Content)
 	}
 	return m, nil
 }

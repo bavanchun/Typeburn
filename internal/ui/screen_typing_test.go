@@ -188,15 +188,16 @@ func TestTyping_View_ContainsStream(t *testing.T) {
 	}
 }
 
-// TestTyping_DegradedView_SmallTerminal checks that a small terminal renders
-// the degraded notice instead of the stream.
-func TestTyping_DegradedView_SmallTerminal(t *testing.T) {
+// TestTyping_View_SmallTerminal_DoesNotCrash checks that TypingModel.View()
+// does not panic at sub-threshold sizes. The degraded notice is now rendered
+// by the root app.Model (single chokepoint per design §4.3); TypingModel.View()
+// itself is only called when the terminal is large enough, but must not crash
+// if invoked directly in tests at small sizes.
+func TestTyping_View_SmallTerminal_DoesNotCrash(t *testing.T) {
 	m := newTestTyping(config.ModeWords, 5)
 	m = m.SetSize(40, 10) // below 60×20 threshold
-	view := m.View()
-	if !strings.Contains(view, "Terminal too small") {
-		t.Errorf("expected degraded notice, got:\n%s", view)
-	}
+	// Must not panic — content may be partial but no crash.
+	_ = m.View()
 }
 
 // TestTyping_Tick_RecomputesWPM checks that a tick message updates headerWPM

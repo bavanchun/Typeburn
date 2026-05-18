@@ -11,7 +11,7 @@ Verified by `go doc` against: `charm.land/bubbletea/v2 v2.0.6`, `charm.land/lipg
   - Special keys are rune constants: `tea.KeyTab, tea.KeyEnter, tea.KeyEsc, tea.KeyEscape, tea.KeyBackspace, tea.KeySpace, tea.KeyUp, tea.KeyDown, tea.KeyLeft, tea.KeyRight, tea.KeyHome, tea.KeyEnd, tea.KeyPgUp, tea.KeyPgDown`.
   - Modifiers (bitmask `tea.KeyMod`): `tea.ModCtrl, tea.ModShift, tea.ModAlt`. Test exact-match `k.Mod == tea.ModCtrl` (the project's config.Keymap already does this — reuse `config.Keymap` + `Binding.Matches(k tea.Key)`).
   - ctrl+c arrives as `Code:'c', Mod:tea.ModCtrl`.
-- Paste: `case tea.PasteMsg:` has `.Data` (string). (Project decision: feed paste runes sequentially through the typing engine.)
+- Paste: `case tea.PasteMsg:` has **`.Content` (string)** — NOT `.Data` (verified in Phase 9). (Project decision: feed paste runes sequentially through the typing engine.)
 - `tea.WindowSizeMsg{ Width, Height int }` — sent once at start and on every resize.
 - Commands: `tea.Quit` (a Cmd-returning func; `return m, tea.Quit`). `tea.QuitMsg` is the message type (used in tests: `cmd().(tea.QuitMsg)`). `tea.Batch(cmds...)`, `tea.Tick(d time.Duration, fn func(time.Time) tea.Msg) tea.Cmd` — fn receives the fire time; use wall-clock deltas (`time.Now()`/the passed time), never tick counts.
 - Program: `tea.NewProgram(model, opts...) *Program`; `p.Run() (Model, error)`. v2 Cursed Renderer handles flicker-free/alt-screen automatically — do NOT manually toggle alt screen.

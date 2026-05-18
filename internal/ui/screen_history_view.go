@@ -10,12 +10,9 @@ import (
 
 // View renders the History screen. It places title, trend sparkline, table,
 // meta line, and footer per mockups §5.
+// Degraded mode (w<60 or h<20) is handled by the root View; this is only called
+// when the terminal meets the safe minimum.
 func (m HistoryModel) View() string {
-	if m.w < 60 || m.h < 20 {
-		return m.th.Style(theme.RoleWarning).Render("Terminal too small") +
-			"\n" + m.th.Style(theme.RoleTextFaint).Render("Need at least 60×20")
-	}
-
 	title := m.th.Style(theme.RoleAccent).Bold(true).Render("H I S T O R Y")
 	footer := RenderFooter(historyFooterHints(), m.w, m.th)
 

@@ -10,12 +10,9 @@ import (
 
 // View renders the Settings screen as a centered block string.
 // Layout per mockups §4: title, separator, 4 rows, separator, help line, footer.
+// Degraded mode (w<60 or h<20) is handled by the root View; this is only called
+// when the terminal meets the safe minimum.
 func (m SettingsModel) View() string {
-	if m.w < 60 || m.h < 20 {
-		return m.th.Style(theme.RoleWarning).Render("Terminal too small") +
-			"\n" + m.th.Style(theme.RoleTextFaint).Render("Need at least 60×20")
-	}
-
 	title := m.th.Style(theme.RoleAccent).Bold(true).Render("S E T T I N G S")
 	sep := m.th.Style(theme.RoleBorder).Render(strings.Repeat("─", 44))
 

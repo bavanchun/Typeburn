@@ -34,6 +34,10 @@ type Model struct {
 	result   ui.ResultModel
 	sett     ui.SettingsModel
 	hist     ui.HistoryModel
+
+	// quitPrompt is non-nil when the esc-on-Home quit confirmation overlay is
+	// active. ctrl+c always hard-quits regardless of this field.
+	quitPrompt *quitPromptModel
 }
 
 // New builds the root model loading persisted settings from disk.
@@ -101,6 +105,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.KeyPressMsg:
 		return m.handleKey(msg.Key())
+
+	case tea.PasteMsg:
+		// Feed paste runes sequentially into the typing engine (project decision
+		// documented in charm-v2-api-cheatsheet.md). Ignored on all other screens.
+		if m.screen == ScreenTyping {
+			var cmd tea.Cmd
+			m.typing, cmd = m.typing.Update(msg)
+			return m, cmd
+		}
+		return m, nil
 	}
 
 	// Delegate remaining messages to the active screen sub-model.
@@ -122,64 +136,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.screen == ScreenHistory {
 		var cmd tea.Cmd
 		m.hist, cmd = m.hist.Update(msg)
-		return m, cmd
-	}
-
-	return m, nil
-}
-
-// handleKey processes global bindings then delegates to the active screen.
-func (m Model) handleKey(key tea.Key) (tea.Model, tea.Cmd) {
-	// Quit is always global, regardless of active screen.
-	if m.keys.Quit.Matches(key) {
-		return m, tea.Quit
-	}
-
-	// While typing, delegate all key handling to the typing sub-model.
-	// Typing captures the full keyboard; no global nav applies mid-test.
-	if m.screen == ScreenTyping {
-		var cmd tea.Cmd
-		m.typing, cmd = m.typing.Update(tea.KeyPressMsg(key))
-		return m, cmd
-	}
-
-	// Global navigation keys apply on all non-typing screens so that e.g.
-	// pressing '3' from the Settings screen still reaches History.
-	switch {
-	case m.keys.NavHome.Matches(key):
-		m.screen = ScreenHome
-		return m, nil
-	case m.keys.NavSettings.Matches(key):
-		m.screen = ScreenSettings
-		return m, nil
-	case m.keys.NavHistory.Matches(key):
-		m = m.handleNavHistory()
-		return m, nil
-	case m.keys.Back.Matches(key):
-		if m.screen == ScreenHome {
-			return m, tea.Quit
-		}
-		m.screen = ScreenHome
-		return m, nil
-	}
-
-	// Delegate remaining keys to the active sub-model.
-	switch m.screen {
-	case ScreenResult:
-		var cmd tea.Cmd
-		m.result, cmd = m.result.Update(tea.KeyPressMsg(key))
-		return m, cmd
-	case ScreenSettings:
-		var cmd tea.Cmd
-		m.sett, cmd = m.sett.Update(tea.KeyPressMsg(key))
-		return m, cmd
-	case ScreenHome:
-		var cmd tea.Cmd
-		m.home, cmd = m.home.Update(tea.KeyPressMsg(key))
-		return m, cmd
-	case ScreenHistory:
-		var cmd tea.Cmd
-		m.hist, cmd = m.hist.Update(tea.KeyPressMsg(key))
 		return m, cmd
 	}
 

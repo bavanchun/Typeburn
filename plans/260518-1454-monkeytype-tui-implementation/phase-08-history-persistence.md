@@ -1,10 +1,11 @@
 ---
 phase: 8
-title: "History & persistence"
-status: pending
+title: History & persistence
+status: completed
 priority: P1
 effort: ~5h
-dependencies: [6]
+dependencies:
+  - 6
 ---
 
 # Phase 8: History & persistence
