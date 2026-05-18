@@ -39,6 +39,20 @@ go test ./internal/version/ -run TestResolve_LdflagsWin -v
 
 **Versioning is hybrid.** `internal/version` reads ldflags-injected `Version/Commit/Date` (set by Makefile + GoReleaser); when empty (bare `go install`) it falls back to `debug.ReadBuildInfo()`, final fallback `"dev"`. `main.go`'s `decide()` is a pure, tested function: a single `--version` short-circuits; a `ContinueOnError` FlagSet with discarded output ensures unknown flags / `-h` / `-v` / positional args fall through to the TUI (no `os.Exit(2)`, no usage dump). `-v` is intentionally unbound (reserved for a future `--verbose`).
 
+## Git Workflow (protected main — enforced)
+
+`main` is protected. **Never commit or push directly to `main`.** This is hard-enforced two ways: GitHub branch protection (PR required, direct push denied, `ci.yml` must pass, linear history) and a local PreToolUse hook that blocks `git commit`/`git push` to main in this repo.
+
+Every change — code, docs, config, release prep — follows:
+
+1. Branch off `main`: `feat/…`, `fix/…`, or `chore/…`.
+2. Commit on the branch (conventional commits, no AI references).
+3. Push the branch; open a PR to `main`.
+4. `ci.yml` must be green; **squash-merge** the PR (squash is the only enabled merge mode; branch auto-deletes).
+5. Tags are cut on `main` **only after** the PR is merged. Tag pushes are allowed by the hook/protection (only branch refs are protected).
+
+**Release runbook is now PR-based:** branch → commit phases → push branch → PR → squash-merge → `git tag` the merged commit on main → push tag → `release.yml`. The disposable-dry-run / fix-forward / never-re-tag invariants are unchanged (see `CONTRIBUTING.md`).
+
 ## Conventions & Constraints
 
 - **File size:** keep every Go file < 200 LOC. Split by concern (`screen_x.go` / `screen_x_view.go` / `screen_x_actions.go` / `screen_x_test.go`). Core logic uses `snake_case` filenames; small utility/output modules use `kebab-case`.
