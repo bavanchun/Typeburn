@@ -51,14 +51,13 @@
 - **Fix location:** `internal/ui/screen_typing.go` (RestartSame branch)
 - **Status:** Shipped in v1.0 (guard-verified safe: tick idles harmlessly while startMs==0)
 
-#### M2: New-Best Precision (sub-WPM rounding)
-- **Issue:** New-best detection compares rounded int WPM; loses sub-WPM precision
-- **Impact:** 75.4 and 75.0 both round to 75; faster run not flagged new-best (occasional missed ★)
-- **Fix:** Add NetWPM float64 to storage.Record; compare that in IsNewBest()
-- **Files:** `internal/app/model_history.go`, `internal/storage/new_best.go`
-- **Effort:** 30 minutes
-- **Backward compatibility:** Old JSON lacks field → unmarshals 0 (acceptable; history local-only)
-- **Status:** Post-1.0 acceptable; fast-follow recommended
+#### M2: New-Best Precision (sub-WPM rounding) — ✅ FIXED (v1.0.1)
+- **Issue:** New-best detection compared rounded int WPM; lost sub-WPM precision
+- **Impact:** 75.4 and 75.0 both rounded to 75; faster run not flagged new-best (occasional missed ★)
+- **Fix shipped:** Added `NetWPM float64` to `storage.Record`; `IsNewBest` and the
+  history-table ★ now compare effective NetWPM, with legacy records (no `net_wpm`
+  key → 0.0) falling back to their stored rounded WPM so prior bests are preserved
+- **Status:** Shipped in v1.0.1 (2026-05-18)
 
 ### Medium Priority (Feature Enhancements)
 
@@ -132,9 +131,9 @@
 | ID | Title | Severity | Impact | Recommended | Status |
 |----|-------|----------|--------|-------------|--------|
 | M1 | Timer tick re-arm on restartSame | MAJOR | Header frozen after Tab restart (Time mode) | Fixed | ✅ Shipped (d6369de) |
-| M2 | New-best precision (rounded int WPM) | MAJOR | Occasional missed ★ badge | Fast-follow | Backlog |
+| M2 | New-best precision (rounded int WPM) | MAJOR | Occasional missed ★ badge | Fixed | ✅ Shipped (v1.0.1) |
 | m3 | Parent dir not fsync'd on atomic write | MINOR | Power loss durability (acceptable for local data) | Document trade-off | Accepted |
-| m4 | MissedChars field always 0 | MINOR | Field advertised but unusable (no target delivery) | Remove field or pass target | v2 |
+| m4 | MissedChars field always 0 | MINOR | Field advertised but unusable (no target delivery) | Remove field | ✅ Removed (v1.0.1) |
 | m5 | CJK runes not width-aware | MINOR | Text overflow in 60-col terminals with CJK quotes | Use lipgloss.Width if CJK added | Deferred |
 
 ### Design Constraints

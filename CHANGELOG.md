@@ -5,17 +5,27 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-This file is the authoritative source of GitHub Release notes (the `[1.0.0]`
-section is extracted verbatim and passed to GoReleaser via `--release-notes`).
+This file is the authoritative source of GitHub Release notes (the latest
+release section is extracted verbatim and passed to GoReleaser via
+`--release-notes`).
 
 ## [Unreleased]
 
-### Planned
+## [1.0.1] - 2026-05-18
 
-- **New-best precision (M2):** new-best detection currently compares rounded
-  integer WPM, so two runs that round to the same WPM can miss the ★ badge.
-  Tracked for a fast-follow release; add a float `NetWPM` to the stored record
-  and compare on that. Old history JSON stays compatible (missing field → 0).
+### Fixed
+
+- **New-best precision:** the ★ personal-best badge compared rounded integer
+  WPM, so a strictly faster run that rounded to the same integer (e.g. 75.4 vs
+  75.0) did not earn the badge. New-best detection now compares the full-precision
+  net WPM. History records written by v1.0.0 (which lack the new field) fall
+  back to their stored rounded WPM, so existing personal bests are preserved.
+
+### Removed
+
+- **`missed` stat:** the result screen showed a `missed` counter that was always
+  `0` (the metrics package never received the target text to compute it). The
+  unusable field and its display were removed; no real metric is affected.
 
 ## [1.0.0] - 2026-05-18
 
@@ -55,5 +65,6 @@ terminal typing test built with Go and Bubble Tea v2.
   HTTPS transport and the pipeline-generated `checksums.txt`. See
   [SECURITY.md](./SECURITY.md).
 
-[Unreleased]: https://github.com/bavanchun/Typeburn/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/bavanchun/Typeburn/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/bavanchun/Typeburn/releases/tag/v1.0.1
 [1.0.0]: https://github.com/bavanchun/Typeburn/releases/tag/v1.0.0
