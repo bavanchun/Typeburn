@@ -1,0 +1,88 @@
+# Tag-triggered release pipeline.
+#
+# ci.yml filters on push.branches/pull_request with NO `tags:` key, so a tag
+# push does NOT trigger it — the tagged commit would otherwise have zero CI.
+# This workflow therefore runs its OWN `test` job and gates publishing on it.
+#
+# Third-party actions are SHA-pinned (supply-chain integrity on a public-binary
+# pipeline); the trailing `# vN` comment records the human-readable version.
+# Bump pins deliberately (see CONTRIBUTING.md). GoReleaser is pinned to the
+# exact version validated locally by `make snapshot` and recorded in
+# CONTRIBUTING.md — all three must stay in lockstep.
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+# A re-run or an accidental double tag must never race two uploads to the same
+# release. Do not cancel an in-flight publish.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+# No workflow-level permissions: each job declares least privilege explicitly.
+# Every future job MUST declare its own permissions block.
+jobs:
+  test:
+    name: Test (gate for the tagged ref)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - name: Setup Go
+        uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version: "1.26.x"
+          cache: true
+      - name: Build
+        run: go build ./...
+      - name: Vet
+        run: go vet ./...
+      - name: Format check
+        run: test -z "$(gofmt -l .)"
+      - name: Test (race detector)
+        run: go test ./... -race -count=1
+
+  goreleaser:
+    name: Publish release
+    needs: [test]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+      - name: Fetch tags
+        run: git fetch --force --tags
+      - name: Setup Go
+        uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version: "1.26.x"
+          cache: true
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@e435ccd777264be153ace6237001ef4d979d3a7a # v6
+        with:
+          version: "v2.15.4"
+          args: release --clean --release-notes=.github/release-notes.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Assert asset count
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Full matrix = 6 archives (linux/darwin/windows x amd64/arm64) +
+          # checksums.txt = 7. A partial upload must fail the run loudly so a
+          # broken public release is never left silently published.
+          expected=7
+          actual=$(gh release view "${{ github.ref_name }}" --json assets --jq '.assets | length')
+          echo "assets: expected=$expected actual=$actual"
+          if [ "$actual" -ne "$expected" ]; then
+            echo "::error::partial release — expected $expected assets, found $actual"
+            exit 1
+          fi
