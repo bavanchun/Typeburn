@@ -5,6 +5,7 @@ import (
 
 	"monkeytype-tui/internal/config"
 	"monkeytype-tui/internal/metrics"
+	"monkeytype-tui/internal/theme"
 	"monkeytype-tui/internal/typing"
 )
 
@@ -35,4 +36,18 @@ func (m TypingModel) completeCmd(endMs int64) tea.Cmd {
 	return func() tea.Msg {
 		return ResultMsg{Result: result, Mode: mode, Length: length, QuoteLen: ql}
 	}
+}
+
+// ApplySettings updates the blink flag and theme from new settings without
+// restarting the test. Used by the root onChange callback for live propagation.
+func (m TypingModel) ApplySettings(s config.Settings, th theme.Theme) TypingModel {
+	m.blink = s.BlinkCursor
+	m.th = th
+	return m
+}
+
+// ApplyTheme swaps the theme on the result model for live theme propagation.
+func (m ResultModel) ApplyTheme(th theme.Theme) ResultModel {
+	m.th = th
+	return m
 }

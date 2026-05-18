@@ -1,0 +1,105 @@
+package ui
+
+import (
+	"fmt"
+
+	"monkeytype-tui/internal/config"
+	"monkeytype-tui/internal/theme"
+)
+
+// settingRow is one row in the settings list: a label, a list of possible
+// string values, the current index, and a contextual help string.
+type settingRow struct {
+	label  string
+	values []string
+	idx    int
+	help   string
+}
+
+// row indices — fixed, never reordered.
+const (
+	rowTheme         = 0
+	rowDefaultMode   = 1
+	rowDefaultLength = 2
+	rowBlinkCursor   = 3
+)
+
+// buildRows constructs the 4 fixed settings rows from the current settings pointer.
+func buildRows(s *config.Settings) []settingRow {
+	// Theme row: cycles theme.Available() = ["default", "mono"].
+	themeVals := theme.Available()
+	themeIdx := 0
+	for i, v := range themeVals {
+		if v == s.Theme {
+			themeIdx = i
+			break
+		}
+	}
+
+	// Default mode row.
+	modeVals := []string{"time", "words", "quote"}
+	modeIdx := 0
+	for i, v := range modeVals {
+		if string(s.DefaultMode) == v {
+			modeIdx = i
+			break
+		}
+	}
+
+	// Default length row: option list depends on current default mode.
+	lenVals, lenIdx := buildLengthRow(s.DefaultMode, s.DefaultLength)
+
+	// Blink cursor row.
+	blinkVals := []string{"off", "on"}
+	blinkIdx := 0
+	if s.BlinkCursor {
+		blinkIdx = 1
+	}
+
+	return []settingRow{
+		{
+			label:  "Theme",
+			values: themeVals,
+			idx:    themeIdx,
+			help:   "Color scheme applied across all screens.",
+		},
+		{
+			label:  "Default mode",
+			values: modeVals,
+			idx:    modeIdx,
+			help:   "Mode pre-selected on the Home screen at startup.",
+		},
+		{
+			label:  "Default length",
+			values: lenVals,
+			idx:    lenIdx,
+			help:   "Length option pre-selected for the default mode.",
+		},
+		{
+			label:  "Blink cursor",
+			values: blinkVals,
+			idx:    blinkIdx,
+			help:   "Toggle cursor blink (530 ms) during the typing test.",
+		},
+	}
+}
+
+// buildLengthRow returns the string option list and the matching index for
+// defaultLength within the given mode. Quote mode exposes the bucket labels
+// (short/medium/long) defined on the Home screen; numeric modes use their
+// LengthsFor option set.
+func buildLengthRow(mode config.Mode, defaultLength int) ([]string, int) {
+	if mode == config.ModeQuote {
+		return quoteBucketLabels, 1 // default to "medium"
+	}
+	lens := config.LengthsFor(mode)
+	vals := make([]string, len(lens))
+	idx := len(lens) / 2 // fallback: middle option
+	for i, v := range lens {
+		vals[i] = fmt.Sprintf("%d", v)
+		if v == defaultLength {
+			idx = i
+		}
+	}
+	return vals, idx
+}

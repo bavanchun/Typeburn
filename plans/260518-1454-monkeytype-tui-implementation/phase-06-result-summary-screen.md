@@ -1,10 +1,12 @@
 ---
 phase: 6
-title: "Result summary screen"
-status: pending
+title: Result summary screen
+status: completed
 priority: P1
 effort: ~5h
-dependencies: [2, 4]
+dependencies:
+  - 2
+  - 4
 ---
 
 # Phase 6: Result summary screen

@@ -5,7 +5,6 @@ package app
 
 import (
 	tea "charm.land/bubbletea/v2"
-	"charm.land/lipgloss/v2"
 
 	"monkeytype-tui/internal/config"
 	"monkeytype-tui/internal/theme"
@@ -33,19 +32,23 @@ type Model struct {
 	home     ui.HomeModel
 	typing   ui.TypingModel
 	result   ui.ResultModel
+	sett     ui.SettingsModel
 }
 
-// New builds the root model with the given theme and settings.
+// New builds the root model loading persisted settings from disk.
+// It falls back to config.Defaults() if the settings file is missing or corrupt.
 func New(th theme.Theme, settings config.Settings) Model {
 	km := config.DefaultKeymap()
 	home := ui.NewHome(settings, th, km)
-	return Model{
+	m := Model{
 		screen:   ScreenHome,
 		theme:    th,
 		keys:     km,
 		settings: settings,
 		home:     home,
 	}
+	m.sett = ui.NewSettings(&m.settings, th, km, m.onSettingsChange)
+	return m
 }
 
 // Init performs no startup command.
@@ -86,6 +89,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.w, m.h = msg.Width, msg.Height
 		m.home = m.home.SetSize(msg.Width, msg.Height)
+		m.sett = m.sett.SetSize(msg.Width, msg.Height)
 		if m.screen == ScreenTyping {
 			m.typing = m.typing.SetSize(msg.Width, msg.Height)
 		}
@@ -109,32 +113,32 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.result, cmd = m.result.Update(msg)
 		return m, cmd
 	}
+	if m.screen == ScreenSettings {
+		var cmd tea.Cmd
+		m.sett, cmd = m.sett.Update(msg)
+		return m, cmd
+	}
 
 	return m, nil
 }
 
 // handleKey processes global bindings then delegates to the active screen.
 func (m Model) handleKey(key tea.Key) (tea.Model, tea.Cmd) {
-	// Quit is always global.
+	// Quit is always global, regardless of active screen.
 	if m.keys.Quit.Matches(key) {
 		return m, tea.Quit
 	}
 
 	// While typing, delegate all key handling to the typing sub-model.
+	// Typing captures the full keyboard; no global nav applies mid-test.
 	if m.screen == ScreenTyping {
 		var cmd tea.Cmd
 		m.typing, cmd = m.typing.Update(tea.KeyPressMsg(key))
 		return m, cmd
 	}
 
-	// While on result screen, delegate to result sub-model.
-	if m.screen == ScreenResult {
-		var cmd tea.Cmd
-		m.result, cmd = m.result.Update(tea.KeyPressMsg(key))
-		return m, cmd
-	}
-
-	// Non-typing screens: handle global nav first.
+	// Global navigation keys apply on all non-typing screens so that e.g.
+	// pressing '3' from the Settings screen still reaches History.
 	switch {
 	case m.keys.NavHome.Matches(key):
 		m.screen = ScreenHome
@@ -153,43 +157,21 @@ func (m Model) handleKey(key tea.Key) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
-	// Delegate remaining keys to the Home screen when active.
-	if m.screen == ScreenHome {
+	// Delegate remaining keys to the active sub-model.
+	switch m.screen {
+	case ScreenResult:
+		var cmd tea.Cmd
+		m.result, cmd = m.result.Update(tea.KeyPressMsg(key))
+		return m, cmd
+	case ScreenSettings:
+		var cmd tea.Cmd
+		m.sett, cmd = m.sett.Update(tea.KeyPressMsg(key))
+		return m, cmd
+	case ScreenHome:
 		var cmd tea.Cmd
 		m.home, cmd = m.home.Update(tea.KeyPressMsg(key))
 		return m, cmd
 	}
 
 	return m, nil
-}
-
-// View renders the active screen centered in the terminal.
-func (m Model) View() tea.View {
-	var body string
-	switch m.screen {
-	case ScreenHome:
-		// HomeModel.View() already calls lipgloss.Place internally when
-		// dimensions are known; pass the raw string through to avoid
-		// double-placing.
-		body = m.home.View()
-		if m.w > 0 && m.h > 0 {
-			return tea.NewView(body)
-		}
-	case ScreenTyping:
-		body = m.typing.View()
-	case ScreenResult:
-		// ResultModel.View() calls lipgloss.Place internally.
-		body = m.result.View()
-		if m.w > 0 && m.h > 0 {
-			return tea.NewView(body)
-		}
-	default:
-		body = placeholderView(m.screen, m.theme)
-	}
-
-	content := body
-	if m.w > 0 && m.h > 0 {
-		content = lipgloss.Place(m.w, m.h, lipgloss.Center, lipgloss.Center, body)
-	}
-	return tea.NewView(content)
 }

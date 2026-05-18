@@ -51,7 +51,7 @@ Go 1.26 · Bubble Tea v2 + Lip Gloss v2 + Bubbles v2 (Charm, exact module path v
 | 3 | [Words & embedded quotes](./phase-03-words-embedded-quotes.md) | Pending | Completed |
 | 4 | [Typing test screen](./phase-04-typing-test-screen.md) | Pending | Completed |
 | 5 | [Home screen](./phase-05-home-screen.md) | Pending | Completed |
-| 6 | [Result summary screen](./phase-06-result-summary-screen.md) | Pending | 2, 4 |
+| 6 | [Result summary screen](./phase-06-result-summary-screen.md) | Pending | Completed |
 | 7 | [Settings & persistence](./phase-07-settings-persistence.md) | Pending | 6 |
 | 8 | [History & persistence](./phase-08-history-persistence.md) | Pending | 6 |
 | 9 | [Polish resize & NO_COLOR](./phase-09-polish-resize-no-color.md) | Pending | 7, 8 |
