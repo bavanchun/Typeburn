@@ -2,7 +2,6 @@ package ui
 
 import (
 	"strings"
-	"unicode/utf8"
 
 	"charm.land/lipgloss/v2"
 
@@ -119,10 +118,6 @@ func wrapTokens(
 			r = typed[i]
 		} else {
 			r = ' '
-		}
-		runeW := utf8.RuneLen(r)
-		if runeW < 0 {
-			runeW = 1
 		}
 		// One terminal cell per rune (ASCII/Latin). CJK double-width is not
 		// handled — deferred (roadmap m5, "CJK width support if quotes added").

@@ -151,4 +151,4 @@ Steps: build → vet → gofmt check → test with race detector.
 
 ## License
 
-MIT — see LICENSE (placeholder; add your LICENSE file).
+MIT — see [LICENSE](./LICENSE).
