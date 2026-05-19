@@ -328,6 +328,24 @@ func TestIsNewBest_LegacyFallback(t *testing.T) {
 	}
 }
 
+// TestIsNewBest_CodeMode checks that a Code-mode record is never a new best,
+// even when it would otherwise be the first result or the highest WPM.
+func TestIsNewBest_CodeMode(t *testing.T) {
+	// Empty history → would normally be first-ever → still false for code.
+	r := Record{Time: baseTime, Mode: "code", Length: 42, WPM: 80, NetWPM: 80.0}
+	if IsNewBest(nil, r) {
+		t.Error("code mode with empty hist: must never be a new best")
+	}
+	if IsNewBest([]Record{}, r) {
+		t.Error("code mode with empty hist slice: must never be a new best")
+	}
+	// Existing records for other modes should not affect the code exclusion.
+	hist := []Record{makeRecord(0, 40)} // time/30 WPM=40
+	if IsNewBest(hist, r) {
+		t.Error("code mode: must never be a new best regardless of hist")
+	}
+}
+
 // TestIsNewBest_FirstInBucket checks that the first result for a mode/length
 // bucket is always a new best regardless of other buckets.
 func TestIsNewBest_FirstInBucket(t *testing.T) {

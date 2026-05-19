@@ -11,7 +11,7 @@ import (
 )
 
 func newTestModel() Model {
-	return New(theme.Default(), config.Defaults())
+	return New(theme.Default(), config.Defaults(), "", "")
 }
 
 func press(code rune, mod tea.KeyMod) tea.KeyPressMsg {

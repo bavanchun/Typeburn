@@ -213,7 +213,7 @@ func TestQuitPromptView_ContainsOptions(t *testing.T) {
 // correctly under NO_COLOR (attribute-only theme, no hex colors).
 func TestNoColor_DegradedNotice(t *testing.T) {
 	th := theme.Load("default", true) // noColor=true
-	m := New(th, config.Defaults())
+	m := New(th, config.Defaults(), "", "")
 	m2, _ := m.Update(tea.WindowSizeMsg{Width: 50, Height: 15})
 	view := m2.(Model).View().Content
 	if !strings.Contains(view, "Terminal too small") {
@@ -229,7 +229,7 @@ func TestNoColor_DegradedNotice(t *testing.T) {
 // (the focus signal that works without color) under NO_COLOR.
 func TestNoColor_HomeScreen(t *testing.T) {
 	th := theme.Load("default", true) // noColor=true
-	m := New(th, config.Defaults())
+	m := New(th, config.Defaults(), "", "")
 	m2, _ := m.Update(tea.WindowSizeMsg{Width: 80, Height: 24})
 	view := m2.(Model).View().Content
 	// The active tab must have the ▎ marker (works without color per §5.5).
@@ -241,7 +241,7 @@ func TestNoColor_HomeScreen(t *testing.T) {
 // TestNoColor_SettingsScreen verifies selected row still has ▎ under NO_COLOR.
 func TestNoColor_SettingsScreen(t *testing.T) {
 	th := theme.Load("default", true)
-	m := New(th, config.Defaults())
+	m := New(th, config.Defaults(), "", "")
 	tm, _ := m.Update(tea.WindowSizeMsg{Width: 80, Height: 24})
 	tm, _ = tm.Update(press('2', 0)) // → Settings
 	view := tm.(Model).View().Content

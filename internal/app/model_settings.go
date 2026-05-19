@@ -9,10 +9,12 @@ import (
 
 // NewFromDisk builds the root model loading persisted settings from disk.
 // Falls back to config.Defaults() if the file is missing or corrupt.
-func NewFromDisk() Model {
+// codeText is the loaded snippet (empty string = no code mode); codeHint is
+// a user-facing reason string when loading failed (empty = no error).
+func NewFromDisk(codeText, codeHint string) Model {
 	s := storage.LoadSettings()
 	th := theme.Load(s.Theme, theme.EnvNoColor())
-	return New(th, s)
+	return New(th, s, codeText, codeHint)
 }
 
 // onSettingsChange is the onChange callback wired into SettingsModel.
@@ -27,7 +29,8 @@ func (m *Model) onSettingsChange(s config.Settings) {
 	}
 	// Rebuild theme from the new name, then propagate to every sub-model.
 	m.theme = theme.Load(s.Theme, theme.EnvNoColor())
-	m.home = ui.NewHome(s, m.theme, m.keys).SetSize(m.w, m.h)
+	// Preserve the loaded code text and hint across settings changes.
+	m.home = ui.NewHome(s, m.theme, m.keys, m.codeText, m.codeHint).SetSize(m.w, m.h)
 	m.typing = m.typing.ApplySettings(s, m.theme)
 	m.result = m.result.ApplyTheme(m.theme)
 	// Re-create SettingsModel so the live theme is visible in the settings view.

@@ -17,6 +17,10 @@ func buildRecord(msg ui.ResultMsg) storage.Record {
 	if msg.Mode == config.ModeQuote {
 		length = 0
 	}
+	// Code mode stores the rune count of the snippet as display-only length.
+	if msg.Mode == config.ModeCode {
+		length = len([]rune(msg.CodeText))
+	}
 	return storage.Record{
 		Time:        nowUTC(),
 		Mode:        mode,

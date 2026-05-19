@@ -60,6 +60,10 @@ func effWPM(r Record) float64 {
 // hist must NOT already contain r; call IsNewBest before AppendHistory.
 // This function is pure and does not mutate hist.
 func IsNewBest(hist []Record, r Record) bool {
+	// Code-mode runs are never personal bests (display-only, no leaderboard).
+	if r.Mode == "code" {
+		return false
+	}
 	key := modeKey(r.Mode, r.Length)
 	best := -1.0
 	for _, h := range hist {
