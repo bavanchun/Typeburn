@@ -16,7 +16,7 @@ LDFLAGS := -s -w \
 .PHONY: build run test test-race lint fmt clean version snapshot release
 
 build:
-	go build -trimpath -ldflags '$(LDFLAGS)' -o $(BIN_DIR)/$(BINARY) .
+	@go build -trimpath -ldflags '$(LDFLAGS)' -o $(BIN_DIR)/$(BINARY) .
 
 run:
 	go run .
