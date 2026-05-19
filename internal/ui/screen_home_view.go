@@ -86,7 +86,7 @@ func (m HomeModel) renderCodeHint() string {
 	case m.codeText != "":
 		text = "ready · press enter"
 	default:
-		text = "pass --text <file> · in-app paste coming soon"
+		text = "press enter to paste a snippet"
 	}
 	return m.th.Style(theme.RoleTextFaint).Render(text)
 }

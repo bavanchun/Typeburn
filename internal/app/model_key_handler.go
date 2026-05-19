@@ -90,6 +90,12 @@ func (m Model) handleKey(key tea.Key) (tea.Model, tea.Cmd) {
 		var cmd tea.Cmd
 		m.hist, cmd = m.hist.Update(tea.KeyPressMsg(key))
 		return m, cmd
+	case ScreenCodePaste:
+		// The paste sub-model only consumes tea.PasteMsg; keys are no-ops
+		// here. esc/back already routed above (global Back else → Home).
+		var cmd tea.Cmd
+		m.codePaste, cmd = m.codePaste.Update(tea.KeyPressMsg(key))
+		return m, cmd
 	}
 
 	return m, nil

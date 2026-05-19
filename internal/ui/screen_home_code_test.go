@@ -57,28 +57,62 @@ func TestHome_TabCycleIncludesCode(t *testing.T) {
 	}
 }
 
-// TestHome_CodeNoText_StartCmdNil verifies Enter is a no-op when no code text.
-func TestHome_CodeNoText_StartCmdNil(t *testing.T) {
-	h := newTestHomeCode("", "pass --text <file> · in-app paste coming soon")
-	// Navigate to Code mode.
+// TestHome_CodeNoText_EnterOpensPaste verifies Enter on Code with no snippet
+// emits NavCodePasteMsg (v1.3.0: was a no-op in v1.2.0 — intended change).
+func TestHome_CodeNoText_EnterOpensPaste(t *testing.T) {
+	h := newTestHomeCode("", "text file is empty")
 	for h.currentMode() != config.ModeCode {
 		h, _ = h.Update(pressTab())
 	}
 	_, cmd := h.Update(pressEnter())
-	if cmd != nil {
-		t.Fatalf("enter on Code with no text must return nil cmd, got non-nil")
+	if cmd == nil {
+		t.Fatal("enter on empty Code must emit NavCodePasteMsg, got nil cmd")
+	}
+	if _, ok := cmd().(NavCodePasteMsg); !ok {
+		t.Fatalf("want NavCodePasteMsg, got %T", cmd())
 	}
 }
 
-// TestHome_CodeNoText_SpaceNoop verifies space is also no-op without code text.
-func TestHome_CodeNoText_SpaceNoop(t *testing.T) {
+// TestHome_CodeNoText_SpaceOpensPaste verifies space (the Start binding is
+// enter/space) also opens paste on empty Code.
+func TestHome_CodeNoText_SpaceOpensPaste(t *testing.T) {
 	h := newTestHomeCode("", "")
 	for h.currentMode() != config.ModeCode {
 		h, _ = h.Update(pressTab())
 	}
 	_, cmd := h.Update(pressKey(' ', 0))
-	if cmd != nil {
-		t.Fatalf("space on Code with no text must return nil cmd")
+	if cmd == nil {
+		t.Fatal("space on empty Code must emit NavCodePasteMsg, got nil cmd")
+	}
+	if _, ok := cmd().(NavCodePasteMsg); !ok {
+		t.Fatalf("want NavCodePasteMsg, got %T", cmd())
+	}
+}
+
+// TestHome_WithCodeText_PreservesSelection is the F3 unit lock: WithCodeText
+// replaces ONLY codeText/codeHint and preserves modeIdx/lenIdx (white-box —
+// same package). A NewHome rebuild would reset modeIdx to DefaultMode.
+func TestHome_WithCodeText_PreservesSelection(t *testing.T) {
+	h := newTestHomeCode("", "")
+	for h.currentMode() != config.ModeCode {
+		h, _ = h.Update(pressTab())
+	}
+	h, _ = h.Update(pressKey(' ', 0)) // no-op on selection; just exercise state
+	want := h.modeIdx
+	got := h.WithCodeText("snippet", "")
+	if got.codeText != "snippet" {
+		t.Errorf("codeText: want %q, got %q", "snippet", got.codeText)
+	}
+	if got.codeHint != "" {
+		t.Errorf("codeHint must be empty, got %q", got.codeHint)
+	}
+	if got.modeIdx != want {
+		t.Errorf("modeIdx not preserved: want %d, got %d", want, got.modeIdx)
+	}
+	for mode, idx := range h.lenIdx {
+		if got.lenIdx[mode] != idx {
+			t.Errorf("lenIdx[%v] not preserved: want %d, got %d", mode, idx, got.lenIdx[mode])
+		}
 	}
 }
 
@@ -136,8 +170,8 @@ func TestHome_CodeRow_HintNoText(t *testing.T) {
 		h, _ = h.Update(pressTab())
 	}
 	view := h.View()
-	if !strings.Contains(view, "pass --text") {
-		t.Fatalf("Code row without text must show 'pass --text' hint, got:\n%s", view)
+	if !strings.Contains(view, "press enter to paste") {
+		t.Fatalf("Code row without text must invite an in-app paste, got:\n%s", view)
 	}
 }
 
