@@ -56,7 +56,7 @@
 - `(m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd)`: routes StartTestMsg/ResultMsg/AbortMsg/NavHistoryMsg/WindowSizeMsg
 - `(m Model) View() tea.View`: delegates to active screen's View; guards with degraded-mode check
 
-**Files:** model.go (root + Init/Update/View), model_history.go (result persistence), model_settings.go (settings change callback), model_view.go (degraded-mode guard), routing.go (screen delegates), quit_prompt.go (overlay logic), model_key_handler.go, model_time_helpers.go, smoke_test.go, phase09_polish_test.go, model_test.go.
+**Files:** model.go (root + Init/Update/View), model_history.go (result persistence), model_settings.go (SettingsChangedMsg handler + live-apply logic), model_view.go (degraded-mode guard), routing.go (screen delegates), quit_prompt.go (overlay logic), model_key_handler.go, model_time_helpers.go, smoke_test.go, phase09_polish_test.go, model_test.go.
 
 ---
 

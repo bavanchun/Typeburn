@@ -40,6 +40,7 @@ Root Model holds the current `screen` value and delegates to the matching sub-mo
 | `NavHistoryMsg` | Result/Settings | root app.Model | Load fresh history from disk, switch to ScreenHistory |
 | `NavCodePasteMsg` | Home screen (empty Code row) | root app.Model | Open ScreenCodePaste with a fresh paste sub-model |
 | `CodePastedMsg` | CodePasteModel | root app.Model | Set codeText, clear codeHint, apply via HomeModel.WithCodeText, return to ScreenHome |
+| `SettingsChangedMsg` | SettingsModel | root app.Model | Persist settings, rebuild theme, re-inject into all sub-models; live apply on screen |
 | `tea.KeyPressMsg` | Bubble Tea | active screen | Typed character or control key |
 | `tea.PasteMsg` | Bubble Tea | TypingModel / CodePasteModel | Typing: chars logged; ScreenCodePaste: normalized via codetext.Normalize |
 | `tea.WindowSizeMsg` | Bubble Tea | root app.Model | Terminal resized; reflow content |

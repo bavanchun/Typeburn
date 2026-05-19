@@ -283,7 +283,7 @@ if mode == ModeTime && lastKeystrokeGap > 7000 {
 
 - **Saved to:** XDG_CONFIG_HOME/typeburn/settings.json
 - **On load:** Normalize() repairs out-of-range values
-- **Auto-persist:** Settings change callback saves immediately
+- **Auto-persist:** SettingsModel emits SettingsChangedMsg on each row change; root model's applySettings() persists + rebuilds theme + re-injects into sub-models
 
 ### History JSON
 
