@@ -10,6 +10,10 @@ const (
 	ModeTime  Mode = "time"
 	ModeWords Mode = "words"
 	ModeQuote Mode = "quote"
+	// ModeCode types a user-supplied snippet verbatim (CLI --text). It has
+	// no numeric length and completes on an exact full-text match (like
+	// quote). Whitespace/newlines/tabs are literal.
+	ModeCode Mode = "code"
 )
 
 // LengthsFor returns the selectable length options for a mode. Quote mode has
@@ -18,7 +22,8 @@ func LengthsFor(m Mode) []int {
 	switch m {
 	case ModeWords:
 		return []int{10, 25, 50, 100}
-	case ModeQuote:
+	case ModeQuote, ModeCode:
+		// No numeric length: the quote / supplied snippet bounds the test.
 		return nil
 	default: // ModeTime
 		return []int{15, 30, 60, 120}
@@ -60,7 +65,7 @@ func (s *Settings) Normalize() {
 		s.Theme = "default"
 	}
 	switch s.DefaultMode {
-	case ModeTime, ModeWords, ModeQuote:
+	case ModeTime, ModeWords, ModeQuote, ModeCode:
 	default:
 		s.DefaultMode = ModeTime
 	}

@@ -7,14 +7,15 @@ import "time"
 // Record captures all fields needed for the History screen table, trend sparkline,
 // and new-best detection. It is encoded as JSON in history.json.
 //
-// Mode is one of "time", "words", or "quote" (mirrors config.Mode string values).
-// Length is the numeric parameter for time/words modes; 0 for quote mode.
+// Mode is one of "time", "words", "quote", or "code" (mirrors config.Mode).
+// Length is the numeric parameter for time/words; 0 for quote; the snippet
+// rune count for code (display only — code is excluded from new-best).
 // WPM is math.Round(NetWPM) stored as int for compact display and comparison.
 type Record struct {
 	// Time is the wall-clock moment the test completed (RFC3339 in JSON).
 	Time time.Time `json:"time"`
 
-	// Mode is the test mode string: "time", "words", or "quote".
+	// Mode is the test mode string: "time", "words", "quote", or "code".
 	Mode string `json:"mode"`
 
 	// Length is the mode parameter (seconds for time, word count for words). 0 for quote.
