@@ -36,7 +36,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6
         with:
-          go-version: "1.26.x"
+          go-version: "1.25.x"
           cache: true
       - name: Build
         run: go build ./...
@@ -63,7 +63,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6
         with:
-          go-version: "1.26.x"
+          go-version: "1.25.x"
           cache: true
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@1a80836c5c9d9e5755a25cb59ec6f45a3b5f41a8 # v7
@@ -72,6 +72,12 @@ jobs:
           args: release --clean --release-notes=.github/release-notes.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Scoped at the STEP level only (never job-level): a fine-grained
+          # PAT with contents r/w on bavanchun/homebrew-tap-typeburn ONLY.
+          # GoReleaser reads it as {{ .Env.HOMEBREW_TAP_TOKEN }} to commit the
+          # cask cross-repo; the default GITHUB_TOKEN cannot. Job `permissions:`
+          # (contents: write, source repo) is intentionally left unchanged.
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
       - name: Assert asset count
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

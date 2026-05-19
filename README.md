@@ -22,9 +22,33 @@ Distraction-free, keyboard-driven, and works on any ANSI terminal.
 
 ## Installation
 
-Requires **Go 1.26+**.
+**1. Quick install (Linux/macOS, no Go toolchain):**
 
-**1. `go install` (latest tagged release):**
+```sh
+curl -fsSL https://raw.githubusercontent.com/bavanchun/Typeburn/main/install.sh | sh
+```
+
+Detects your OS/arch, downloads the matching release archive, **verifies its
+sha256 against `checksums.txt`**, and installs `typeburn` into `~/.local/bin`
+(no sudo). Override the target with `BIN_DIR=…` or pin a tag with `VERSION=vX.Y.Z`.
+
+> **Trust boundary — read before piping any script to a shell.** The sha256
+> check defends against a corrupted or man-in-the-middled *download*. It does
+> **not** make `curl … | sh` inherently safe: the script, the archive, and
+> `checksums.txt` all come from the same GitHub release (and `checksums.txt`
+> is unsigned), so a compromised release would be self-consistent. If that
+> boundary matters to you, use the non-piped audit path instead:
+>
+> ```sh
+> curl -fsSL -o install.sh https://raw.githubusercontent.com/bavanchun/Typeburn/main/install.sh
+> less install.sh        # read it
+> sh install.sh          # then run it
+> ```
+>
+> Windows is not covered by `install.sh` (POSIX `sh` only) — use the manual
+> archive below.
+
+**2. `go install` (latest tagged release):**
 
 ```sh
 go install github.com/bavanchun/Typeburn@latest
@@ -38,14 +62,17 @@ go install github.com/bavanchun/Typeburn@latest
 > until the proxy ingests the tag, `go install ...@vX.Y.Z` can 404. Downloading
 > the release binary (below) is immediate and unaffected.
 
-**2. Download a pre-built binary:**
+Requires **Go 1.25+**.
+
+**3. Download a pre-built binary:**
 
 Grab the archive for your OS/arch from the
 [latest release](https://github.com/bavanchun/Typeburn/releases/latest)
 (linux/darwin/windows × amd64/arm64), verify it against `checksums.txt`,
-extract, and run the `Typeburn` binary.
+extract, and run the `typeburn` binary (the release archives ship a lowercase
+`typeburn`; only the `go install` path above produces `Typeburn`).
 
-**3. Build from source:**
+**4. Build from source:**
 
 ```sh
 make build            # → ./bin/typeburn (lowercase, local convention)
@@ -54,7 +81,13 @@ go build -o typeburn .
 make run               # run without installing (or: go run .)
 ```
 
-**4. Homebrew:** planned, not yet available (see [CONTRIBUTING.md](./CONTRIBUTING.md)).
+**5. Homebrew (macOS/Linux):**
+
+```sh
+brew install bavanchun/tap-typeburn/typeburn
+```
+
+A cask wrapping the prebuilt release archive (no Go/Xcode toolchain needed).
 
 ## Usage
 

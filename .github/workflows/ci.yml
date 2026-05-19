@@ -22,7 +22,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v6
         with:
-          go-version: "1.26.x"
+          go-version: "1.25.x"
           cache: true
 
       - name: Build
@@ -36,3 +36,27 @@ jobs:
 
       - name: Test (race detector)
         run: go test ./... -race -count=1
+
+  installer:
+    name: install.sh & release config
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      # ubuntu-latest ships shellcheck; pin nothing extra. Zero warnings is
+      # a hard gate — the installer is piped to users' shells.
+      - name: ShellCheck install.sh
+        run: shellcheck install.sh scripts/test-install-sh.sh
+
+      # Offline harness: localhost stand-in for the GitHub API + downloads.
+      - name: install.sh regression harness
+        run: ./scripts/test-install-sh.sh
+
+      # Catches .goreleaser.yaml schema drift before a tag ever triggers a
+      # real publish (no network/build — config validation only).
+      - name: GoReleaser config check
+        uses: goreleaser/goreleaser-action@v7
+        with:
+          version: "v2.15.4"
+          args: check

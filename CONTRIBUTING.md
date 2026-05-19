@@ -4,7 +4,7 @@ Thanks for your interest in improving Typeburn.
 
 ## Prerequisites
 
-- **Go 1.26+** (the module targets `go 1.26.2`).
+- **Go 1.25+** (the module targets `go 1.25.0`).
 - **GoReleaser `v2.15.4`** — the **exact pinned version**. Install with:
 
   ```sh
@@ -88,17 +88,51 @@ conventional `feat:`/`fix:` commits, so it would be empty). The `[1.0.0]`-style
 section is extracted to `.github/release-notes.md` and passed to GoReleaser via
 `--release-notes`.
 
-## Homebrew (planned — not yet enabled)
+## Homebrew (enabled — cask via the tap)
 
-Homebrew distribution is intentionally deferred. To enable it later:
+Users install with:
 
-1. Provision a public tap repository, e.g. `bavanchun/homebrew-tap`.
-2. Mint a **fine-grained** Personal Access Token scoped to **only** that tap
-   repo with `Contents: write`, with an expiry. **Never** use a classic or
-   org-wide PAT. Store it as a repository secret (e.g. `HOMEBREW_TAP_TOKEN`).
-3. Add a `homebrew_casks:` block to `.goreleaser.yaml` referencing the tap and
-   that secret, and wire the secret into the `goreleaser` job in `release.yml`.
+```sh
+brew install bavanchun/tap-typeburn/typeburn
+```
 
-(There is deliberately no commented-out `brews:`/`homebrew_casks:` block in
-`.goreleaser.yaml` — dead schema rots across GoReleaser versions; this prose is
-the spec instead.)
+This is a **cask** (not a formula): it wraps the prebuilt release archive, so
+no user Go/Xcode toolchain is needed. GoReleaser's `homebrew_casks:` block
+(`.goreleaser.yaml`) commits the cask `.rb` into the tap repo
+`bavanchun/homebrew-tap-typeburn` under `Casks/`. The cask is **not** a GitHub
+release asset — the release-asset count stays 7 (6 archives + `checksums.txt`).
+
+Wiring:
+
+1. Tap repo `bavanchun/homebrew-tap-typeburn` (provisioned).
+2. A **fine-grained** PAT scoped to **only** that tap repo with
+   `Contents: read and write`, shortest viable expiry. **Never** a classic or
+   org-wide PAT. Stored as the repo secret `HOMEBREW_TAP_TOKEN`
+   (`gh secret set HOMEBREW_TAP_TOKEN -R bavanchun/Typeburn`).
+3. `.goreleaser.yaml` `homebrew_casks:` references
+   `token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"` (the default `GITHUB_TOKEN` cannot
+   push cross-repo). `release.yml` injects `HOMEBREW_TAP_TOKEN` at the
+   GoReleaser **step `env:` only** — never job-level; job `permissions:`
+   stay scoped to the source repo.
+4. `release.prerelease: auto` + cask `skip_upload: "auto"`: a prerelease/`-rc`
+   tag (e.g. the disposable dry-run `v0.0.0-rc.test`) is flagged prerelease
+   and commits **nothing** to the tap.
+
+### Tap rollback runbook (a bad cask breaks `brew upgrade` for everyone)
+
+A broken `Casks/typeburn.rb` in the tap repo affects every user's next
+`brew install`/`brew upgrade`. The CI PAT is intentionally too narrow to
+self-heal interactively, so rollback is a **manual human action**:
+
+1. With a HUMAN GitHub credential (NOT the CI PAT), in
+   `bavanchun/homebrew-tap-typeburn`:
+   `git revert <bad commit touching Casks/typeburn.rb>` and push.
+   This restores the last-good cask immediately for all users.
+2. Fix the root cause in this repo, then ship a **fix-forward** patch release
+   (a new tag) — never delete-and-re-tag a shipped version (it has reached
+   the module proxy / Homebrew users).
+3. The next stable release's GoReleaser run overwrites the cask cleanly.
+
+(There is deliberately no commented-out alternate schema in
+`.goreleaser.yaml` — dead schema rots across GoReleaser versions; the live
+block plus this prose is the spec.)
