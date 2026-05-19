@@ -11,6 +11,23 @@ release section is extracted verbatim and passed to GoReleaser via
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-05-19
+
+### Added
+
+- **Code mode:** practice typing on your own text or code. Supply it with
+  `typeburn --text <file>` or pipe via `typeburn --text -`. The snippet is
+  rendered with full-literal layout — real line breaks, tabs shown as two
+  columns, and you type every space and indentation exactly; the test
+  completes on an exact full-text match. Long snippets scroll with a
+  caret-following viewport. Code mode is always listed in the mode tabs;
+  without `--text` it shows a hint and is disabled (in-app paste is planned).
+  `NO_COLOR` behavior is unchanged.
+- Code runs are saved to History but never count toward the ★ personal
+  best (custom text is not comparable run-to-run). Oversized
+  (&gt;10k runes / &gt;500 lines), empty, or non-text input is rejected with
+  a clear reason instead of starting.
+
 ## [1.1.0] - 2026-05-19
 
 ### Added
@@ -85,7 +102,8 @@ terminal typing test built with Go and Bubble Tea v2.
   HTTPS transport and the pipeline-generated `checksums.txt`. See
   [SECURITY.md](./SECURITY.md).
 
-[Unreleased]: https://github.com/bavanchun/Typeburn/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/bavanchun/Typeburn/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/bavanchun/Typeburn/releases/tag/v1.2.0
 [1.1.0]: https://github.com/bavanchun/Typeburn/releases/tag/v1.1.0
 [1.0.1]: https://github.com/bavanchun/Typeburn/releases/tag/v1.0.1
 [1.0.0]: https://github.com/bavanchun/Typeburn/releases/tag/v1.0.0

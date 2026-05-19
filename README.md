@@ -11,7 +11,7 @@ Distraction-free, keyboard-driven, and works on any ANSI terminal.
 
 ## Features
 
-- **Three test modes**: Time (15/30/60/120 s), Words (10/25/50/100 words), Quote (short/medium/long/epic)
+- **Four test modes**: Time (15/30/60/120 s), Words (10/25/50/100 words), Quote (short/medium/long/epic), Code (your own text via `--text`)
 - **Live stats**: WPM, raw WPM, accuracy, and consistency updated every keystroke
 - **Result screen**: big-digit WPM, sparkline chart, full char breakdown
 - **History**: scrollable table of all past tests with per-mode best marker (★)
@@ -62,7 +62,14 @@ make run               # run without installing (or: go run .)
 ./bin/typeburn            # from `make build`
 Typeburn                  # from `go install` / release archive
 Typeburn --version        # print version, commit, build date, toolchain; then exit
+Typeburn --text snippet.go # Code mode: type your own file
+cat snippet.go | Typeburn --text -   # Code mode: read the snippet from stdin
 ```
+
+In **Code mode** you type the supplied text exactly — every space, tab, and
+line break — and the test finishes on an exact match. Without `--text`, the
+Code tab is shown but disabled (in-app paste is planned). Code runs appear in
+History but never set a ★ personal best.
 
 The minimum usable terminal size is **60 columns × 20 rows**. If the terminal is
 too small the app shows a resize prompt and resumes automatically once you resize.
@@ -84,7 +91,7 @@ too small the app shows a resize prompt and resumes automatically once you resiz
 
 | Key | Action |
 |---|---|
-| `tab` / `shift+tab` | Cycle mode forward / backward (Time → Words → Quote) |
+| `tab` / `shift+tab` | Cycle mode forward / backward (Time → Words → Quote → Code) |
 | `←` `→` / `h` `l` | Change length option |
 | `enter` / `space` | Start test |
 

@@ -175,10 +175,15 @@
 - ✅ **v1.0.1:** M2 new-best sub-WPM precision fixed; always-zero `missed` stat removed.
 - ✅ **v1.1.0:** Six theme packs (Solarized D/L, Dracula, Nord, Gruvbox D/L);
   non-blocking persistence-failure notice; post-1.0 doc corrections.
+- ✅ **v1.2.0:** Code mode — `--text <file>`/stdin, full-literal whitespace,
+  new `internal/codetext` loader + isolated code renderer/viewport, saved to
+  History but excluded from ★.
 
 ### Next (Optional)
-1. **Gather user feedback** on missing features (Code mode? Vim motions? more themes?)
-2. **Code mode / custom text input** — next-most-valuable product upgrade if requested.
+1. **Gather user feedback** on missing features (Vim motions? more themes?)
+2. **In-app paste for Code mode** — supply the snippet inside the TUI (the
+   architecture already injects the text as a string; Home forks on
+   availability), removing the CLI-only constraint.
 
 ### v2.0 Planning (Future)
 - M4: Add target delivery mechanism; remove MissedChars 0-stub or make it meaningful
@@ -208,6 +213,6 @@
 
 ## Conclusion
 
-**Typeburn v1.1.0 is the current release — feature-complete and production-ready.** The codebase is clean, tested, and well-documented. Post-1.0 work has been purely additive (v1.0.1 precision fix + stub removal; v1.1.0 six theme packs + persistence-failure notice + doc hygiene) with zero breaking changes to existing users.
+**Typeburn v1.2.0 is the current release — feature-complete and production-ready.** The codebase is clean, tested, and well-documented. Post-1.0 work has been purely additive (v1.0.1 precision fix + stub removal; v1.1.0 six theme packs + persistence-failure notice + doc hygiene; v1.2.0 Code mode) with zero breaking changes to existing users.
 
-M1 (timer re-arm) and M2 (new-best precision) — the identified correctness bugs — were fixed in v1.0 (d6369de) and v1.0.1 respectively. Remaining backlog is additive or cosmetic; the next sizeable feature candidate is Code mode / custom text input.
+M1 (timer re-arm) and M2 (new-best precision) — the identified correctness bugs — were fixed in v1.0 (d6369de) and v1.0.1 respectively. Remaining backlog is additive or cosmetic; the next candidate is in-app paste for Code mode (removing the CLI-only constraint).
