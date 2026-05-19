@@ -11,7 +11,7 @@ Distraction-free, keyboard-driven, and works on any ANSI terminal.
 
 ## Features
 
-- **Four test modes**: Time (15/30/60/120 s), Words (10/25/50/100 words), Quote (short/medium/long/epic), Code (your own text via `--text`)
+- **Four test modes**: Time (15/30/60/120 s), Words (10/25/50/100 words), Quote (short/medium/long/epic), Code (your own text via `--text` or in-app paste)
 - **Live stats**: WPM, raw WPM, accuracy, and consistency updated every keystroke
 - **Result screen**: big-digit WPM, sparkline chart, full char breakdown
 - **History**: scrollable table of all past tests with per-mode best marker (★)
@@ -67,9 +67,10 @@ cat snippet.go | Typeburn --text -   # Code mode: read the snippet from stdin
 ```
 
 In **Code mode** you type the supplied text exactly — every space, tab, and
-line break — and the test finishes on an exact match. Without `--text`, the
-Code tab is shown but disabled (in-app paste is planned). Code runs appear in
-History but never set a ★ personal best.
+line break — and the test finishes on an exact match. Without `--text`, tab to
+the Code row and press enter to open the in-app paste screen, bracket-paste a
+snippet, then press enter to start. Code runs appear in History but never set
+a ★ personal best.
 
 The minimum usable terminal size is **60 columns × 20 rows**. If the terminal is
 too small the app shows a resize prompt and resumes automatically once you resize.

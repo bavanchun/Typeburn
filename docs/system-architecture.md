@@ -24,6 +24,7 @@ const (
   ScreenResult
   ScreenSettings
   ScreenHistory
+  ScreenCodePaste
 )
 ```
 
@@ -37,8 +38,10 @@ Root Model holds the current `screen` value and delegates to the matching sub-mo
 | `ResultMsg` | TypingModel | root app.Model | Persist record, detect new-best, switch to ScreenResult |
 | `AbortMsg` | TypingModel | root app.Model | Discard test, return to ScreenHome |
 | `NavHistoryMsg` | Result/Settings | root app.Model | Load fresh history from disk, switch to ScreenHistory |
+| `NavCodePasteMsg` | Home screen (empty Code row) | root app.Model | Open ScreenCodePaste with a fresh paste sub-model |
+| `CodePastedMsg` | CodePasteModel | root app.Model | Set codeText, clear codeHint, apply via HomeModel.WithCodeText, return to ScreenHome |
 | `tea.KeyPressMsg` | Bubble Tea | active screen | Typed character or control key |
-| `tea.PasteMsg` | Bubble Tea | TypingModel | Clipboard paste (all chars logged) |
+| `tea.PasteMsg` | Bubble Tea | TypingModel / CodePasteModel | Typing: chars logged; ScreenCodePaste: normalized via codetext.Normalize |
 | `tea.WindowSizeMsg` | Bubble Tea | root app.Model | Terminal resized; reflow content |
 | `tickMsg` | TypingModel | TypingModel | ~100ms periodic update; recalculate live metrics |
 
