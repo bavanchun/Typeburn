@@ -89,7 +89,7 @@ func TestHome_CodeNoText_SpaceOpensPaste(t *testing.T) {
 	}
 }
 
-// TestHome_WithCodeText_PreservesSelection is the F3 unit lock: WithCodeText
+// TestHome_WithCodeText_PreservesSelection locks the invariant: WithCodeText
 // replaces ONLY codeText/codeHint and preserves modeIdx/lenIdx (white-box —
 // same package). A NewHome rebuild would reset modeIdx to DefaultMode.
 func TestHome_WithCodeText_PreservesSelection(t *testing.T) {

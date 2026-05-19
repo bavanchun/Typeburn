@@ -59,7 +59,7 @@ func TestRouting_NavCodePasteMsg_OpensPasteScreen(t *testing.T) {
 
 // TestRouting_CodePastedMsg_AppliesAndReturnsHome verifies a valid paste sets
 // codeText, clears codeHint, returns to Home, and — crucially — leaves the
-// Code row selected so Enter immediately starts a Code test (F3).
+// Code row selected so Enter immediately starts a Code test.
 func TestRouting_CodePastedMsg_AppliesAndReturnsHome(t *testing.T) {
 	m := tea.Model(codeTestModel(t, "", "text file is empty"))
 	m, _ = m.Update(tea.WindowSizeMsg{Width: 80, Height: 24})
@@ -85,14 +85,15 @@ func TestRouting_CodePastedMsg_AppliesAndReturnsHome(t *testing.T) {
 		t.Errorf("codeHint must be cleared, got %q", rm.codeHint)
 	}
 
-	// F3: Code row still selected → Enter starts a CODE test (not Time).
+	// Code row still selected → Enter starts a CODE test (not Time). A Home
+	// rebuild would snap modeIdx back to the default mode and lose this.
 	_, cmd2 := m.Update(press(tea.KeyEnter, 0))
 	start, ok := run(cmd2).(ui.StartTestMsg)
 	if !ok {
 		t.Fatalf("Enter after paste must emit StartTestMsg (Code still selected)")
 	}
 	if start.Mode != config.ModeCode {
-		t.Fatalf("F3: selection not preserved — want ModeCode, got %v (NewHome rebuild?)", start.Mode)
+		t.Fatalf("selection not preserved — want ModeCode, got %v (Home rebuilt instead of WithCodeText?)", start.Mode)
 	}
 	if start.CodeText != "func f(){}" {
 		t.Errorf("start CodeText: want %q, got %q", "func f(){}", start.CodeText)
@@ -118,7 +119,8 @@ func TestRouting_EscFromPaste_ReturnsHomeUnchanged(t *testing.T) {
 
 // TestRouting_PasteMsg_ScreenScoped verifies PasteMsg is ignored on Home
 // (nil cmd, no screen change) and the Typing branch is unaffected (a paste on
-// Typing keeps the Typing screen — phase09 owns the engine-feed assertions).
+// Typing keeps the Typing screen — the existing typing paste tests own the
+// engine-feed assertions).
 func TestRouting_PasteMsg_ScreenScoped(t *testing.T) {
 	m := tea.Model(codeTestModel(t, "", ""))
 	m, _ = m.Update(tea.WindowSizeMsg{Width: 80, Height: 24})
@@ -132,7 +134,8 @@ func TestRouting_PasteMsg_ScreenScoped(t *testing.T) {
 		t.Errorf("PasteMsg on Home must not change screen")
 	}
 
-	// Typing: still on Typing after a paste (engine-feed proven by phase09).
+	// Typing: still on Typing after a paste (engine-feed proven by the
+	// existing typing paste tests).
 	mt, _ := m.Update(ui.StartTestMsg{Mode: config.ModeWords, Length: 10})
 	mt, _ = mt.Update(tea.PasteMsg{Content: "abc"})
 	if mt.(Model).screen != ScreenTyping {
