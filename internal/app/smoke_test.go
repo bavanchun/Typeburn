@@ -47,6 +47,20 @@ func sm_view(m tea.Model) string {
 	return m.(Model).View().Content
 }
 
+// sm_drain runs the returned Cmd chain the way the Bubble Tea runtime would —
+// executing each Cmd and feeding its message back into Update — so a unit test
+// can observe effects that are delivered via a message (not synchronously).
+func sm_drain(m tea.Model, cmd tea.Cmd) tea.Model {
+	for i := 0; cmd != nil && i < 8; i++ {
+		msg := cmd()
+		if msg == nil {
+			break
+		}
+		m, cmd = m.Update(msg)
+	}
+	return m
+}
+
 // sampleResult returns a metrics.Result suitable for injecting a ResultMsg.
 func sampleResult() metrics.Result {
 	return metrics.Result{
@@ -184,15 +198,10 @@ func TestSmoke_SettingsScreen_Renders(t *testing.T) {
 }
 
 // TestSmoke_Settings_ThemeRowCycles verifies that cycling the Theme row in the
-// Settings screen advances the SettingsModel's internal row index.
-//
-// Note: the root model's settings.Theme field is updated via a *config.Settings
-// pointer that the SettingsModel holds — the pointer points into the struct
-// allocated in app.New(). Because Bubble Tea copies models by value on each
-// Update call, the pointer-based mutation is visible inside sett.s but not
-// reflected back into the returned Model copy's settings field in unit tests.
-// In production (one long-lived tea.Program), this works correctly. The
-// isolated observable here is that the settings row index advances.
+// Settings screen advances the displayed value in the Settings view itself.
+// Live application onto the rendered root model is covered separately by
+// TestSmoke_Settings_ThemeAppliesLive (the message must be drained for the
+// root to apply it).
 func TestSmoke_Settings_ThemeRowCycles(t *testing.T) {
 	tmp := t.TempDir()
 	t.Setenv("XDG_CONFIG_HOME", tmp)
@@ -217,6 +226,60 @@ func TestSmoke_Settings_ThemeRowCycles(t *testing.T) {
 	v := sm_view(m)
 	if !strings.Contains(v, "mono") {
 		t.Fatalf("after cycling theme →: expected 'mono' in settings view, got:\n%s", v)
+	}
+}
+
+// TestSmoke_Settings_ThemeAppliesLive proves a Theme change applies to the
+// rendered root model in-session (not only persisted for next launch). It
+// drains the emitted message the way the runtime does.
+func TestSmoke_Settings_ThemeAppliesLive(t *testing.T) {
+	tmp := t.TempDir()
+	t.Setenv("XDG_CONFIG_HOME", tmp)
+	t.Setenv("XDG_DATA_HOME", tmp)
+
+	m := tea.Model(New(theme.Default(), config.Defaults(), "", ""))
+	m = sm_sendSize(m, 100, 40)
+	m, _ = sm_sendKey(m, '2', 0) // → Settings, Theme row (sel=0)
+
+	if rm := m.(Model); rm.theme.Name() != "default" {
+		t.Fatalf("precondition: want default theme, got %q", rm.theme.Name())
+	}
+	before := sm_view(m)
+
+	m, cmd := sm_sendKey(m, tea.KeyRight, 0) // cycle Theme → second theme
+	m = sm_drain(m, cmd)
+
+	rm := m.(Model)
+	want := theme.Available()[1]
+	if rm.theme.Name() != want {
+		t.Fatalf("live theme not applied to root: want %q, got %q", want, rm.theme.Name())
+	}
+	if sm_view(m) == before {
+		t.Fatal("View() output unchanged after theme swap (theme not live-applied)")
+	}
+}
+
+// TestSmoke_Settings_BlinkAppliesLive proves the Blink-cursor toggle applies
+// to the rendered root model in-session.
+func TestSmoke_Settings_BlinkAppliesLive(t *testing.T) {
+	tmp := t.TempDir()
+	t.Setenv("XDG_CONFIG_HOME", tmp)
+	t.Setenv("XDG_DATA_HOME", tmp)
+
+	m := tea.Model(New(theme.Default(), config.Defaults(), "", ""))
+	m = sm_sendSize(m, 100, 40)
+	m, _ = sm_sendKey(m, '2', 0) // Settings
+
+	before := m.(Model).settings.BlinkCursor
+	// Move to the Blink row (row 3) and cycle it.
+	for range 3 {
+		m, _ = sm_sendKey(m, tea.KeyDown, 0)
+	}
+	m, cmd := sm_sendKey(m, tea.KeyRight, 0)
+	m = sm_drain(m, cmd)
+
+	if got := m.(Model).settings.BlinkCursor; got == before {
+		t.Fatalf("live blink not applied to root: still %v", got)
 	}
 }
 

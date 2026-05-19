@@ -51,7 +51,8 @@ func (m TypingModel) completeCmd(endMs int64) tea.Cmd {
 func (m TypingModel) TargetText() string { return m.target }
 
 // ApplySettings updates the blink flag and theme from new settings without
-// restarting the test. Used by the root onChange callback for live propagation.
+// restarting the test. Used by the root settings-change handler for live
+// propagation.
 func (m TypingModel) ApplySettings(s config.Settings, th theme.Theme) TypingModel {
 	m.blink = s.BlinkCursor
 	m.th = th

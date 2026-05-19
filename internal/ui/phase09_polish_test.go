@@ -105,8 +105,7 @@ func TestNoColor_HomeView_HasAccentMarker(t *testing.T) {
 // TestNoColor_SettingsView_HasAccentMarker verifies ▎ present on Settings under NO_COLOR.
 func TestNoColor_SettingsView_HasAccentMarker(t *testing.T) {
 	th := theme.Load("default", true)
-	s := config.Defaults()
-	m := NewSettings(&s, th, config.DefaultKeymap(), nil)
+	m := NewSettings(config.Defaults(), th, config.DefaultKeymap())
 	m = m.SetSize(80, 24)
 	view := m.View()
 	if !strings.Contains(view, "▎") {

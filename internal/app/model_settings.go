@@ -17,10 +17,15 @@ func NewFromDisk(codeText, codeHint string) Model {
 	return New(th, s, codeText, codeHint)
 }
 
-// onSettingsChange is the onChange callback wired into SettingsModel.
-// It persists atomically, rebuilds the theme, and re-injects into all sub-models
-// so that theme swap, blink toggle, and default mode/length apply live.
-func (m *Model) onSettingsChange(s config.Settings) {
+// applySettings applies a settings change to the LIVE model the program
+// renders: persist atomically, rebuild the theme, and re-inject into every
+// sub-model so theme swap, blink toggle, and default mode/length take effect
+// immediately. It is invoked from Update on receipt of ui.SettingsChangedMsg
+// (value receiver → the returned copy is what Bubble Tea continues to drive,
+// unlike the previous pointer callback which mutated an orphaned New() copy).
+// The Settings selection index is preserved so the user stays on the row they
+// just changed.
+func (m Model) applySettings(s config.Settings) Model {
 	m.settings = s
 	// Persist best-effort: a disk failure must not crash the UI, but it must
 	// not be silent either — surface a dismissible notice.
@@ -33,6 +38,7 @@ func (m *Model) onSettingsChange(s config.Settings) {
 	m.home = ui.NewHome(s, m.theme, m.keys, m.codeText, m.codeHint).SetSize(m.w, m.h)
 	m.typing = m.typing.ApplySettings(s, m.theme)
 	m.result = m.result.ApplyTheme(m.theme)
-	// Re-create SettingsModel so the live theme is visible in the settings view.
-	m.sett = ui.NewSettings(&m.settings, m.theme, m.keys, m.onSettingsChange).SetSize(m.w, m.h)
+	sel := m.sett.Sel()
+	m.sett = ui.NewSettings(m.settings, m.theme, m.keys).WithSel(sel).SetSize(m.w, m.h)
+	return m
 }
