@@ -204,6 +204,43 @@
 
 ---
 
+## Installation & Distribution
+
+### `install.sh` — Hardened POSIX Installer
+
+**Purpose:** Standalone POSIX `/bin/sh` installer for systems without Go. Detects OS/arch, resolves the latest non-prerelease release tag, downloads the matching archive + checksums.txt, verifies SHA-256 integrity, and atomically installs the `typeburn` binary to ~/.local/bin (no sudo, no system package manager required).
+
+**Design principles:**
+- POSIX `/bin/sh` — works on any Unix-like system (Linux, macOS, BSD, etc.)
+- Zero external dependencies — uses only `curl`, `tar`/`unzip`, `uname`, `sha256sum`
+- Fail-safe verification — validates archive member before extraction; atomicity prevents partial/corrupt installs
+- Test seams — environment variables (TYPEBURN_API, TYPEBURN_BASE_URL, TYPEBURN_LATEST_PATH, TYPEBURN_UNAME_S/M, VERSION, BIN_DIR) allow the offline test harness to mock GitHub API and filesystem
+
+**Invocation:**
+```bash
+curl -fsSL https://raw.githubusercontent.com/bavanchun/Typeburn/main/install.sh | sh
+```
+
+**Files:** install.sh (root directory).
+
+### `scripts/test-install-sh.sh` — Offline Installer Regression Harness
+
+**Purpose:** Bash test harness that exercises 14 failure and success scenarios for install.sh *without internet access*. Mocks the GitHub API and release-asset downloads via localhost http.server.
+
+**Design:**
+- Subshell-local env per test case — full isolation, no test-to-test pollution
+- Assertions on both exit status and filesystem state — a refused install must write nothing; a failed install must leave any prior binary byte-identical
+- Integrated into CI as `installer` job in .github/workflows/ci.yml (runs shellcheck + harness + `goreleaser check`)
+
+**Invocation:**
+```bash
+scripts/test-install-sh.sh
+```
+
+**Files:** scripts/test-install-sh.sh.
+
+---
+
 ## File Naming Convention
 
 **Actual convention used:** Mixed snake_case and kebab-case (Go standard + readability).
@@ -239,12 +276,14 @@
 
 **Build & Version Management:**
 - `Makefile`: VERSION (git tag or "dev"), COMMIT (short SHA), DATE (UTC); LDFLAGS injection; targets: `build`, `test`, `test-race`, `version` (quick ldflags check), `snapshot` (dry-run), `release` (full publish)
-- `.goreleaser.yaml` (v2, pinned v2.15.4): 6-platform matrix (linux/darwin/windows × amd64/arm64), trimpath + ldflags with v-prefixed version, archives (tar.gz for Unix, zip for Windows) include README/LICENSE/CHANGELOG, sha256 checksums, changelog filter excludes all git commits (uses `.github/release-notes.md` instead)
-- `.github/workflows/release.yml`: tag-triggered (`v*`), self-gating `test` job (contents:read) gates `publish` job (contents:write), SHA-pinned GoReleaser v2.15.4, concurrency-guarded, post-publish asset-count assertion (expects 7)
+- `.goreleaser.yaml` (v2, pinned v2.15.4): 6-platform matrix (linux/darwin/windows × amd64/arm64), trimpath + ldflags with v-prefixed version, archives (tar.gz for Unix, zip for Windows) include README/LICENSE/CHANGELOG, sha256 checksums, changelog filter excludes all git commits (uses `.github/release-notes.md` instead); determinism pins on `project_name`, `builds.binary`, `archives.name_template` (exact lowercase strings); no `before.hooks`; `release.prerelease: auto` safe-skips RC/beta tags; Homebrew cask commit to bavanchun/homebrew-tap-typeburn with `skip_upload: "auto"` and token isolation
+- `.github/workflows/ci.yml`: ubuntu + macos matrix, build + vet + gofmt + race-test gates; new `installer` job runs shellcheck on install.sh + test-install-sh.sh harness + `goreleaser check`
+- `.github/workflows/release.yml`: tag-triggered (`v*`), self-gating `test` job (contents:read) gates `publish` job (contents:write), SHA-pinned GoReleaser v2.15.4, concurrency-guarded, post-publish asset-count assertion (expects 7: 2 tar.gz linux + 2 tar.gz darwin + 2 zip windows + 1 checksums.txt)
 - `.github/release-notes.md`: curated release notes handoff to GoReleaser (replaces auto-generated git log)
+- `go.mod`: Go minimum version 1.25.0 (as of v1.5.0; bumped down from 1.26.2 to match bubbletea v2 + lipgloss v2 requirements)
 
 **Supporting Documentation:**
 - `CHANGELOG.md` (Keep a Changelog): semantic versioning, per-release sections with Added/Changed/Deprecated/Removed/Fixed
-- `CONTRIBUTING.md`: build prerequisites (Go 1.26+, GoReleaser v2.15.4 pinned), contribution guidelines, release process (tag-triggered CI)
+- `CONTRIBUTING.md`: build prerequisites (Go 1.25+ as of v1.5.0, GoReleaser v2.15.4 pinned), contribution guidelines, release process (tag-triggered CI)
 - `SECURITY.md`: binary integrity model (SHA-256 verification), unsigned-binary disclosure policy
 - `.github/ISSUE_TEMPLATE/*.md` & `.github/PULL_REQUEST_TEMPLATE.md`: standardized issue/PR submission
