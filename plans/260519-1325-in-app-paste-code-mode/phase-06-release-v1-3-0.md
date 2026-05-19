@@ -1,7 +1,7 @@
 ---
 phase: 6
 title: "Release v1.3.0"
-status: pending
+status: completed
 priority: P1
 effort: "1h"
 dependencies: [5]

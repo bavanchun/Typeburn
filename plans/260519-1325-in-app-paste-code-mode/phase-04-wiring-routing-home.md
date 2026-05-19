@@ -1,7 +1,7 @@
 ---
 phase: 4
 title: "Wiring + Routing + Home"
-status: pending
+status: completed
 priority: P1
 effort: "3h"
 dependencies: [3]
