@@ -1,7 +1,7 @@
 ---
 phase: 1
 title: "Branch Setup"
-status: pending
+status: completed
 priority: P1
 effort: "5m"
 dependencies: []

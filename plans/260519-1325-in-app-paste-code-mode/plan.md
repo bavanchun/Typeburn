@@ -1,7 +1,7 @@
 ---
 title: "In-app Paste for Code Mode (v1.3.0)"
 description: "New ScreenCodePaste: supply the Code-mode snippet via in-TUI bracketed paste; codetext.Normalize refactor; TDD per phase, protected-main PR flow"
-status: pending
+status: completed
 priority: P2
 branch: "feat/v1.3.0-in-app-paste"
 tags: [feature, ui, tdd, release]
@@ -35,12 +35,12 @@ merged SHA. Sequential.
 
 | Phase | Name | Status | Depends | TDD focus |
 |-------|------|--------|---------|-----------|
-| 1 | [Branch Setup](./phase-01-branch-setup.md) | Pending | — | gate, no commit |
-| 2 | [codetext Normalize Refactor](./phase-02-codetext-normalize-refactor.md) | Pending | 1 | Normalize/Load parity → refactor |
-| 3 | [ScreenCodePaste Sub-model](./phase-03-screencodepaste-sub-model.md) | Pending | 2 | paste→Normalize, waiting/error/esc states → impl |
-| 4 | [Wiring + Routing + Home](./phase-04-wiring-routing-home.md) | Pending | 3 | Screen enum/routing/PasteMsg-route/CodePastedMsg/Home-row tests → impl |
-| 5 | [Integration Verify](./phase-05-integration-verify.md) | Pending | 4 | full -race, goldens unchanged, tester+review |
-| 6 | [Release v1.3.0](./phase-06-release-v1-3-0.md) | Pending | 5 | CHANGELOG/PR/dry-run/tag |
+| 1 | [Branch Setup](./phase-01-branch-setup.md) | Completed | — | gate, no commit |
+| 2 | [codetext Normalize Refactor](./phase-02-codetext-normalize-refactor.md) | Completed | 1 | Normalize/Load parity → refactor |
+| 3 | [ScreenCodePaste Sub-model](./phase-03-screencodepaste-sub-model.md) | Completed | 2 | paste→Normalize, waiting/error/esc states → impl |
+| 4 | [Wiring + Routing + Home](./phase-04-wiring-routing-home.md) | Completed | 3 | Screen enum/routing/PasteMsg-route/CodePastedMsg/Home-row tests → impl |
+| 5 | [Integration Verify](./phase-05-integration-verify.md) | Completed | 4 | full -race, goldens unchanged, tester+review |
+| 6 | [Release v1.3.0](./phase-06-release-v1-3-0.md) | Completed | 5 | CHANGELOG/PR/dry-run/tag |
 
 **Dependency:** 1 → 2 → 3 → 4 → 5 → 6.
 
