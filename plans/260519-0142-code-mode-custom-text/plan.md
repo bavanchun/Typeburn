@@ -1,14 +1,21 @@
 ---
-title: "Code Mode / Custom Text Input (v1.2.0)"
-description: "ModeCode: type CLI-supplied text/code with full-literal whitespace; new codetext loader + isolated code renderer; TDD per phase, protected-main PR flow"
+title: Code Mode / Custom Text Input (v1.2.0)
+description: >-
+  ModeCode: type CLI-supplied text/code with full-literal whitespace; new
+  codetext loader + isolated code renderer; TDD per phase, protected-main PR
+  flow
 status: pending
 priority: P2
-branch: "feat/v1.2.0-code-mode"
-tags: [feature, mode, tdd, release]
+branch: feat/v1.2.0-code-mode
+tags:
+  - feature
+  - mode
+  - tdd
+  - release
 blockedBy: []
 blocks: []
-created: "2026-05-18T18:44:04.961Z"
-createdBy: "ck:plan"
+created: '2026-05-18T18:44:04.961Z'
+createdBy: 'ck:plan'
 source: skill
 ---
 
@@ -44,7 +51,7 @@ parallel groups.
 | 4 | [Code Renderer + Viewport](./phase-04-code-renderer-viewport.md) | Pending | 1 | literal `\n`/`\t` + scroll-follow tests → impl |
 | 5 | [Wiring + Home + History](./phase-05-wiring-home-history.md) | Pending | 2,3,4 | decide()/Home-disabled/IsNewBest-excludes-code tests → impl |
 | 6 | [Integration Verify](./phase-06-integration-verify.md) | Pending | 5 | full -race, goldens unchanged, review |
-| 7 | [Release v1.2.0](./phase-07-release-v1-2-0.md) | Pending | 6 | CHANGELOG/PR/dry-run/tag |
+| 7 | [Release v1.2.0](./phase-07-release-v1-2-0.md) | Pending | 6 | Completed |
 
 **Dependency:** 1 → 2,3,4 (sequential, each tests-first) → 5 → 6 → 7.
 
