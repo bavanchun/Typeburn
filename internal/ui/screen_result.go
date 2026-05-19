@@ -20,7 +20,8 @@ type ResultModel struct {
 	mode     config.Mode
 	length   int
 	quoteLen words.QuoteLen
-	isBest   bool // set externally by Phase 8; false = badge hidden
+	codeText string // ModeCode snippet, so restart-same re-runs it (not "")
+	isBest   bool   // set externally by Phase 8; false = badge hidden
 
 	w, h int
 	th   theme.Theme
@@ -35,6 +36,7 @@ func NewResult(msg ResultMsg, th theme.Theme, km config.Keymap) ResultModel {
 		mode:     msg.Mode,
 		length:   msg.Length,
 		quoteLen: msg.QuoteLen,
+		codeText: msg.CodeText,
 		th:       th,
 		km:       km,
 	}
@@ -88,9 +90,9 @@ func (m ResultModel) Update(msg tea.Msg) (ResultModel, tea.Cmd) {
 
 // restartSameCmd emits a StartTestMsg that re-creates an identical typing test.
 func (m ResultModel) restartSameCmd() tea.Cmd {
-	mode, length, ql := m.mode, m.length, m.quoteLen
+	mode, length, ql, ct := m.mode, m.length, m.quoteLen, m.codeText
 	return func() tea.Msg {
-		return StartTestMsg{Mode: mode, Length: length, QuoteLen: ql}
+		return StartTestMsg{Mode: mode, Length: length, QuoteLen: ql, CodeText: ct}
 	}
 }
 

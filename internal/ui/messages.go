@@ -13,9 +13,12 @@ import (
 // receives it and transitions to ScreenResult.
 // QuoteLen carries the quote bucket so ResultModel can re-emit StartTestMsg
 // with the correct bucket when the user restarts the same test.
+// CodeText carries the snippet text for ModeCode (used to store rune count and
+// to allow ctrl+r restart with the same text).
 type ResultMsg struct {
 	Result   metrics.Result
 	Mode     config.Mode
 	Length   int
 	QuoteLen words.QuoteLen
+	CodeText string
 }

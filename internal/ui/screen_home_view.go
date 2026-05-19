@@ -57,18 +57,38 @@ func (m HomeModel) renderTabs() string {
 }
 
 // renderOptions builds the length-option row for the current mode.
+// For Code mode a single disabled-style hint line is shown instead of a cycler.
 func (m HomeModel) renderOptions() string {
 	mode := m.currentMode()
-	chosen := m.lenIdx[mode]
-	if mode == config.ModeQuote {
-		return RenderOptions(quoteBucketLabels, chosen, m.th)
+	switch mode {
+	case config.ModeQuote:
+		return RenderOptions(quoteBucketLabels, m.lenIdx[mode], m.th)
+	case config.ModeCode:
+		return m.renderCodeHint()
+	default:
+		lens := config.LengthsFor(mode)
+		labels := make([]string, len(lens))
+		for i, v := range lens {
+			labels[i] = fmt.Sprintf("%d", v)
+		}
+		return RenderOptions(labels, m.lenIdx[mode], m.th)
 	}
-	lens := config.LengthsFor(mode)
-	labels := make([]string, len(lens))
-	for i, v := range lens {
-		labels[i] = fmt.Sprintf("%d", v)
+}
+
+// renderCodeHint returns a single disabled-style hint line for the Code row.
+// When codeHint is non-empty (load error), it shows that. When codeText is
+// loaded it shows "ready · press enter". Otherwise it shows the --text hint.
+func (m HomeModel) renderCodeHint() string {
+	var text string
+	switch {
+	case m.codeHint != "":
+		text = m.codeHint
+	case m.codeText != "":
+		text = "ready · press enter"
+	default:
+		text = "pass --text <file> · in-app paste coming soon"
 	}
-	return RenderOptions(labels, chosen, m.th)
+	return m.th.Style(theme.RoleTextFaint).Render(text)
 }
 
 // homeHints returns the footer hint set for the Home screen per mockups §1.

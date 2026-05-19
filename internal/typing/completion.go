@@ -12,7 +12,9 @@ import (
 //   - ModeWords: complete when the user has typed exactly wordTarget words.
 //     A word is considered typed when the trailing space has been entered OR
 //     when the last word in the sequence is fully typed (no trailing space needed).
-//   - ModeQuote: complete when the typed buffer exactly matches the full target.
+//   - ModeQuote / ModeCode: complete when the typed buffer exactly matches
+//     the full target (Code's target is the user-supplied snippet; literal
+//     '\n'/'\t' are ordinary target runes).
 func (e *Engine) Complete(nowMs int64) bool {
 	switch e.mode {
 	case config.ModeTime:
@@ -21,7 +23,7 @@ func (e *Engine) Complete(nowMs int64) bool {
 	case config.ModeWords:
 		return countCompletedWords(e.typed, e.target) >= e.wordTarget
 
-	case config.ModeQuote:
+	case config.ModeQuote, config.ModeCode:
 		return runesEqual(e.typed, e.target)
 
 	default:

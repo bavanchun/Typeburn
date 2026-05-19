@@ -1,21 +1,18 @@
-## [1.1.0] - 2026-05-19
+## [1.2.0] - 2026-05-19
 
 ### Added
 
-- **Theme packs:** six new color themes selectable in Settings —
-  `solarized-dark`, `solarized-light`, `dracula`, `nord`, `gruvbox-dark`,
-  `gruvbox-light` (bringing the total to eight, with `default` and `mono`).
-  `solarized-light` and `gruvbox-light` are the first light themes. `NO_COLOR`
-  behavior is unchanged.
-- **Persistence-failure notice:** if saving a result or settings to disk
-  fails, a dismissible one-line notice now appears instead of the failure
-  being silent. It never blocks input and clears on the next keypress.
+- **Code mode:** practice typing on your own text or code. Supply it with
+  `typeburn --text <file>` or pipe via `typeburn --text -`. The snippet is
+  rendered with full-literal layout — real line breaks, tabs shown as two
+  columns, and you type every space and indentation exactly; the test
+  completes on an exact full-text match. Long snippets scroll with a
+  caret-following viewport. Code mode is always listed in the mode tabs;
+  without `--text` it shows a hint and is disabled (in-app paste is planned).
+  `NO_COLOR` behavior is unchanged.
+- Code runs are saved to History but never count toward the ★ personal
+  best (custom text is not comparable run-to-run). Oversized
+  (>10k runes / >500 lines), empty, or non-text input is rejected with a
+  clear reason instead of starting.
 
-### Changed
-
-- Documentation corrected post-1.0: removed the stale "badges 404 until the
-  first tag" note; the dependency-layering rule now describes the real
-  invariant (`config`/`theme` intentionally bridge to the TUI); the word
-  stream's wrap comment now matches the actual character-cell behavior.
-
-[1.1.0]: https://github.com/bavanchun/Typeburn/releases/tag/v1.1.0
+[1.2.0]: https://github.com/bavanchun/Typeburn/releases/tag/v1.2.0

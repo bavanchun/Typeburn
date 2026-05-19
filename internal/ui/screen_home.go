@@ -13,15 +13,18 @@ import (
 // to ScreenTyping.
 type StartTestMsg struct {
 	Mode     config.Mode
-	Length   int // seconds (Time) or word count (Words); 0 for Quote
+	Length   int // seconds (Time) or word count (Words); 0 for Quote/Code
 	QuoteLen words.QuoteLen
+	// CodeText carries the user-supplied snippet when Mode==ModeCode.
+	// Empty for all other modes.
+	CodeText string
 }
 
 // modeLabels maps mode constants to display names shown in the tab row.
-var modeLabels = []string{"Time", "Words", "Quote"}
+var modeLabels = []string{"Time", "Words", "Quote", "Code"}
 
 // modeOrder is the cycle order for tab switching.
-var modeOrder = []config.Mode{config.ModeTime, config.ModeWords, config.ModeQuote}
+var modeOrder = []config.Mode{config.ModeTime, config.ModeWords, config.ModeQuote, config.ModeCode}
 
 // quoteBucketLabels are the display labels for Quote sub-options.
 var quoteBucketLabels = []string{"short", "medium", "long"}
@@ -33,16 +36,20 @@ var quoteBuckets = []words.QuoteLen{words.QuoteShort, words.QuoteMedium, words.Q
 // currently-selected mode and a per-mode length index so that switching tabs
 // preserves each mode's choice.
 type HomeModel struct {
-	modeIdx int                 // index into modeOrder / modeLabels
-	lenIdx  map[config.Mode]int // selected option index per mode
-	w, h    int
-	th      theme.Theme
-	km      config.Keymap
+	modeIdx  int                 // index into modeOrder / modeLabels
+	lenIdx   map[config.Mode]int // selected option index per mode
+	w, h     int
+	th       theme.Theme
+	km       config.Keymap
+	codeText string // user-supplied snippet; empty = Code row disabled
+	codeHint string // load-failure reason shown on Code row; empty = no error
 }
 
 // NewHome constructs a HomeModel seeded from s. The initial mode and length
 // index are derived from s.DefaultMode and s.DefaultLength.
-func NewHome(s config.Settings, th theme.Theme, km config.Keymap) HomeModel {
+// codeText is the loaded snippet (empty = Code disabled); codeHint is the
+// load-failure reason string (empty = loaded OK or no --text flag).
+func NewHome(s config.Settings, th theme.Theme, km config.Keymap, codeText, codeHint string) HomeModel {
 	// Resolve initial mode index.
 	modeIdx := 0
 	for i, m := range modeOrder {
@@ -53,11 +60,16 @@ func NewHome(s config.Settings, th theme.Theme, km config.Keymap) HomeModel {
 	}
 
 	// Build per-mode length index map seeded to the middle option by default.
+	// Quote defaults to index 1 (medium bucket). Code has no cycler; index is unused.
 	lenIdx := make(map[config.Mode]int)
 	for _, m := range modeOrder {
 		lens := config.LengthsFor(m)
 		if lens == nil {
-			lenIdx[m] = 1 // default to "medium" for Quote
+			if m == config.ModeQuote {
+				lenIdx[m] = 1 // default to "medium" bucket
+			} else {
+				lenIdx[m] = 0 // Code: no-op index, unused
+			}
 			continue
 		}
 		// Find the index of DefaultLength within this mode's option list.
@@ -72,10 +84,12 @@ func NewHome(s config.Settings, th theme.Theme, km config.Keymap) HomeModel {
 	}
 
 	return HomeModel{
-		modeIdx: modeIdx,
-		lenIdx:  lenIdx,
-		th:      th,
-		km:      km,
+		modeIdx:  modeIdx,
+		lenIdx:   lenIdx,
+		th:       th,
+		km:       km,
+		codeText: codeText,
+		codeHint: codeHint,
 	}
 }
 
@@ -90,11 +104,17 @@ func (m HomeModel) SetSize(w, h int) HomeModel {
 func (m HomeModel) currentMode() config.Mode { return modeOrder[m.modeIdx] }
 
 // optionCount returns the number of selectable options for the current mode.
+// Code and Quote have no numeric length selector; Code returns 0, Quote returns
+// the bucket count.
 func (m HomeModel) optionCount() int {
-	if m.currentMode() == config.ModeQuote {
+	switch m.currentMode() {
+	case config.ModeQuote:
 		return len(quoteBucketLabels)
+	case config.ModeCode:
+		return 0 // no cycler; OptLeft/OptRight are no-ops
+	default:
+		return len(config.LengthsFor(m.currentMode()))
 	}
-	return len(config.LengthsFor(m.currentMode()))
 }
 
 // Update handles key events for the Home screen and returns an optional Cmd.
@@ -115,17 +135,17 @@ func (m HomeModel) Update(msg tea.Msg) (HomeModel, tea.Cmd) {
 	case m.km.PrevMode.Matches(k):
 		m.modeIdx = (m.modeIdx - 1 + len(modeOrder)) % len(modeOrder)
 
-	// Decrease length option (clamped at 0).
+	// Decrease length option (clamped at 0, no-op for Code which has no cycler).
 	case m.km.OptLeft.Matches(k):
 		mode := m.currentMode()
-		if m.lenIdx[mode] > 0 {
+		if mode != config.ModeCode && m.lenIdx[mode] > 0 {
 			m.lenIdx[mode]--
 		}
 
-	// Increase length option (clamped at max).
+	// Increase length option (clamped at max, no-op for Code which has no cycler).
 	case m.km.OptRight.Matches(k):
 		mode := m.currentMode()
-		if m.lenIdx[mode] < m.optionCount()-1 {
+		if mode != config.ModeCode && m.lenIdx[mode] < m.optionCount()-1 {
 			m.lenIdx[mode]++
 		}
 
@@ -138,8 +158,21 @@ func (m HomeModel) Update(msg tea.Msg) (HomeModel, tea.Cmd) {
 }
 
 // startCmd builds a Cmd that emits a StartTestMsg with the current selection.
+// For ModeCode with no text loaded, it returns nil (no-op — stay on Home).
 func (m HomeModel) startCmd() tea.Cmd {
 	mode := m.currentMode()
+
+	// Code mode: no-op if no text; emit with CodeText payload if available.
+	if mode == config.ModeCode {
+		if m.codeText == "" {
+			return nil
+		}
+		ct := m.codeText
+		return func() tea.Msg {
+			return StartTestMsg{Mode: config.ModeCode, CodeText: ct}
+		}
+	}
+
 	idx := m.lenIdx[mode]
 
 	var length int

@@ -35,6 +35,13 @@ type Model struct {
 	sett     ui.SettingsModel
 	hist     ui.HistoryModel
 
+	// codeText is the user-supplied code snippet loaded from --text <file>.
+	// Empty string means no code text is available; Code mode is then disabled.
+	codeText string
+	// codeHint is a user-facing reason when loading the code text failed
+	// (e.g., "text file is empty"). Empty when codeText loaded successfully.
+	codeHint string
+
 	// quitPrompt is non-nil when the esc-on-Home quit confirmation overlay is
 	// active. ctrl+c always hard-quits regardless of this field.
 	quitPrompt *quitPromptModel
@@ -46,17 +53,20 @@ type Model struct {
 	persistErr string
 }
 
-// New builds the root model loading persisted settings from disk.
-// It falls back to config.Defaults() if the settings file is missing or corrupt.
-func New(th theme.Theme, settings config.Settings) Model {
+// New builds the root model with the given theme, settings, and optional code
+// text/hint. codeText is the snippet loaded from --text (empty = Code disabled);
+// codeHint is a user-facing load-failure reason (empty = no error).
+func New(th theme.Theme, settings config.Settings, codeText, codeHint string) Model {
 	km := config.DefaultKeymap()
-	home := ui.NewHome(settings, th, km)
+	home := ui.NewHome(settings, th, km, codeText, codeHint)
 	m := Model{
 		screen:   ScreenHome,
 		theme:    th,
 		keys:     km,
 		settings: settings,
 		home:     home,
+		codeText: codeText,
+		codeHint: codeHint,
 	}
 	m.sett = ui.NewSettings(&m.settings, th, km, m.onSettingsChange)
 	return m
@@ -70,9 +80,15 @@ func (m Model) Init() tea.Cmd { return nil }
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// StartTestMsg: Home screen requested a test start.
 	if sm, ok := msg.(ui.StartTestMsg); ok {
-		t := ui.NewTyping(sm.Mode, sm.Length, sm.QuoteLen,
-			m.theme, m.keys, m.settings.BlinkCursor).SetSize(m.w, m.h)
-		m.typing = t
+		var t ui.TypingModel
+		if sm.Mode == config.ModeCode {
+			// Code mode: use the supplied snippet verbatim — do not call words.ForMode.
+			t = ui.NewTypingCode(sm.CodeText, m.theme, m.keys, m.settings.BlinkCursor)
+		} else {
+			t = ui.NewTyping(sm.Mode, sm.Length, sm.QuoteLen,
+				m.theme, m.keys, m.settings.BlinkCursor)
+		}
+		m.typing = t.SetSize(m.w, m.h)
 		m.screen = ScreenTyping
 		return m, nil
 	}

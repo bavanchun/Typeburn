@@ -94,7 +94,7 @@ func TestDegradedNotice_NoColor(t *testing.T) {
 // TestNoColor_HomeView_HasAccentMarker verifies ▎ present on Home under NO_COLOR.
 func TestNoColor_HomeView_HasAccentMarker(t *testing.T) {
 	th := theme.Load("default", true)
-	h := NewHome(config.Defaults(), th, config.DefaultKeymap())
+	h := NewHome(config.Defaults(), th, config.DefaultKeymap(), "", "")
 	h = h.SetSize(80, 24)
 	view := h.View()
 	if !strings.Contains(view, "▎") {

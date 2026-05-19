@@ -5,7 +5,13 @@ import (
 	"time"
 
 	"charm.land/lipgloss/v2"
+
+	"github.com/bavanchun/Typeburn/internal/config"
 )
+
+// fixedOverhead is the number of non-stream rows in the typing screen layout:
+// header + blank + blank-before-footer + footer = 4 rows.
+const fixedOverhead = 4
 
 // View renders the full typing screen content as a string. The root app.Model
 // wraps this in lipgloss.Place for centering — View itself does not center.
@@ -28,13 +34,32 @@ func (m TypingModel) View() string {
 		m.th,
 	)
 
-	stream := RenderWordStream(
-		m.eng.States(),
-		[]rune(m.target),
-		typedFromLog(m.eng.Log()),
-		cw,
-		m.th,
-	)
+	// Select renderer based on mode: Code uses the literal code stream renderer;
+	// all other modes use the word stream renderer (golden-tested, unchanged).
+	var stream string
+	if m.mode == config.ModeCode {
+		// streamHeight = total height minus fixed overhead rows; clamp ≥1.
+		streamHeight := m.h - fixedOverhead
+		if streamHeight < 1 {
+			streamHeight = 1
+		}
+		stream = RenderCodeStream(
+			m.eng.States(),
+			[]rune(m.target),
+			typedFromLog(m.eng.Log()),
+			cw,
+			streamHeight,
+			m.th,
+		)
+	} else {
+		stream = RenderWordStream(
+			m.eng.States(),
+			[]rune(m.target),
+			typedFromLog(m.eng.Log()),
+			cw,
+			m.th,
+		)
+	}
 
 	footer := RenderFooter(TypingHints(), m.w, m.th)
 

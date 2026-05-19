@@ -25,7 +25,7 @@ go test ./internal/version/ -run TestResolve_LdflagsWin -v
 
 **Strict dependency layering — do not violate.** The *pure-logic* packages are UI-free and must stay that way (no `bubbletea`/`lipgloss` imports):
 
-- Pure logic (no UI deps): `internal/typing` (keystroke state machine), `internal/metrics` (WPM/accuracy/consistency formulas), `internal/words` (embedded wordlist + quote pack), `internal/storage` (atomic JSON persistence), `internal/version` (build stamp).
+- Pure logic (no UI deps): `internal/typing` (keystroke state machine), `internal/metrics` (WPM/accuracy/consistency formulas), `internal/words` (embedded wordlist + quote pack), `internal/codetext` (Code-mode `--text` file/stdin loader + normalization — the ONLY file/stdin I/O boundary; keeps words/typing I/O-free), `internal/storage` (atomic JSON persistence), `internal/version` (build stamp).
 - Styling/input boundary (intentionally not reusable-core): `internal/config` binds Bubble Tea key types for its keymap, and `internal/theme` returns Lip Gloss styles/colors by design. These two depend on `charm.land` libs deliberately — they are the seam between pure logic and the TUI, not general-purpose libraries. Do not "fix" this by removing the imports; do not add new UI deps to the pure-logic packages above.
 - `internal/ui` depends on the packages above and implements the five screen sub-models + reusable components.
 - `internal/app` is the root Bubble Tea Elm model that wires everything together.
@@ -38,7 +38,7 @@ go test ./internal/version/ -run TestResolve_LdflagsWin -v
 
 **Storage is defensive.** Atomic temp-file + rename; any corrupt/missing file returns safe defaults and never panics; history is capped at the 200 newest records. Settings load once at startup (`app.NewFromDisk()`); history loads on demand and after each test.
 
-**Versioning is hybrid.** `internal/version` reads ldflags-injected `Version/Commit/Date` (set by Makefile + GoReleaser); when empty (bare `go install`) it falls back to `debug.ReadBuildInfo()`, final fallback `"dev"`. `main.go`'s `decide()` is a pure, tested function: a single `--version` short-circuits; a `ContinueOnError` FlagSet with discarded output ensures unknown flags / `-h` / `-v` / positional args fall through to the TUI (no `os.Exit(2)`, no usage dump). `-v` is intentionally unbound (reserved for a future `--verbose`).
+**Versioning is hybrid.** `internal/version` reads ldflags-injected `Version/Commit/Date` (set by Makefile + GoReleaser); when empty (bare `go install`) it falls back to `debug.ReadBuildInfo()`, final fallback `"dev"`. `main.go`'s `decide()` is a pure, tested function returning `(printVersion bool, textPath string)`: `--version` short-circuits to the banner; `--text <file>`/`-` selects Code mode (loaded via `internal/codetext`, errors → Code shown disabled with a reason, never a crash); a `ContinueOnError` FlagSet with discarded output ensures unknown flags / `-h` / `-v` / positional args fall through to the TUI (no `os.Exit(2)`, no usage dump). `-v` is intentionally unbound (reserved for a future `--verbose`).
 
 ## Git Workflow (protected main — enforced)
 

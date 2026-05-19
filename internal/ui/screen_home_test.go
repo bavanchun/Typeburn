@@ -14,7 +14,7 @@ import (
 // helpers
 
 func newTestHome() HomeModel {
-	return NewHome(config.Defaults(), theme.Default(), config.DefaultKeymap())
+	return NewHome(config.Defaults(), theme.Default(), config.DefaultKeymap(), "", "")
 }
 
 func pressKey(code rune, mod tea.KeyMod) tea.KeyPressMsg {
@@ -40,7 +40,7 @@ func TestNewHomeSeededFromSettings(t *testing.T) {
 	}
 }
 
-// TestTabCyclesModeForward verifies tab → Time→Words→Quote→Time.
+// TestTabCyclesModeForward verifies tab → Time→Words→Quote→Code→Time.
 func TestTabCyclesModeForward(t *testing.T) {
 	h := newTestHome()
 
@@ -55,18 +55,29 @@ func TestTabCyclesModeForward(t *testing.T) {
 	}
 
 	h, _ = h.Update(pressTab())
+	if h.currentMode() != config.ModeCode {
+		t.Fatalf("after 3rd tab: want ModeCode, got %v", h.currentMode())
+	}
+
+	h, _ = h.Update(pressTab())
 	if h.currentMode() != config.ModeTime {
-		t.Fatalf("after 3rd tab (wrap): want ModeTime, got %v", h.currentMode())
+		t.Fatalf("after 4th tab (wrap): want ModeTime, got %v", h.currentMode())
 	}
 }
 
 // TestShiftTabCyclesModeBackward verifies shift+tab reverses mode order.
+// With four modes (Time, Words, Quote, Code), shift+tab from Time wraps to Code.
 func TestShiftTabCyclesModeBackward(t *testing.T) {
 	h := newTestHome()
-	// Start on Time, shift+tab should wrap to Quote.
+	// Start on Time, shift+tab should wrap to Code (last mode).
+	h, _ = h.Update(pressShiftTab())
+	if h.currentMode() != config.ModeCode {
+		t.Fatalf("shift+tab from Time: want ModeCode (last), got %v", h.currentMode())
+	}
+
 	h, _ = h.Update(pressShiftTab())
 	if h.currentMode() != config.ModeQuote {
-		t.Fatalf("shift+tab from Time: want ModeQuote, got %v", h.currentMode())
+		t.Fatalf("shift+tab from Code: want ModeQuote, got %v", h.currentMode())
 	}
 
 	h, _ = h.Update(pressShiftTab())
@@ -151,12 +162,17 @@ func TestSwitchModePreservesPerModeLengthIndex(t *testing.T) {
 
 // TestLengthIndexInRangeAfterModeSwitch verifies the per-mode index is always
 // within the bounds of the new mode's options (no out-of-range panic).
+// ModeCode is explicitly excluded: it has no length cycler (optionCount==0)
+// so the usual [0,count) check does not apply.
 func TestLengthIndexInRangeAfterModeSwitch(t *testing.T) {
 	h := newTestHome()
 	// Cycle through all modes and check each index is valid.
 	for i := 0; i < len(modeOrder)*2; i++ {
 		h, _ = h.Update(pressTab())
 		mode := h.currentMode()
+		if mode == config.ModeCode {
+			continue // Code has no length cycler; skip range check
+		}
 		idx := h.lenIdx[mode]
 		count := h.optionCount()
 		if idx < 0 || idx >= count {
