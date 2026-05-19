@@ -22,3 +22,13 @@ type ResultMsg struct {
 	QuoteLen words.QuoteLen
 	CodeText string
 }
+
+// CodePastedMsg is emitted by CodePasteModel when a bracketed paste passes
+// codetext.Normalize. Text is the normalized snippet, ready to use as a Code
+// target verbatim. The root model receives it, stores the snippet, and
+// returns to Home with Code enabled. No message is emitted on a failed paste
+// (the sub-model stays and shows the reason) or on cancel (esc is handled by
+// the global Back handler, not via a message).
+type CodePastedMsg struct {
+	Text string
+}
