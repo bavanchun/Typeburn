@@ -181,6 +181,10 @@
 - ✅ **v1.3.0:** In-app paste for Code mode — `ScreenCodePaste` reached from
   the empty Code row, bracketed paste validated via the shared
   `codetext.Normalize` core; `--text` still supported and takes precedence.
+- ✅ **v1.4.0:** Settings changes (theme, blink, default mode/length) apply
+  live in-session — fixed an orphaned-callback bug that only persisted them
+  to disk; typing content width scales to ~82% of wide terminals (floored at
+  80) with the block vertically centered.
 
 ### Next (Optional)
 1. **Gather user feedback** on missing features (Vim motions? more themes?)
@@ -213,6 +217,6 @@
 
 ## Conclusion
 
-**Typeburn v1.3.0 is the current release — feature-complete and production-ready.** The codebase is clean, tested, and well-documented. Post-1.0 work has been purely additive (v1.0.1 precision fix + stub removal; v1.1.0 six theme packs + persistence-failure notice + doc hygiene; v1.2.0 Code mode; v1.3.0 in-app paste for Code mode) with zero breaking changes to existing users.
+**Typeburn v1.4.0 is the current release — feature-complete and production-ready.** The codebase is clean, tested, and well-documented. Post-1.0 work has been purely additive or corrective (v1.0.1 precision fix + stub removal; v1.1.0 six theme packs + persistence-failure notice + doc hygiene; v1.2.0 Code mode; v1.3.0 in-app paste for Code mode; v1.4.0 live Settings apply fix + wider centered typing layout) with zero breaking changes to existing users.
 
-M1 (timer re-arm) and M2 (new-best precision) — the identified correctness bugs — were fixed in v1.0 (d6369de) and v1.0.1 respectively. Remaining backlog is additive or cosmetic; in-app paste for Code mode shipped in v1.3.0 (removing the CLI-only constraint).
+M1 (timer re-arm) and M2 (new-best precision) — the identified correctness bugs — were fixed in v1.0 (d6369de) and v1.0.1 respectively. v1.4.0 fixed a Settings live-apply bug (changes were persisted but not applied in-session) and improved the wide-terminal typing layout. Remaining backlog is additive or cosmetic.
