@@ -200,6 +200,7 @@ Selection moves with `↑/↓` or `j/k`. The `▎` bar in `accent` is the focus 
 - **Restart:** instant clear + repaint. **No flash by default.** Optional `restart flash` setting → single 1-frame `accent`-tinted blank then new text (off by default — flashes feel slow).
 - **Counter (WPM in header):** updates on a ~250ms tick, no tween (tweening numbers reads as laggy).
 - **Screen transitions:** hard cut. No slide/fade — terminals can't do it cleanly and it harms the "fast" feel.
+- **Code paste screen (`ScreenCodePaste`):** instruction + single status line (waiting, or the validation reason on a failed paste). Role-only styling; the line structure is identical in every state and under `NO_COLOR`. Pasted text is validated by the same `codetext.Normalize` core as `--text` (no rule divergence), so the rejection reasons match the CLI path.
 - Respect a future `reduce-motion` notion by simply having no motion to reduce (design is already static).
 
 ---

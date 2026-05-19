@@ -100,6 +100,15 @@ func (m HomeModel) SetSize(w, h int) HomeModel {
 	return m
 }
 
+// WithCodeText returns a copy with ONLY codeText/codeHint replaced; modeIdx,
+// lenIdx and sizes are preserved so the Code row stays selected after an
+// in-app paste (a NewHome rebuild would snap modeIdx back to DefaultMode).
+func (m HomeModel) WithCodeText(text, hint string) HomeModel {
+	m.codeText = text
+	m.codeHint = hint
+	return m
+}
+
 // currentMode returns the currently selected config.Mode.
 func (m HomeModel) currentMode() config.Mode { return modeOrder[m.modeIdx] }
 
@@ -162,10 +171,10 @@ func (m HomeModel) Update(msg tea.Msg) (HomeModel, tea.Cmd) {
 func (m HomeModel) startCmd() tea.Cmd {
 	mode := m.currentMode()
 
-	// Code mode: no-op if no text; emit with CodeText payload if available.
+	// Code mode: no snippet → open in-app paste; snippet (--text) → start.
 	if mode == config.ModeCode {
 		if m.codeText == "" {
-			return nil
+			return func() tea.Msg { return NavCodePasteMsg{} }
 		}
 		ct := m.codeText
 		return func() tea.Msg {

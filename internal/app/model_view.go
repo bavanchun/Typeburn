@@ -44,6 +44,8 @@ func (m Model) View() tea.View {
 		out = m.sett.View() // self-placed
 	case ScreenHistory:
 		out = m.hist.View() // self-placed
+	case ScreenCodePaste:
+		out = m.codePaste.View() // self-placed
 	case ScreenTyping:
 		out = m.typing.View()
 		if m.w > 0 && m.h > 0 {

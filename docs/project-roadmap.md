@@ -178,12 +178,12 @@
 - ✅ **v1.2.0:** Code mode — `--text <file>`/stdin, full-literal whitespace,
   new `internal/codetext` loader + isolated code renderer/viewport, saved to
   History but excluded from ★.
+- ✅ **v1.3.0:** In-app paste for Code mode — `ScreenCodePaste` reached from
+  the empty Code row, bracketed paste validated via the shared
+  `codetext.Normalize` core; `--text` still supported and takes precedence.
 
 ### Next (Optional)
 1. **Gather user feedback** on missing features (Vim motions? more themes?)
-2. **In-app paste for Code mode** — supply the snippet inside the TUI (the
-   architecture already injects the text as a string; Home forks on
-   availability), removing the CLI-only constraint.
 
 ### v2.0 Planning (Future)
 - M4: Add target delivery mechanism; remove MissedChars 0-stub or make it meaningful
@@ -213,6 +213,6 @@
 
 ## Conclusion
 
-**Typeburn v1.2.0 is the current release — feature-complete and production-ready.** The codebase is clean, tested, and well-documented. Post-1.0 work has been purely additive (v1.0.1 precision fix + stub removal; v1.1.0 six theme packs + persistence-failure notice + doc hygiene; v1.2.0 Code mode) with zero breaking changes to existing users.
+**Typeburn v1.3.0 is the current release — feature-complete and production-ready.** The codebase is clean, tested, and well-documented. Post-1.0 work has been purely additive (v1.0.1 precision fix + stub removal; v1.1.0 six theme packs + persistence-failure notice + doc hygiene; v1.2.0 Code mode; v1.3.0 in-app paste for Code mode) with zero breaking changes to existing users.
 
-M1 (timer re-arm) and M2 (new-best precision) — the identified correctness bugs — were fixed in v1.0 (d6369de) and v1.0.1 respectively. Remaining backlog is additive or cosmetic; the next candidate is in-app paste for Code mode (removing the CLI-only constraint).
+M1 (timer re-arm) and M2 (new-best precision) — the identified correctness bugs — were fixed in v1.0 (d6369de) and v1.0.1 respectively. Remaining backlog is additive or cosmetic; in-app paste for Code mode shipped in v1.3.0 (removing the CLI-only constraint).

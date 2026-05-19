@@ -20,6 +20,7 @@ const (
 	ScreenResult
 	ScreenSettings
 	ScreenHistory
+	ScreenCodePaste
 )
 
 // Model is the root Elm model.
@@ -34,6 +35,9 @@ type Model struct {
 	result   ui.ResultModel
 	sett     ui.SettingsModel
 	hist     ui.HistoryModel
+	// codePaste is the active ScreenCodePaste sub-model. Constructed fresh on
+	// NavCodePasteMsg; only consulted while screen == ScreenCodePaste.
+	codePaste ui.CodePasteModel
 
 	// codeText is the user-supplied code snippet loaded from --text <file>.
 	// Empty string means no code text is available; Code mode is then disabled.
@@ -111,12 +115,22 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
+	// In-app paste wiring (open paste screen / apply a valid paste). Bodies
+	// live in model_code_paste.go to keep this router compact.
+	if _, ok := msg.(ui.NavCodePasteMsg); ok {
+		return m.openCodePaste(), nil
+	}
+	if cp, ok := msg.(ui.CodePastedMsg); ok {
+		return m.applyCodePaste(cp.Text), nil
+	}
+
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.w, m.h = msg.Width, msg.Height
 		m.home = m.home.SetSize(msg.Width, msg.Height)
 		m.sett = m.sett.SetSize(msg.Width, msg.Height)
 		m.hist = m.hist.SetSize(msg.Width, msg.Height)
+		m.codePaste = m.codePaste.SetSize(msg.Width, msg.Height)
 		if m.screen == ScreenTyping {
 			m.typing = m.typing.SetSize(msg.Width, msg.Height)
 		}
@@ -134,6 +148,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.screen == ScreenTyping {
 			var cmd tea.Cmd
 			m.typing, cmd = m.typing.Update(msg)
+			return m, cmd
+		}
+		if m.screen == ScreenCodePaste {
+			var cmd tea.Cmd
+			m.codePaste, cmd = m.codePaste.Update(msg)
 			return m, cmd
 		}
 		return m, nil
@@ -158,6 +177,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.screen == ScreenHistory {
 		var cmd tea.Cmd
 		m.hist, cmd = m.hist.Update(msg)
+		return m, cmd
+	}
+	if m.screen == ScreenCodePaste {
+		var cmd tea.Cmd
+		m.codePaste, cmd = m.codePaste.Update(msg)
 		return m, cmd
 	}
 

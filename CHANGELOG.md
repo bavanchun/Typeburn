@@ -11,6 +11,24 @@ release section is extracted verbatim and passed to GoReleaser via
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-05-19
+
+### Added
+
+- **In-app paste for Code mode:** you no longer need `typeburn --text <file>`
+  to practice on your own snippet. On the Home screen, tab to **Code** and
+  press enter on the empty row to open a paste screen; bracket-paste your
+  snippet and it is validated and loaded in place — press enter again to
+  start the test. `--text` is still supported and takes precedence (when a
+  snippet is supplied that way, Code is enabled and enter starts immediately;
+  the paste screen is not used that run).
+- Pasted snippets go through the **same** normalization and caps as `--text`
+  (CRLF→LF, one trailing newline trimmed, UTF-8 BOM stripped; empty,
+  non-text, or oversized &gt;10k runes / &gt;500 lines input is rejected with
+  a clear reason and you can paste again). `esc` returns to Home unchanged.
+  Code runs still save to History but never count toward the ★ personal
+  best. `NO_COLOR` behavior is unchanged.
+
 ## [1.2.0] - 2026-05-19
 
 ### Added
@@ -102,7 +120,8 @@ terminal typing test built with Go and Bubble Tea v2.
   HTTPS transport and the pipeline-generated `checksums.txt`. See
   [SECURITY.md](./SECURITY.md).
 
-[Unreleased]: https://github.com/bavanchun/Typeburn/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/bavanchun/Typeburn/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/bavanchun/Typeburn/releases/tag/v1.3.0
 [1.2.0]: https://github.com/bavanchun/Typeburn/releases/tag/v1.2.0
 [1.1.0]: https://github.com/bavanchun/Typeburn/releases/tag/v1.1.0
 [1.0.1]: https://github.com/bavanchun/Typeburn/releases/tag/v1.0.1

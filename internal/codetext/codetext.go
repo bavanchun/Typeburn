@@ -52,13 +52,28 @@ func Load(path string) (string, error) {
 	return loadReader(f)
 }
 
-// loadReader is the FS-independent core: read all, normalize, validate.
+// Normalize applies the exact same BOM/binary/CRLF/trim/empty/cap pipeline as
+// Load to an already in-memory string (no file I/O). It exists so an in-app
+// paste is validated by identical rules/caps as `--text` — Load and Normalize
+// share the single normalize core below, so the rules cannot diverge.
+func Normalize(s string) (string, error) {
+	return normalize([]byte(s))
+}
+
+// loadReader is the FS-independent reader core: read all, then normalize.
 func loadReader(r io.Reader) (string, error) {
 	raw, err := io.ReadAll(r)
 	if err != nil {
 		return "", fmt.Errorf("codetext: read: %w", err)
 	}
+	return normalize(raw)
+}
 
+// normalize is the single post-read pipeline shared by Load (via loadReader)
+// and Normalize: strip a leading UTF-8 BOM, reject binary, CRLF→LF, trim one
+// trailing newline, then enforce the empty/rune/line rules. Operating on the
+// raw bytes keeps the BOM check byte-level for both entry points.
+func normalize(raw []byte) (string, error) {
 	raw = bytes.TrimPrefix(raw, utf8BOM)
 
 	// Binary guard: invalid UTF-8 or a NUL byte means this is not text.
