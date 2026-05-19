@@ -12,6 +12,30 @@ import (
 	"github.com/bavanchun/Typeburn/internal/words"
 )
 
+// TestResult_RestartSame_CodeModeKeepsSnippet is the regression guard for the
+// Result-screen restart-same path dropping the Code snippet (which made the
+// restarted test instantly complete on an empty target).
+func TestResult_RestartSame_CodeModeKeepsSnippet(t *testing.T) {
+	const snippet = "func f() {\n\treturn 1\n}"
+	msg := ResultMsg{
+		Result:   metrics.Result{},
+		Mode:     config.ModeCode,
+		CodeText: snippet,
+	}
+	m := NewResult(msg, theme.Default(), config.DefaultKeymap())
+	out := m.restartSameCmd()()
+	st, ok := out.(StartTestMsg)
+	if !ok {
+		t.Fatalf("want StartTestMsg, got %T", out)
+	}
+	if st.Mode != config.ModeCode {
+		t.Errorf("mode: want code, got %q", st.Mode)
+	}
+	if st.CodeText != snippet {
+		t.Errorf("restart-same dropped the snippet: got %q want %q", st.CodeText, snippet)
+	}
+}
+
 // newTestResult constructs a ResultModel with sample data and 80×24 terminal.
 func newTestResult() ResultModel {
 	res := metrics.Result{
