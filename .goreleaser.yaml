@@ -5,15 +5,26 @@
 # publish/auth/release-notes path is exercised by the Phase 5 disposable-tag dry-run.
 version: 2
 
-before:
-  hooks:
-    # Build only. No `go mod tidy` (mutates go.sum, needs network) and no
-    # `go test` (arbitrary code in the privileged publish job) — tests run in
-    # release.yml's separate, least-privilege `test` job before this ever runs.
-    - go build ./...
+# Deterministic, lowercase identity. Pinning project_name + builds.binary +
+# archives.name_template removes GoReleaser's derived-name ambiguity: the
+# archive filenames and the binary inside them are fixed strings that
+# install.sh and the Homebrew cask reference verbatim. Without these, the
+# v2 defaults derive the name from the module path (capital `Typeburn`) and
+# embed a version segment install.sh cannot predict.
+project_name: typeburn
+
+# No `before.hooks`. A `go build ./...` hook would execute arbitrary project
+# code (incl. test/tooling packages) inside the privileged, token-bearing
+# publish job. release.yml's separate least-privilege `test` job already
+# builds the tree before this job runs; GoReleaser's own `builds:` step
+# compiles only the release main package per target — nothing wider runs
+# beside the tap token.
 
 builds:
-  - env:
+  # Pinned lowercase binary name. install.sh and the Homebrew cask extract a
+  # member named exactly `typeburn`; do not let it derive from the module path.
+  - binary: typeburn
+    env:
       - CGO_ENABLED=0
       # Fail loudly on any module drift instead of silently rewriting go.sum.
       - GOFLAGS=-mod=readonly
@@ -37,7 +48,12 @@ builds:
 
 archives:
   # Plural `formats:` — singular `format:` is removed in this v2 line.
-  - formats: ["tar.gz"]
+  # Explicit name_template: fixed, predictable archive filenames that
+  # install.sh maps os/arch to verbatim. The default v2 template embeds a
+  # version segment and the derived project name — both unpredictable to a
+  # static installer resolving the latest tag.
+  - name_template: "typeburn_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    formats: ["tar.gz"]
     format_overrides:
       - goos: windows
         formats: ["zip"]
@@ -69,3 +85,31 @@ release:
     owner: bavanchun
     name: Typeburn
   draft: false
+  # `auto` flags any tag GoReleaser reads as a prerelease (e.g. the disposable
+  # dry-run tag `v0.0.0-rc.test`) as a GitHub prerelease. GitHub excludes
+  # prereleases from `/releases/latest`, so the dry-run never becomes the
+  # version install.sh resolves. Load-bearing safe-dry-run guarantee.
+  prerelease: auto
+
+homebrew_casks:
+  # Commits a Cask (not a formula — no user Go/Xcode toolchain) wrapping the
+  # prebuilt release archive to a SEPARATE tap repo. The cask `.rb` is pushed
+  # into that repo's Casks/ directory; it is NOT a GitHub release asset, so
+  # the release-asset count stays 7 (6 archives + checksums.txt).
+  - name: typeburn
+    binaries:
+      - typeburn
+    repository:
+      owner: bavanchun
+      name: homebrew-tap-typeburn
+      # MUST be explicit. The default GITHUB_TOKEN is scoped to the source
+      # repo and cannot push cross-repo to the tap — a fine-grained PAT
+      # scoped to the tap repo only is injected as HOMEBREW_TAP_TOKEN.
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    directory: Casks
+    homepage: "https://github.com/bavanchun/Typeburn"
+    description: "A Monkeytype-style terminal typing test, distraction-free and keyboard-driven."
+    # `auto`: on a prerelease tag the cask is NOT committed to the tap (it is
+    # left in dist/ only). With release.prerelease:auto above, the disposable
+    # dry-run tag publishes nothing durable to users.
+    skip_upload: "auto"
