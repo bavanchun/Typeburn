@@ -407,3 +407,34 @@ Tags are immutable once pushed; releases are never re-tagged or reverted. **Fix-
 4. Push tag → CI automatically publishes new release with updated CHANGELOG
 
 **Before real tag:** Dry-run with `make snapshot` to verify build + archive paths locally (no publish/auth).
+
+### Distribution Channels
+
+Users can install Typeburn via five independent channels; all verify integrity via SHA-256 or code signing:
+
+| Channel | Entry Point | Verification | Dependencies | Platforms |
+|---------|-----------|--------------|--------------|-----------|
+| **Hardened installer** | `curl -fsSL https://raw.githubusercontent.com/bavanchun/Typeburn/main/install.sh \| sh` | SHA-256 checksums.txt (POSIX sh, no sudo) | None (uses system curl, tar/unzip, uname) | Linux, macOS (any x86_64/arm64) |
+| **Go install** | `go install github.com/bavanchun/Typeburn@v1.5.0` | Go module checksum (go.sum) | Go 1.25+ | All platforms |
+| **Manual archive** | Download from [GitHub Releases](https://github.com/bavanchun/Typeburn/releases) | SHA-256 in checksums.txt | tar/unzip | All platforms |
+| **Build from source** | `git clone + go build ./...` | git commit signature (if configured) | Go 1.25+ | All platforms |
+| **Homebrew tap** | `brew install bavanchun/tap-typeburn/typeburn` | Tap cask (signed by maintainer) | Homebrew | macOS (x86_64/arm64) |
+
+**Installer (install.sh) design:**
+- POSIX `/bin/sh` (no bash, no Go, no sudo required)
+- Detects OS/arch via `uname -s -m`; resolves latest non-prerelease tag via GitHub API
+- Downloads matching archive + checksums.txt; verifies sha256 before extraction
+- Validates archive contains exactly `typeburn` binary (no extraneous files)
+- Atomically installs to `~/.local/bin` (or `$BIN_DIR`)
+- Test seams: `TYPEBURN_API`, `TYPEBURN_BASE_URL`, `TYPEBURN_LATEST_PATH`, `TYPEBURN_UNAME_S/M`, `VERSION`, `BIN_DIR` — allows offline regression harness (`scripts/test-install-sh.sh`) to mock the GitHub API and exercise 14 failure scenarios deterministically
+
+**Homebrew cask integration:**
+- `.goreleaser.yaml` commits a `typeburn.rb` cask to [bavanchun/homebrew-tap-typeburn](https://github.com/bavanchun/homebrew-tap-typeburn) on every release
+- Cask uses `skip_upload: "auto"` — cask is NOT a release asset (the 7-asset invariant is preserved: 2 tar.gz linux, 2 tar.gz darwin, 2 zip windows, 1 checksums.txt)
+- Token injected at GoReleaser step only (release.yml), never at job level
+- No user credential leakage; tap repo credentials remain isolated
+
+**GoReleaser determinism:**
+- `.goreleaser.yaml` pins `project_name`, `builds.binary`, and `archives.name_template` to exact lowercase strings (avoiding derived-name ambiguity in v2 defaults)
+- No `before.hooks` (prevents arbitrary test/tooling code from running in the token-bearing publish job; separate least-privilege `test` job in release.yml gates this)
+- `release.prerelease: auto` — skips prerelease/RC tags from being marked "pre-release" on GitHub (safe dry-run with `make snapshot` before tagging)

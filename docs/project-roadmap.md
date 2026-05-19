@@ -185,6 +185,7 @@
   live in-session — fixed an orphaned-callback bug that only persisted them
   to disk; typing content width scales to ~82% of wide terminals (floored at
   80) with the block vertically centered.
+- ✅ **v1.5.0 (Distribution):** Go floor lowered to 1.25.0 (from 1.26.2); hardened POSIX `install.sh` with OS/arch detection, latest-tag resolution, sha256 verification, and atomic ~/.local/bin install (no sudo); new `scripts/test-install-sh.sh` offline regression harness (14 cases, localhost fixtures) integrated into CI as `installer` job; GoReleaser config hardened with determinism pins (project_name, builds.binary, archives.name_template) and `release.prerelease: auto`; new Homebrew cask channel (bavanchun/homebrew-tap-typeburn) with token isolation; 7-asset release integrity invariant preserved. Ship date: 2026-05-20.
 
 ### Next (Optional)
 1. **Gather user feedback** on missing features (Vim motions? more themes?)
