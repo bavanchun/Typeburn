@@ -9,6 +9,16 @@ import (
 	"github.com/bavanchun/Typeburn/internal/ui"
 )
 
+// altView wraps a frame string in the alternate screen buffer. The altscreen
+// gives the program full-window mode with no scrollback (the TUI cannot be
+// scrolled) and restores the prior terminal contents on quit. Every View()
+// return path goes through here so altscreen is unconditional.
+func altView(s string) tea.View {
+	v := tea.NewView(s)
+	v.AltScreen = true
+	return v
+}
+
 // View renders the active screen centered in the terminal.
 //
 // Single chokepoint: if the terminal is below the 60×20 safe minimum, the
@@ -21,12 +31,12 @@ func (m Model) View() tea.View {
 	// Degraded gate — must check before any screen delegation.
 	if m.w > 0 && m.h > 0 && (m.w < 60 || m.h < 20) {
 		notice := ui.DegradedNotice(m.w, m.h, m.theme)
-		return tea.NewView(lipgloss.Place(m.w, m.h, lipgloss.Center, lipgloss.Center, notice))
+		return altView(lipgloss.Place(m.w, m.h, lipgloss.Center, lipgloss.Center, notice))
 	}
 
 	// Quit-prompt overlay on Home screen.
 	if m.quitPrompt != nil && m.screen == ScreenHome {
-		return tea.NewView(m.quitPrompt.view(m.w, m.h, m.theme))
+		return altView(m.quitPrompt.view(m.w, m.h, m.theme))
 	}
 
 	// Compute the final frame string in one place (single return) so the
@@ -70,5 +80,5 @@ func (m Model) View() tea.View {
 		out = strings.Join(lines, "\n")
 	}
 
-	return tea.NewView(out)
+	return altView(out)
 }
