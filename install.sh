@@ -81,7 +81,9 @@ chmod 700 "$tmp"
 stage=""
 cleanup() {
   rm -rf "$tmp"
-  [ -n "$stage" ] && rm -f "$stage" 2>/dev/null || true
+  if [ -n "$stage" ]; then
+    rm -f "$stage" 2>/dev/null || true
+  fi
 }
 trap cleanup EXIT INT TERM HUP
 

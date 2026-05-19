@@ -24,7 +24,9 @@ PASS=0
 FAIL=0
 
 cleanup() {
-  [ -n "$SRV_PID" ] && kill "$SRV_PID" 2>/dev/null || true
+  if [ -n "$SRV_PID" ]; then
+    kill "$SRV_PID" 2>/dev/null || true
+  fi
   rm -rf "$WORK"
 }
 trap cleanup EXIT INT TERM
@@ -177,7 +179,7 @@ if (
   export BIN_DIR="$bd" TYPEBURN_UNAME_S=Linux TYPEBURN_UNAME_M=x86_64 \
          TYPEBURN_BASE_URL="$BASE/dl_g"
   sh "$INSTALL_SH" >/dev/null 2>&1 && exit 1
-  [ ! -e "$bd/typeburn" ] && [ ! -L "$bd/typeburn" ] || exit 1
+  if [ -e "$bd/typeburn" ] || [ -L "$bd/typeburn" ]; then exit 1; fi
 ); then ok "(g) symlink archive member rejected"
 else bad "(g) symlink member"; fi
 
