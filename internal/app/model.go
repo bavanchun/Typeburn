@@ -72,7 +72,7 @@ func New(th theme.Theme, settings config.Settings, codeText, codeHint string) Mo
 		codeText: codeText,
 		codeHint: codeHint,
 	}
-	m.sett = ui.NewSettings(&m.settings, th, km, m.onSettingsChange)
+	m.sett = ui.NewSettings(settings, th, km)
 	return m
 }
 
@@ -122,6 +122,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 	if cp, ok := msg.(ui.CodePastedMsg); ok {
 		return m.applyCodePaste(cp.Text), nil
+	}
+
+	// SettingsChangedMsg: a Settings row changed → apply to the live model
+	// (persist + theme rebuild + sub-model re-injection). Body in
+	// model_settings.go.
+	if sc, ok := msg.(ui.SettingsChangedMsg); ok {
+		return m.applySettings(sc.Settings), nil
 	}
 
 	switch msg := msg.(type) {

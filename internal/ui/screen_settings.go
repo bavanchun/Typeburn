@@ -9,30 +9,40 @@ import (
 
 // SettingsModel is the sub-model for the Settings screen. It owns exactly
 // 4 rows (Theme, Default mode, Default length, Blink cursor) and nothing else.
-// Every value change calls onChange so the root can persist and apply live.
-// Row types and row-building helpers live in settings_rows.go.
+// It holds its settings BY VALUE; every value change emits a
+// SettingsChangedMsg so the root can persist and apply it to the live model.
+// (A callback/pointer bound in app.New() would target a copied-out struct the
+// program never renders.) Row types/helpers live in settings_rows.go.
 type SettingsModel struct {
-	rows     []settingRow
-	sel      int // currently-selected row index (0-3)
-	s        *config.Settings
-	th       theme.Theme
-	km       config.Keymap
-	w, h     int
-	onChange func(config.Settings)
+	rows []settingRow
+	sel  int // currently-selected row index (0-3)
+	s    config.Settings
+	th   theme.Theme
+	km   config.Keymap
+	w, h int
 }
 
-// NewSettings constructs the SettingsModel wired to the root settings pointer.
-// onChange is called with the updated Settings on every value change so the
-// root can persist atomically and propagate live (theme rebuild, blink update).
-func NewSettings(s *config.Settings, th theme.Theme, km config.Keymap, onChange func(config.Settings)) SettingsModel {
-	m := SettingsModel{s: s, th: th, km: km, onChange: onChange}
-	m.rows = buildRows(s)
+// NewSettings constructs the SettingsModel from a settings value.
+func NewSettings(s config.Settings, th theme.Theme, km config.Keymap) SettingsModel {
+	m := SettingsModel{s: s, th: th, km: km}
+	m.rows = buildRows(&m.s)
 	return m
 }
 
 // SetSize stores terminal dimensions for layout.
 func (m SettingsModel) SetSize(w, h int) SettingsModel {
 	m.w, m.h = w, h
+	return m
+}
+
+// Sel returns the selected row index (so the root can preserve it on rebuild).
+func (m SettingsModel) Sel() int { return m.sel }
+
+// WithSel restores a previously-selected row index, clamped to the row count.
+func (m SettingsModel) WithSel(sel int) SettingsModel {
+	if sel >= 0 && sel < len(m.rows) {
+		m.sel = sel
+	}
 	return m
 }
 
@@ -57,26 +67,33 @@ func (m SettingsModel) Update(msg tea.Msg) (SettingsModel, tea.Cmd) {
 
 	case m.km.OptLeft.Matches(k):
 		m = m.cycleSelected(-1)
+		return m, m.changedCmd()
 
 	case m.km.OptRight.Matches(k), m.km.Cycle.Matches(k):
 		m = m.cycleSelected(+1)
+		return m, m.changedCmd()
 
 	case m.km.Back.Matches(k), m.km.NavHome.Matches(k):
-		// Settings already persisted on each change; esc just returns to Home.
+		// Settings already applied on each change; esc just returns to Home.
 		return m, func() tea.Msg { return AbortMsg{} }
 	}
 
 	return m, nil
 }
 
-// cycleSelected advances the selected row's value by delta (+1 or -1) with wrap.
-// It applies the change to the root settings pointer and calls onChange.
+// changedCmd emits the current settings value to the root for live apply.
+func (m SettingsModel) changedCmd() tea.Cmd {
+	s := m.s
+	return func() tea.Msg { return SettingsChangedMsg{Settings: s} }
+}
+
+// cycleSelected advances the selected row's value by delta (+1 or -1) with wrap
+// and writes it into the local settings value.
 func (m SettingsModel) cycleSelected(delta int) SettingsModel {
 	row := &m.rows[m.sel]
 	n := len(row.values)
 	row.idx = ((row.idx+delta)%n + n) % n
 
-	// Apply the new value to the settings struct and propagate.
 	m.applyRow(m.sel, row.idx)
 
 	// When default mode changes, rebuild the length row to match the new mode.
@@ -89,13 +106,10 @@ func (m SettingsModel) cycleSelected(delta int) SettingsModel {
 		m.applyRow(rowDefaultLength, lenIdx)
 	}
 
-	if m.onChange != nil {
-		m.onChange(*m.s)
-	}
 	return m
 }
 
-// applyRow writes the selected value back into the settings pointer.
+// applyRow writes the selected value into the local settings value.
 func (m *SettingsModel) applyRow(rowIdx, valIdx int) {
 	val := m.rows[rowIdx].values[valIdx]
 	switch rowIdx {

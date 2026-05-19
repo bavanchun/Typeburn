@@ -68,7 +68,7 @@ func TestPersistNotice_SettingsFailureSetsError(t *testing.T) {
 	m := New(theme.Default(), config.Defaults(), "", "")
 	s := m.settings
 	s.BlinkCursor = !s.BlinkCursor
-	m.onSettingsChange(s) // pointer receiver mutates m
+	m = m.applySettings(s) // value receiver → use the returned model
 
 	if m.persistErr != "Couldn't save settings to disk" {
 		t.Fatalf("want persistErr set after failed SaveSettings, got %q", m.persistErr)

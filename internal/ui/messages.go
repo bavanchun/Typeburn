@@ -38,3 +38,14 @@ type NavCodePasteMsg struct{}
 type CodePastedMsg struct {
 	Text string
 }
+
+// SettingsChangedMsg is emitted by SettingsModel whenever a row value changes.
+// The root model receives it and applies the new settings to the LIVE model
+// it renders (persist + theme rebuild + sub-model re-injection). SettingsModel
+// holds its settings by value and never mutates root state through a
+// callback/pointer: such a binding, taken in app.New() before the model is
+// copied out, would target a struct the program never renders — so the change
+// would persist to disk but never appear on screen until the next launch.
+type SettingsChangedMsg struct {
+	Settings config.Settings
+}

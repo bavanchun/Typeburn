@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"strings"
 	"time"
 
 	"charm.land/lipgloss/v2"
@@ -63,24 +62,15 @@ func (m TypingModel) View() string {
 
 	footer := RenderFooter(TypingHints(), m.w, m.th)
 
-	// Spacer fills remaining vertical space so footer pins to the last row.
-	streamLines := strings.Count(stream, "\n") + 1
-	used := 1 + // header
-		1 + // blank line after header
-		streamLines +
-		1 + // blank line before footer
-		1 // footer
-	spacerLines := m.h - used
-	if spacerLines < 0 {
-		spacerLines = 0
-	}
-	spacer := strings.Repeat("\n", spacerLines)
-
+	// Emit a compact block (header · stream · footer with single-line gaps).
+	// The root wraps this in lipgloss.Place(Center,Center); keeping the block
+	// compact lets that vertical centering actually take effect instead of
+	// the stream being pinned to the top with the footer at the very bottom.
 	return lipgloss.JoinVertical(lipgloss.Left,
 		header,
 		"",
 		stream,
-		spacer,
+		"",
 		footer,
 	)
 }

@@ -33,6 +33,23 @@ func pressText(ch string) tea.KeyPressMsg {
 	return tea.KeyPressMsg(tea.Key{Code: r, Text: ch})
 }
 
+// TestTypingView_CompactNotFullHeight verifies the word-stream typing view is
+// a compact block (header + stream + footer with small gaps) rather than a
+// block padded to the full terminal height. The root wraps it in
+// lipgloss.Place(Center,Center); a full-height block would make that vertical
+// centering a no-op and leave the text pinned to the top.
+func TestTypingView_CompactNotFullHeight(t *testing.T) {
+	m := newTypingWithSeed(
+		config.ModeWords, 10, words.QuoteShort,
+		theme.Default(), config.DefaultKeymap(), false, 42,
+	).SetSize(160, 50)
+	v := m.View()
+	lines := strings.Count(v, "\n") + 1
+	if lines >= 50 {
+		t.Fatalf("typing view should be compact for root centering, got %d lines at h=50", lines)
+	}
+}
+
 // TestNewTyping_HasTarget ensures the constructor produces a non-empty target.
 func TestNewTyping_HasTarget(t *testing.T) {
 	m := newTestTyping(config.ModeWords, 5)

@@ -104,13 +104,16 @@ Spacing/rhythm: one blank line between logical groups; two blank lines around th
 ### 4.1 Content column
 
 - **Centered** horizontally and vertically (Lip Gloss `Place(termW, termH, Center, Center, content)`).
-- **Max content width: 80 cols.** Word-stream wraps at `min(termW-8, 80)`.
-- Responsive:
-  - `termW ≥ 88` → content width 80, side gutters absorb extra.
+- Responsive content width:
+  - `termW ≥ 88` (wide) → `clamp(round(termW × 0.82), 80, termW-8)` — scales
+    with the screen, never narrower than 80, capped to keep side breathing
+    room so the centered block stays comfortable on very wide terminals.
   - `72 ≤ termW < 88` → content width `termW - 8`.
   - `60 ≤ termW < 72` → content width `termW - 4`, footer keybinds collapse to short forms (`tab restart` → `↹`).
   - `termW < 60` or `termH < 20` → **degraded mode** (see 4.3).
-- Vertical rhythm: header row → blank → focal block → blank → secondary → flexible spacer → footer pinned to last row.
+- Vertical rhythm: the typing screen emits a **compact** block (header → blank
+  → focal block → blank → footer) and the root `Place(Center, Center)` centers
+  it; the footer is not pinned to the last terminal row.
 
 ### 4.2 Header / footer placement
 

@@ -17,20 +17,28 @@ func pressSettKey(code rune) tea.KeyPressMsg {
 }
 
 // newTestSettings builds a SettingsModel with a fresh copy of Defaults.
-// If onChange is nil a no-op callback is used.
-func newTestSettings(onChange func(config.Settings)) (SettingsModel, *config.Settings) {
-	s := config.Defaults()
-	if onChange == nil {
-		onChange = func(config.Settings) {}
+func newTestSettings() SettingsModel {
+	m := NewSettings(config.Defaults(), theme.Default(), config.DefaultKeymap())
+	return m.SetSize(100, 40)
+}
+
+// settChangedFrom runs the Cmd returned by Update and returns the emitted
+// SettingsChangedMsg (or fails). A nil cmd means no value change was emitted.
+func settChangedFrom(t *testing.T, cmd tea.Cmd) SettingsChangedMsg {
+	t.Helper()
+	if cmd == nil {
+		t.Fatal("expected a Cmd emitting SettingsChangedMsg, got nil")
 	}
-	m := NewSettings(&s, theme.Default(), config.DefaultKeymap(), onChange)
-	m = m.SetSize(100, 40)
-	return m, &s
+	sc, ok := cmd().(SettingsChangedMsg)
+	if !ok {
+		t.Fatalf("expected SettingsChangedMsg, got %T", cmd())
+	}
+	return sc
 }
 
 // TestNewSettingsExactly4Rows verifies the constructor yields exactly 4 rows.
 func TestNewSettingsExactly4Rows(t *testing.T) {
-	m, _ := newTestSettings(nil)
+	m := newTestSettings()
 	if len(m.rows) != 4 {
 		t.Fatalf("want 4 rows, got %d", len(m.rows))
 	}
@@ -38,7 +46,7 @@ func TestNewSettingsExactly4Rows(t *testing.T) {
 
 // TestDownMovesSelection verifies ↓ increments selection.
 func TestDownMovesSelection(t *testing.T) {
-	m, _ := newTestSettings(nil)
+	m := newTestSettings()
 	m, _ = m.Update(pressSettKey(tea.KeyDown))
 	if m.sel != 1 {
 		t.Fatalf("want sel=1 after ↓, got %d", m.sel)
@@ -47,7 +55,7 @@ func TestDownMovesSelection(t *testing.T) {
 
 // TestUpDoesNotGoNegative verifies ↑ is clamped at row 0.
 func TestUpDoesNotGoNegative(t *testing.T) {
-	m, _ := newTestSettings(nil)
+	m := newTestSettings()
 	m, _ = m.Update(pressSettKey(tea.KeyUp))
 	if m.sel != 0 {
 		t.Fatalf("want sel=0 after ↑ from top, got %d", m.sel)
@@ -56,7 +64,7 @@ func TestUpDoesNotGoNegative(t *testing.T) {
 
 // TestDownClampsAtLastRow verifies ↓ is clamped at the last row.
 func TestDownClampsAtLastRow(t *testing.T) {
-	m, _ := newTestSettings(nil)
+	m := newTestSettings()
 	for range 10 {
 		m, _ = m.Update(pressSettKey(tea.KeyDown))
 	}
@@ -69,7 +77,7 @@ func TestDownClampsAtLastRow(t *testing.T) {
 // theme.Available() order and wraps back to the first. Asserted generically
 // so adding/removing a theme pack does not require touching this test.
 func TestThemeCyclesRightAndWraps(t *testing.T) {
-	m, _ := newTestSettings(nil)
+	m := newTestSettings()
 	vals := m.rows[rowTheme].values
 	if len(vals) < 2 {
 		t.Fatalf("expected ≥2 themes, got %v", vals)
@@ -95,7 +103,7 @@ func TestThemeCyclesRightAndWraps(t *testing.T) {
 
 // TestThemeCyclesLeft verifies ← from the first entry wraps to the last.
 func TestThemeCyclesLeft(t *testing.T) {
-	m, _ := newTestSettings(nil)
+	m := newTestSettings()
 	vals := m.rows[rowTheme].values
 	last := vals[len(vals)-1]
 	m, _ = m.Update(pressSettKey(tea.KeyLeft))
@@ -107,7 +115,7 @@ func TestThemeCyclesLeft(t *testing.T) {
 // TestCyclingDefaultModeRepairsDefaultLength verifies when mode changes the
 // Default length row is rebuilt and index stays in bounds.
 func TestCyclingDefaultModeRepairsDefaultLength(t *testing.T) {
-	m, _ := newTestSettings(nil)
+	m := newTestSettings()
 
 	// Navigate to Default mode row (sel=1).
 	m, _ = m.Update(pressSettKey(tea.KeyDown))
@@ -134,7 +142,7 @@ func TestCyclingDefaultModeRepairsDefaultLength(t *testing.T) {
 
 // TestTogglingBlinkFlipsBool verifies cycling the Blink row toggles BlinkCursor.
 func TestTogglingBlinkFlipsBool(t *testing.T) {
-	m, s := newTestSettings(nil)
+	m := newTestSettings()
 	// Navigate to Blink cursor row (sel=3).
 	for range 3 {
 		m, _ = m.Update(pressSettKey(tea.KeyDown))
@@ -143,47 +151,49 @@ func TestTogglingBlinkFlipsBool(t *testing.T) {
 		t.Fatalf("expected sel=3 (blink row), got %d", m.sel)
 	}
 
-	initial := s.BlinkCursor
-	m, _ = m.Update(pressSettKey(tea.KeyRight))
-	if s.BlinkCursor == initial {
+	initial := m.s.BlinkCursor
+	m, cmd := m.Update(pressSettKey(tea.KeyRight))
+	if m.s.BlinkCursor == initial {
 		t.Fatalf("BlinkCursor should have toggled from %v", initial)
 	}
-}
-
-// TestOnChangeCalledOnValueChange verifies onChange is called for every value change.
-func TestOnChangeCalledOnValueChange(t *testing.T) {
-	calls := 0
-	m, _ := newTestSettings(func(config.Settings) { calls++ })
-
-	m, _ = m.Update(pressSettKey(tea.KeyRight)) // cycle theme
-	if calls != 1 {
-		t.Fatalf("onChange call count: want 1, got %d", calls)
-	}
-
-	m, _ = m.Update(pressSettKey(tea.KeyDown))  // move selection (no value change)
-	m, _ = m.Update(pressSettKey(tea.KeyRight)) // cycle default mode
-	if calls != 2 {
-		t.Fatalf("onChange call count after 2nd change: want 2, got %d", calls)
+	if sc := settChangedFrom(t, cmd); sc.Settings.BlinkCursor == initial {
+		t.Fatalf("emitted msg BlinkCursor should be toggled from %v", initial)
 	}
 }
 
-// TestOnChangeReceivesUpdatedSettings verifies onChange gets the mutated settings.
-func TestOnChangeReceivesUpdatedSettings(t *testing.T) {
-	var received config.Settings
-	m, _ := newTestSettings(func(s config.Settings) { received = s })
+// TestValueChangeEmitsSettingsChangedMsg verifies a value change emits a
+// SettingsChangedMsg cmd while a pure selection move emits none.
+func TestValueChangeEmitsSettingsChangedMsg(t *testing.T) {
+	m := newTestSettings()
+
+	m, cmd := m.Update(pressSettKey(tea.KeyRight)) // cycle theme
+	settChangedFrom(t, cmd)                        // must emit
+
+	m, cmd = m.Update(pressSettKey(tea.KeyDown)) // move selection only
+	if cmd != nil {
+		t.Fatalf("selection move must not emit a change cmd, got %T", cmd())
+	}
+
+	_, cmd = m.Update(pressSettKey(tea.KeyRight)) // cycle default mode
+	settChangedFrom(t, cmd)                       // must emit
+}
+
+// TestSettingsChangedMsgCarriesUpdatedSettings verifies the emitted message
+// carries the mutated settings value.
+func TestSettingsChangedMsgCarriesUpdatedSettings(t *testing.T) {
+	m := newTestSettings()
 
 	// Cycle theme (sel=0 by default).
-	m, _ = m.Update(pressSettKey(tea.KeyRight))
-	_ = m
+	_, cmd := m.Update(pressSettKey(tea.KeyRight))
 
-	if received.Theme != "mono" {
-		t.Fatalf("onChange received wrong theme: want 'mono', got %q", received.Theme)
+	if sc := settChangedFrom(t, cmd); sc.Settings.Theme != "mono" {
+		t.Fatalf("emitted msg wrong theme: want 'mono', got %q", sc.Settings.Theme)
 	}
 }
 
 // TestEscReturnsAbortMsg verifies esc emits AbortMsg (return to Home).
 func TestEscReturnsAbortMsg(t *testing.T) {
-	m, _ := newTestSettings(nil)
+	m := newTestSettings()
 	_, cmd := m.Update(pressSettKey(tea.KeyEsc))
 	if cmd == nil {
 		t.Fatal("esc: expected a Cmd, got nil")
@@ -195,7 +205,7 @@ func TestEscReturnsAbortMsg(t *testing.T) {
 
 // TestKey1ReturnsAbortMsg verifies '1' (NavHome) also returns to Home.
 func TestKey1ReturnsAbortMsg(t *testing.T) {
-	m, _ := newTestSettings(nil)
+	m := newTestSettings()
 	_, cmd := m.Update(pressKey('1', 0))
 	if cmd == nil {
 		t.Fatal("key '1': expected a Cmd, got nil")
@@ -207,7 +217,7 @@ func TestKey1ReturnsAbortMsg(t *testing.T) {
 
 // TestExcludedOptionsNeverRendered verifies the view has no excluded row labels.
 func TestExcludedOptionsNeverRendered(t *testing.T) {
-	m, _ := newTestSettings(nil)
+	m := newTestSettings()
 	view := m.View()
 
 	excluded := []string{
@@ -222,7 +232,7 @@ func TestExcludedOptionsNeverRendered(t *testing.T) {
 
 // TestViewContains4RowLabels verifies all 4 row labels appear in View().
 func TestViewContains4RowLabels(t *testing.T) {
-	m, _ := newTestSettings(nil)
+	m := newTestSettings()
 	view := m.View()
 
 	labels := []string{"Theme", "Default mode", "Default length", "Blink cursor"}
@@ -233,14 +243,14 @@ func TestViewContains4RowLabels(t *testing.T) {
 	}
 }
 
-// TestSettingsPointerUpdatedOnCycle verifies the settings pointer reflects changes.
-func TestSettingsPointerUpdatedOnCycle(t *testing.T) {
-	m, s := newTestSettings(nil)
+// TestSettingsValueUpdatedOnCycle verifies the in-model settings value
+// reflects changes after a cycle.
+func TestSettingsValueUpdatedOnCycle(t *testing.T) {
+	m := newTestSettings()
 
 	// Cycle theme (row 0).
 	m, _ = m.Update(pressSettKey(tea.KeyRight))
-	_ = m
-	if s.Theme != "mono" {
-		t.Fatalf("settings pointer not updated: want theme='mono', got %q", s.Theme)
+	if m.s.Theme != "mono" {
+		t.Fatalf("settings value not updated: want theme='mono', got %q", m.s.Theme)
 	}
 }
