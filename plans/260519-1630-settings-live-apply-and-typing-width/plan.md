@@ -59,7 +59,7 @@ squash-merge → tag on merged SHA (per `typeburn-release-runbook`). Sequential.
 | Phase | Name | Status | Depends | TDD focus |
 |-------|------|--------|---------|-----------|
 | 1 | [Branch Setup](./phase-01-branch-setup.md) | Pending | — | Completed |
-| 2 | [Settings Live-Apply Refactor](./phase-02-settings-live-apply-refactor.md) | Pending | 1 | failing live-apply regression → message refactor |
+| 2 | [Settings Live-Apply Refactor](./phase-02-settings-live-apply-refactor.md) | Pending | 1 | Completed |
 | 3 | [Typing Width Bounded Fill](./phase-03-typing-width-bounded-fill.md) | Pending | 2 | rewrite ContentWidth/layout contract → impl |
 | 4 | [Integration Verify](./phase-04-integration-verify.md) | Pending | 3 | full -race, tester + code-reviewer |
 | 5 | [Release v1.4.0](./phase-05-release-v1-4-0.md) | Pending | 4 | CHANGELOG/PR/dry-run/tag |

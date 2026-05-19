@@ -1,10 +1,11 @@
 ---
 phase: 2
-title: "Settings Live-Apply Refactor"
-status: pending
+title: Settings Live-Apply Refactor
+status: completed
 priority: P1
-effort: "4h"
-dependencies: [1]
+effort: 4h
+dependencies:
+  - 1
 ---
 
 # Phase 2: Settings Live-Apply Refactor

@@ -38,10 +38,34 @@ func TestWidthTier_Boundaries(t *testing.T) {
 }
 
 // TestContentWidth_PerTier verifies ContentWidth returns correct values.
+// Wide uses ~82% of the terminal so the stream grows on large screens,
+// floored at 80 (never narrower than a mid terminal) and capped at termW-8
+// for breathing room around the centered block.
 func TestContentWidth_PerTier(t *testing.T) {
-	// Wide: always 80.
-	if got := ContentWidth(100, TierWide); got != 80 {
-		t.Errorf("TierWide 100: want 80, got %d", got)
+	wideCases := []struct{ termW, want int }{
+		{88, 80},   // wide boundary: 0.82*88≈72 → floored to 80
+		{98, 80},   // still floored
+		{100, 82},  // 0.82*100
+		{120, 98},  // 0.82*120
+		{160, 131}, // 0.82*160
+		{200, 164}, // 0.82*200, well under termW-8
+	}
+	for _, c := range wideCases {
+		if got := ContentWidth(c.termW, TierWide); got != c.want {
+			t.Errorf("TierWide %d: want %d, got %d", c.termW, c.want, got)
+		}
+	}
+	// Invariant: wide is never below 80 and is non-decreasing in termW.
+	prev := 0
+	for w := 88; w <= 400; w++ {
+		got := ContentWidth(w, TierWide)
+		if got < 80 {
+			t.Fatalf("TierWide %d: %d < 80 (regressed below old cap)", w, got)
+		}
+		if got < prev {
+			t.Fatalf("TierWide not monotonic at %d: %d < %d", w, got, prev)
+		}
+		prev = got
 	}
 	// Mid: termW-8.
 	if got := ContentWidth(80, TierMid); got != 72 {

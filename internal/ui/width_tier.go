@@ -1,5 +1,7 @@
 package ui
 
+import "math"
+
 // Tier classifies the terminal width into layout bands used by footer, logo,
 // and word-stream to adapt their rendering per design §4.1.
 type Tier int
@@ -32,16 +34,25 @@ func WidthTier(termW, termH int) Tier {
 }
 
 // ContentWidth returns the word-stream content width for a given terminal width
-// and tier, per design §4.1.
+// and tier.
 //
-//   - Wide (≥88): 80 cols
+//   - Wide (≥88): ~82% of termW, floored at 80 (never narrower than a mid
+//     terminal) and capped at termW-8 so the centered block keeps breathing
+//     room. The stream grows with the screen instead of being stuck at 80.
 //   - Mid (72–87): termW-8
 //   - Narrow (60–71): termW-4
 //   - Degraded or tiny: 20 (defensive minimum; caller should not reach here)
 func ContentWidth(termW int, tier Tier) int {
 	switch tier {
 	case TierWide:
-		return 80
+		w := int(math.Round(float64(termW) * 0.82))
+		if w < 80 {
+			w = 80
+		}
+		if maxW := termW - 8; w > maxW {
+			w = maxW
+		}
+		return w
 	case TierMid:
 		w := termW - 8
 		if w < 20 {
