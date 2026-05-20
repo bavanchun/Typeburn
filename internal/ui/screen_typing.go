@@ -6,6 +6,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 
 	"github.com/bavanchun/Typeburn/internal/config"
+	"github.com/bavanchun/Typeburn/internal/runner"
 	"github.com/bavanchun/Typeburn/internal/theme"
 	"github.com/bavanchun/Typeburn/internal/typing"
 	"github.com/bavanchun/Typeburn/internal/words"
@@ -65,19 +66,10 @@ func newTypingWithSeed(
 	blink bool,
 	seed int64,
 ) TypingModel {
-	g := words.NewGenerator(seed)
-	target := words.ForMode(g, mode, length, ql)
-
-	// For ModeTime, wordTarget encodes the time limit in ms.
-	wordTarget := length
-	if mode == config.ModeTime {
-		wordTarget = length * 1000
-	}
-	eng := typing.New(target, mode, wordTarget)
-
+	s := runner.NewSession(mode, length, ql, seed)
 	return TypingModel{
-		eng: eng, mode: mode, length: length, ql: ql,
-		target: target, th: th, keys: km, blink: blink, seed: seed,
+		eng: s.Engine, mode: s.Mode, length: s.Length, ql: s.QuoteLen,
+		target: s.Target, th: th, keys: km, blink: blink, seed: seed,
 	}
 }
 

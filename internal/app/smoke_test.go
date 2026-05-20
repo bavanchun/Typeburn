@@ -159,6 +159,7 @@ func TestSmoke_ResultMsg_HistoryPersisted(t *testing.T) {
 	tmp := t.TempDir()
 	t.Setenv("XDG_CONFIG_HOME", tmp)
 	t.Setenv("XDG_DATA_HOME", tmp)
+	t.Setenv("NO_COLOR", "")
 
 	m := tea.Model(New(theme.Default(), config.Defaults(), "", ""))
 	m = sm_sendSize(m, 80, 24)
@@ -206,6 +207,7 @@ func TestSmoke_Settings_ThemeRowCycles(t *testing.T) {
 	tmp := t.TempDir()
 	t.Setenv("XDG_CONFIG_HOME", tmp)
 	t.Setenv("XDG_DATA_HOME", tmp)
+	t.Setenv("NO_COLOR", "")
 
 	m := tea.Model(New(theme.Default(), config.Defaults(), "", ""))
 	m = sm_sendSize(m, 80, 24)
@@ -236,6 +238,7 @@ func TestSmoke_Settings_ThemeAppliesLive(t *testing.T) {
 	tmp := t.TempDir()
 	t.Setenv("XDG_CONFIG_HOME", tmp)
 	t.Setenv("XDG_DATA_HOME", tmp)
+	t.Setenv("NO_COLOR", "")
 
 	m := tea.Model(New(theme.Default(), config.Defaults(), "", ""))
 	m = sm_sendSize(m, 100, 40)

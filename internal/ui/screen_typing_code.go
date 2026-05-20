@@ -7,6 +7,7 @@ package ui
 
 import (
 	"github.com/bavanchun/Typeburn/internal/config"
+	"github.com/bavanchun/Typeburn/internal/runner"
 	"github.com/bavanchun/Typeburn/internal/theme"
 	"github.com/bavanchun/Typeburn/internal/typing"
 )
@@ -15,11 +16,11 @@ import (
 // verbatim as the target — words.ForMode is NOT called. This keeps the pure
 // words/typing packages free of code-mode knowledge (I/O boundary is in main).
 func NewTypingCode(target string, th theme.Theme, km config.Keymap, blink bool) TypingModel {
-	eng := typing.New(target, config.ModeCode, 0)
+	s := runner.NewCodeSession(target)
 	return TypingModel{
-		eng:    eng,
-		mode:   config.ModeCode,
-		target: target,
+		eng:    s.Engine,
+		mode:   s.Mode,
+		target: s.Target,
 		th:     th,
 		keys:   km,
 		blink:  blink,

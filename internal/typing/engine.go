@@ -9,10 +9,10 @@ import (
 // Correct reflects whether the typed rune matched the target at that moment.
 // For backspace events, Typed is set to 0 (null rune) and Correct is false.
 type Keystroke struct {
-	TimeMs  int64
-	Typed   rune
-	Target  rune
-	Correct bool
+	TimeMs  int64 `json:"time_ms"`
+	Typed   rune  `json:"typed"`
+	Target  rune  `json:"target"`
+	Correct bool  `json:"correct"`
 }
 
 // Engine maintains the mutable typing state: target buffer, typed buffer,

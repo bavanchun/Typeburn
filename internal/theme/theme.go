@@ -31,6 +31,10 @@ func Available() []string {
 	}
 }
 
+// Names is an alias for Available used by non-UI callers that validate theme
+// names without caring about display order semantics.
+func Names() []string { return Available() }
+
 // EnvNoColor reports whether the NO_COLOR convention is active. Any non-empty
 // value disables color (https://no-color.org).
 func EnvNoColor() bool { return os.Getenv("NO_COLOR") != "" }
