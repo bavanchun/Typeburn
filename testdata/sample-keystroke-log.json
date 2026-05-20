@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "mode": "words",
+  "end_ms": 5000,
+  "log": [
+    {"time_ms": 0, "typed": 104, "target": 104, "correct": true},
+    {"time_ms": 500, "typed": 101, "target": 101, "correct": true},
+    {"time_ms": 900, "typed": 108, "target": 108, "correct": true},
+    {"time_ms": 1300, "typed": 108, "target": 108, "correct": true},
+    {"time_ms": 1700, "typed": 111, "target": 111, "correct": true},
+    {"time_ms": 2100, "typed": 32, "target": 32, "correct": true},
+    {"time_ms": 2500, "typed": 119, "target": 119, "correct": true},
+    {"time_ms": 3000, "typed": 111, "target": 111, "correct": true},
+    {"time_ms": 3500, "typed": 114, "target": 114, "correct": true},
+    {"time_ms": 4200, "typed": 108, "target": 108, "correct": true},
+    {"time_ms": 4800, "typed": 100, "target": 100, "correct": true}
+  ]
+}
