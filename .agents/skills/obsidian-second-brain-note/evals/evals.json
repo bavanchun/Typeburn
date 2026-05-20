@@ -1,0 +1,37 @@
+{
+  "skill": "obsidian-second-brain-note",
+  "cases": [
+    {
+      "name": "speech-ai-pipeline-note",
+      "prompt": "Take this ASR to emotion to voice cloning diagram and save a professional Obsidian second brain note with related concepts.",
+      "assertions": [
+        "Creates note under an AI subfolder, not vault root",
+        "Adds YAML frontmatter with tags, aliases, related links",
+        "Creates or links concept notes for ASR, emotion recognition, TTS, voice cloning",
+        "Uses explicit Obsidian path links with aliases",
+        "Keeps the main note readable and splits deep detail into linked notes"
+      ]
+    },
+    {
+      "name": "article-summary-note",
+      "prompt": "Summarize this AI article into my Obsidian vault as a second brain note.",
+      "assertions": [
+        "Classifies as literature-note or concept-note",
+        "Includes source metadata if source exists",
+        "Extracts durable ideas rather than dumping summary",
+        "Links to existing concepts and tags professionally",
+        "Does not create a long exhausting note when multiple atomic notes are better"
+      ]
+    },
+    {
+      "name": "root-vault-prevention",
+      "prompt": "Create related concept notes for these terms: RAG, embeddings, vector database.",
+      "assertions": [
+        "Does not create files in vault root",
+        "Uses a domain Concepts folder",
+        "Adds backlinks between related concept notes",
+        "Checks for existing notes before creating duplicates"
+      ]
+    }
+  ]
+}
