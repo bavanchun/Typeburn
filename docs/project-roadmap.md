@@ -186,9 +186,15 @@
   to disk; typing content width scales to ~82% of wide terminals (floored at
   80) with the block vertically centered.
 - ✅ **v1.5.0 (Distribution):** Go floor lowered to 1.25.0 (from 1.26.2); hardened POSIX `install.sh` with OS/arch detection, latest-tag resolution, sha256 verification, and atomic ~/.local/bin install (no sudo); new `scripts/test-install-sh.sh` offline regression harness (14 cases, localhost fixtures) integrated into CI as `installer` job; GoReleaser config hardened with determinism pins (project_name, builds.binary, archives.name_template) and `release.prerelease: auto`; new Homebrew cask channel (bavanchun/homebrew-tap-typeburn) with token isolation; 7-asset release integrity invariant preserved. Ship date: 2026-05-20.
+- ✅ **v2.0.0 (Pro CLI):** cobra/fang subcommands (`run`, `history`,
+  `version`, `config`, `replay`), JSON outputs, schema-versioned replay logs,
+  and raw `run --no-tui`; v1 root aliases remain compatible. Ship date:
+  2026-05-20.
 
 ### Next (Optional)
 1. **Gather user feedback** on missing features (Vim motions? more themes?)
+2. **Shell completions + man pages in archives** (cobra/fang can generate them;
+   packaging is deferred).
 
 ### v2.0 Planning (Future)
 - M4: Add target delivery mechanism; remove MissedChars 0-stub or make it meaningful
@@ -218,6 +224,6 @@
 
 ## Conclusion
 
-**Typeburn v1.4.0 is the current release — feature-complete and production-ready.** The codebase is clean, tested, and well-documented. Post-1.0 work has been purely additive or corrective (v1.0.1 precision fix + stub removal; v1.1.0 six theme packs + persistence-failure notice + doc hygiene; v1.2.0 Code mode; v1.3.0 in-app paste for Code mode; v1.4.0 live Settings apply fix + wider centered typing layout) with zero breaking changes to existing users.
+**Typeburn v2.0.0 is the current planned release — feature-complete and production-ready after CI.** The codebase is clean, tested, and well-documented. Post-1.0 work has been additive or corrective, with v2.0.0 adding a professional scriptable CLI while preserving v1 root aliases.
 
 M1 (timer re-arm) and M2 (new-best precision) — the identified correctness bugs — were fixed in v1.0 (d6369de) and v1.0.1 respectively. v1.4.0 fixed a Settings live-apply bug (changes were persisted but not applied in-session) and improved the wide-terminal typing layout. Remaining backlog is additive or cosmetic.

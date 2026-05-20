@@ -27,18 +27,46 @@
 
 ### Entrypoint — `main.go` & Flag Parsing
 
-**Purpose:** Process command-line args and decide: print version banner or launch the TUI. Single `--version` short-circuits; all other inputs (unknown flags, `-h`, `-v`, or positional args) launch the TUI without error exit.
+**Purpose:** Thin fang/cobra entrypoint. It builds `internal/cli.NewRoot()`,
+executes it, and maps returned errors to process exit codes.
 
 **Design:**
-- `decide(args []string) bool`: pure function (no os.Exit, no I/O) — testable
-  - Uses `flag.NewFlagSet` with `ContinueOnError` mode and `io.Discard` output
-  - Only `--version` returns true; parse errors (unknown flags, `-h`) return false
-  - Preserves legacy behavior: `typeburn <anything>` starts test, not error exit
-- `main()`: calls decide(); prints version via `version.String()` or launches `tea.NewProgram(app.NewFromDisk())`
+- `internal/cli.Decide(args)`: pure v1 compatibility helper for root aliases.
+- Root-level unknown args fall through to the TUI; recognized subcommands parse strictly.
+- `main()`: `fang.Execute(context.Background(), cli.NewRoot())`, then `os.Exit(cli.ExitCode(err))`.
 
 **Rationale:** Avoids polluting the TUI with error banners or usage text; unknown input is gracefully treated as "user wants to type."
 
-**Files:** main.go, decide_test.go.
+**Files:** `main.go`, `internal/cli/decide.go`, `internal/cli/decide_test.go`.
+
+---
+
+### `internal/cli` — Scriptable CLI Surface
+
+**Purpose:** cobra/fang command surface: `run`, `history`, `version`,
+`config`, and `replay`. Owns exit codes and command validation.
+
+**Key behavior:**
+- `run` launches the TUI directly into Typing via `ui.StartTestMsg`, or uses
+  `internal/cli/notui` for raw terminal mode.
+- `history` and `config` expose XDG persistence without opening the TUI.
+- `replay` decodes `schema_version: 1` keystroke logs and calls `metrics.Compute`.
+- `output` renders plain tables and deterministic indented JSON.
+
+**Files:** `internal/cli/*.go`, `internal/cli/output/*.go`,
+`internal/cli/notui/*.go`.
+
+---
+
+### `internal/runner` — Shared Session Construction
+
+**Purpose:** Build typing sessions outside the UI layer. Keeps target generation
+and `wordTarget` math shared by TUI and CLI.
+
+**Entry points:**
+- `NewSession(mode, length, quoteLen, seed) Session`
+- `NewCodeSession(snippet) Session`
+- `RebuildEngine(target, mode, length) *typing.Engine`
 
 ---
 
