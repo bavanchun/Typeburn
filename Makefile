@@ -13,7 +13,9 @@ LDFLAGS := -s -w \
 	-X $(MODULE).Commit=$(COMMIT) \
 	-X $(MODULE).Date=$(DATE)
 
-.PHONY: build run test test-race lint fmt clean version snapshot release
+SIZE_LIMIT ?= 8388608
+
+.PHONY: build run test test-race lint fmt clean version snapshot release size-check notui-noexit-check
 
 build:
 	go build -trimpath -ldflags '$(LDFLAGS)' -o $(BIN_DIR)/$(BINARY) .
@@ -32,6 +34,7 @@ lint:
 	@out=$$(gofmt -l .); if [ -n "$$out" ]; then echo "$$out"; exit 1; fi
 	@echo "==> go vet"
 	go vet ./...
+	@$(MAKE) notui-noexit-check
 
 fmt:
 	gofmt -w .
@@ -42,6 +45,19 @@ clean:
 # Build then print the resolved banner — quick check that ldflags landed.
 version: build
 	@$(BIN_DIR)/$(BINARY) --version
+
+# v2 CLI measurement after cobra/fang/x/term: 5,302,642 bytes on darwin/arm64.
+# Keep an 8 MiB guard so dependency growth is deliberate.
+size-check: build
+	@actual=$$(stat -f%z $(BIN_DIR)/$(BINARY) 2>/dev/null || stat -c%s $(BIN_DIR)/$(BINARY)); \
+	if [ $$actual -gt $(SIZE_LIMIT) ]; then \
+		echo "binary $$actual > $(SIZE_LIMIT)" >&2; exit 1; \
+	fi
+
+notui-noexit-check:
+	@if grep -R "os\\.Exit" internal/cli/notui >/dev/null 2>&1; then \
+		echo "internal/cli/notui must not call os.Exit" >&2; exit 1; \
+	fi
 
 # Local dry-run: builds + archives into dist/. Proves the build/archive/ldflags
 # path ONLY (no publish/auth/release-notes — that is Phase 5's disposable-tag run).
