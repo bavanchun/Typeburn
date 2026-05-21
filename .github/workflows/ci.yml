@@ -37,6 +37,12 @@ jobs:
       - name: Test (race detector)
         run: go test ./... -race -count=1
 
+      - name: No-TUI restore guard
+        run: make notui-noexit-check
+
+      - name: Binary size check
+        run: make size-check
+
   installer:
     name: install.sh & release config
     runs-on: ubuntu-latest

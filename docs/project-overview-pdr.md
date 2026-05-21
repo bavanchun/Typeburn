@@ -6,7 +6,10 @@
 
 ## What It Is
 
-Distraction-free, keyboard-driven typing test for terminal. Five screens (Home, Typing, Result, Settings, History) + three test modes (Time, Words, Quote) with live WPM/accuracy/consistency metrics and persistent history.
+Distraction-free, keyboard-driven typing test for terminal. Six screens (Home,
+Typing, Result, Settings, History, CodePaste) + four test modes (Time, Words,
+Quote, Code) with live WPM/accuracy/consistency metrics, persistent history,
+and a scriptable v2 CLI.
 
 **Target user:** Developers, terminal enthusiasts, speed-typers who prefer keyboard-first, no-browser tools.
 
@@ -18,6 +21,8 @@ Distraction-free, keyboard-driven typing test for terminal. Five screens (Home, 
 - **Time:** 15, 30, 60, 120 seconds (timer counts down; test ends when time expires)
 - **Words:** 10, 25, 50, 100 words (test ends when word count typed)
 - **Quote:** Short/Medium/Long/Epic from embedded pack (test ends when quote complete)
+- **Code:** User text via `--text`, in-app paste, or `run --mode code --text`
+  (exact whitespace match)
 
 ### Test Metrics
 - **Net WPM:** correct characters / 5 / seconds × 60
@@ -47,18 +52,18 @@ Distraction-free, keyboard-driven typing test for terminal. Five screens (Home, 
 - **Keybindings:** Centralized, per design spec (Home/Typing/Result/Settings/History each have distinct binds)
 - **Resize handling:** Graceful degradation notice if <60 cols or <20 rows; auto-resume when resized
 - **Paste support:** Ctrl+V pastes entire clipboard into typing; each char logged
+- **CLI:** `run`, `history`, `version`, `config`, and `replay` subcommands with
+  JSON output where useful
 
 ---
 
 ## Explicitly Excluded from v1
 
-- Code mode (custom text input)
 - Vim keybindings / emacs mode
 - Multiplayer / online sync
 - Leaderboard
 - Sound effects
 - Smooth scrolling / animations beyond cursor
-- Solarized-dark or other color themes (reserved for v2)
 - Plugin system
 - AI-generated prompt content
 - Daily challenges / streaks
@@ -92,7 +97,7 @@ Distraction-free, keyboard-driven typing test for terminal. Five screens (Home, 
 
 ## Stack
 
-- **Language:** Go 1.26+
+- **Language:** Go 1.25+
 - **UI Framework:** Bubble Tea v2.0.6 (Elm-style state machine, Cursed Renderer)
 - **Styling:** Lip Gloss v2.0.3 (ANSI color + attributes)
 - **Storage:** atomic JSON (XDG-compliant, gofmt-checked)
@@ -103,4 +108,5 @@ Distraction-free, keyboard-driven typing test for terminal. Five screens (Home, 
 
 ## Development Status
 
-**v1.0 COMPLETE.** All phases shipped. No breaking changes planned before 2.0.
+**v2.0 CLI implementation complete in working tree.** CI gates must pass before
+release.

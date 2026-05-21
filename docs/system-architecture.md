@@ -4,11 +4,19 @@
 
 ## High-Level Architecture
 
-Root `app.Model` implements Bubble Tea's `tea.Model` interface (Init/Update/View). Global state: screen enum + five sub-models (Home, Typing, Result, Settings, History) + theme + keymap.
+`main.go` builds a fang/cobra root command in `internal/cli`. Bare `typeburn`
+still launches the Bubble Tea TUI, while subcommands provide scriptable
+history/config/version/replay/run flows.
+
+Root `app.Model` implements Bubble Tea's `tea.Model` interface (Init/Update/View). Global state: screen enum + six sub-models (Home, Typing, Result, Settings, History, CodePaste) + theme + keymap.
 
 **Message flow:** Top-level messages (StartTestMsg, ResultMsg, AbortMsg, NavHistoryMsg) route via `if _,ok := msg.(Type)` in root Update(); screen-specific messages are delegated to sub-models.
 
 **Rendered output:** Each screen's View() is composed into a single terminal frame. Bubble Tea's Cursed Renderer diffs against the previous frame and outputs only changed cells.
+
+**Headless output:** `internal/cli/output` writes plain tabwriter tables or
+indented JSON. `run --no-tui` uses `internal/cli/notui` and `golang.org/x/term`
+raw mode; it never calls `os.Exit` inside the raw-mode package.
 
 ---
 

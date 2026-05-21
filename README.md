@@ -92,11 +92,14 @@ A cask wrapping the prebuilt release archive (no Go/Xcode toolchain needed).
 ## Usage
 
 ```sh
-./bin/typeburn            # from `make build`
-Typeburn                  # from `go install` / release archive
-Typeburn --version        # print version, commit, build date, toolchain; then exit
-Typeburn --text snippet.go # Code mode: type your own file
-cat snippet.go | Typeburn --text -   # Code mode: read the snippet from stdin
+typeburn                         # open the TUI Home screen
+typeburn -h                      # styled help with subcommands
+typeburn run --mode time --duration 30 --theme nord
+typeburn history --json
+typeburn config set theme nord
+typeburn replay testdata/sample-keystroke-log.json --json
+typeburn --version               # v1-compatible alias
+typeburn --text snippet.go       # v1-compatible Code mode alias
 ```
 
 In **Code mode** you type the supplied text exactly — every space, tab, and
@@ -104,6 +107,9 @@ line break — and the test finishes on an exact match. Without `--text`, tab to
 the Code row and press enter to open the in-app paste screen, bracket-paste a
 snippet, then press enter to start. Code runs appear in History but never set
 a ★ personal best.
+
+See [docs/cli-reference.md](./docs/cli-reference.md) for the full subcommand
+surface, JSON shapes, exit codes, and raw `--no-tui` limitations.
 
 The minimum usable terminal size is **60 columns × 20 rows**. If the terminal is
 too small the app shows a resize prompt and resumes automatically once you resize.

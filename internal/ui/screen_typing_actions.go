@@ -5,17 +5,13 @@ import (
 
 	"github.com/bavanchun/Typeburn/internal/config"
 	"github.com/bavanchun/Typeburn/internal/metrics"
+	"github.com/bavanchun/Typeburn/internal/runner"
 	"github.com/bavanchun/Typeburn/internal/theme"
-	"github.com/bavanchun/Typeburn/internal/typing"
 )
 
 // restartSame resets engine and timer but keeps the same target text.
 func (m TypingModel) restartSame() TypingModel {
-	wordTarget := m.length
-	if m.mode == config.ModeTime {
-		wordTarget = m.length * 1000
-	}
-	m.eng = typing.New(m.target, m.mode, wordTarget)
+	m.eng = runner.RebuildEngine(m.target, m.mode, m.length)
 	m.startMs, m.nowMs, m.lastPaintMs, m.headerWPM = 0, 0, 0, 0
 	return m
 }

@@ -25,6 +25,7 @@ make run         # go run .
 make test        # go test ./...
 make test-race   # go test ./... -race -count=1   (the CI gate)
 make lint        # gofmt -l check + go vet
+make size-check  # build + binary size cap
 make fmt         # gofmt -w .
 make version     # build, then print the resolved version banner
 make clean       # remove ./bin/
@@ -32,6 +33,25 @@ make clean       # remove ./bin/
 
 All of `build`, `vet`, `gofmt -l` (empty), and `go test ./... -race -count=1`
 must pass before a change is merged — these are exactly what CI enforces.
+`make lint` also rejects `os.Exit` inside `internal/cli/notui` so raw-mode
+terminal restoration is not bypassed.
+
+## Dependency policy
+
+Allowed dependency families are stdlib, `charm.land/*`,
+`github.com/charmbracelet/*`, `github.com/spf13/cobra`, and `golang.org/x/*`.
+Anything else needs explicit user approval and a short rationale in the PR.
+
+Pinned CLI deps as of v2.0.0: cobra `v1.10.2`, fang `v1.0.0`,
+`golang.org/x/term v0.43.0`. Bump them deliberately, not with `@latest`.
+
+## Keystroke schema versioning
+
+`typeburn replay` accepts `schema_version: 1` logs using
+`typing.Keystroke` JSON tags. Adding a `Keystroke` field is non-breaking only
+when old logs decode safely via a zero value or `omitempty`. Renaming/removing a
+field or changing semantics requires a new schema version and explicit migration
+handling in `internal/cli/cmd_replay.go`.
 
 ## Branch & PR workflow (protected main)
 
