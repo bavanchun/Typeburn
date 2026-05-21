@@ -1,30 +1,24 @@
-## [1.5.0] - 2026-05-20
+## [2.0.0] - 2026-05-20
 
 ### Added
 
-- **One-line installer for Linux and macOS.** No Go toolchain required:
-
-  ```sh
-  curl -fsSL https://raw.githubusercontent.com/bavanchun/Typeburn/main/install.sh | sh
-  ```
-
-  It detects your OS/arch, downloads the matching release archive, **verifies
-  its sha256 against `checksums.txt`**, and installs `typeburn` into
-  `~/.local/bin` (no sudo). `BIN_DIR=` and `VERSION=` overrides are supported,
-  and the README documents a non-piped audit path plus the honest trust
-  boundary (the checksum defends the download, not a compromised release).
-- **Homebrew cask.** Install or upgrade via Homebrew on macOS/Linux:
-
-  ```sh
-  brew install bavanchun/tap-typeburn/typeburn
-  ```
-
-  The cask wraps the prebuilt release archive — no Go/Xcode toolchain needed.
+- Professional CLI surface via cobra/fang: `run`, `history`, `version`,
+  `config`, and `replay` subcommands, with styled `-h` / `--help`.
+- Scriptable JSON output for `history`, `version`, `config list`, `replay`,
+  and raw `run --no-tui --json` results.
+- Raw terminal runner: `typeburn run --no-tui --mode words --words 10`.
+  It restores terminal state on normal completion, panic, and handled aborts.
+- Schema-versioned keystroke replay fixture and parser
+  (`schema_version: 1`).
 
 ### Changed
 
-- **`go install` now requires Go 1.25+** (was 1.26+). The effective floor is
-  set by direct dependencies; 1.25 is the lowest the module graph allows.
-  Pre-built binaries, the installer, and the Homebrew cask need no Go at all.
+- `main.go` is now a thin fang/cobra entrypoint. The v1 aliases
+  `--version` and `--text <file>` still work, and root-level unknown args still
+  fall through to the TUI.
+- Session construction moved into `internal/runner` so the TUI, replay, and
+  raw runner share target/engine setup.
+- Dependency policy now explicitly permits cobra, fang, and `golang.org/x/*`
+  for the CLI surface.
 
-[1.5.0]: https://github.com/bavanchun/Typeburn/releases/tag/v1.5.0
+[2.0.0]: https://github.com/bavanchun/Typeburn/releases/tag/v2.0.0
