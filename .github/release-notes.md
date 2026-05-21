@@ -1,24 +1,21 @@
-## [2.0.0] - 2026-05-20
+## [2.1.0] - 2026-05-21
 
 ### Added
 
-- Professional CLI surface via cobra/fang: `run`, `history`, `version`,
-  `config`, and `replay` subcommands, with styled `-h` / `--help`.
-- Scriptable JSON output for `history`, `version`, `config list`, `replay`,
-  and raw `run --no-tui --json` results.
-- Raw terminal runner: `typeburn run --no-tui --mode words --words 10`.
-  It restores terminal state on normal completion, panic, and handled aborts.
-- Schema-versioned keystroke replay fixture and parser
-  (`schema_version: 1`).
+- **Opt-in update check.** Enable with `typeburn config set update_check on`.
+  Each TUI launch fires a background check (800 ms timeout); if a newer stable
+  release is found the Result screen shows a muted footer hint:
+  `↑ v2.1.0 available — run "typeburn version --check-update"`.
+- `typeburn version --check-update [--json]` — explicit network check that
+  always bypasses the 24 h cache.
+- `internal/update` package: pure stdlib (no bubbletea/lipgloss), 24 h
+  XDG-state cache with semver injection guard, GitHub API client with
+  redirect-block and 1.5 s total timeout.
 
 ### Changed
 
-- `main.go` is now a thin fang/cobra entrypoint. The v1 aliases
-  `--version` and `--text <file>` still work, and root-level unknown args still
-  fall through to the TUI.
-- Session construction moved into `internal/runner` so the TUI, replay, and
-  raw runner share target/engine setup.
-- Dependency policy now explicitly permits cobra, fang, and `golang.org/x/*`
-  for the CLI surface.
+- `typeburn config set update_check on|off` (also accepts `true/false/yes/no/1/0`).
+- `typeburn config list` now includes `update_check` (default `false`).
+- Binary size cap raised 8 MiB → 10 MiB (net/http adds ~260 KB).
 
-[2.0.0]: https://github.com/bavanchun/Typeburn/releases/tag/v2.0.0
+[2.1.0]: https://github.com/bavanchun/Typeburn/releases/tag/v2.1.0
