@@ -9,6 +9,7 @@ import (
 	"github.com/bavanchun/Typeburn/internal/config"
 	"github.com/bavanchun/Typeburn/internal/metrics"
 	"github.com/bavanchun/Typeburn/internal/theme"
+	"github.com/bavanchun/Typeburn/internal/update"
 	"github.com/bavanchun/Typeburn/internal/words"
 )
 
@@ -324,6 +325,55 @@ func TestResultView_NoZeroSize(t *testing.T) {
 	m := newTestResult()
 	m.w, m.h = 0, 0
 	_ = m.View()
+}
+
+// TestResultView_UpdateHint_Absent checks no footer hint line when updateHint is nil.
+func TestResultView_UpdateHint_Absent(t *testing.T) {
+	m := newTestResult() // updateHint is nil by default
+	view := m.View()
+	if strings.Contains(view, "available") {
+		t.Errorf("expected no update hint in view, got:\n%s", view)
+	}
+}
+
+// TestResultView_UpdateHint_Present checks the footer hint renders version + command.
+func TestResultView_UpdateHint_Present(t *testing.T) {
+	hint := &update.Result{
+		Current:          "v2.0.0",
+		Latest:           "v2.1.0",
+		UpgradeAvailable: true,
+	}
+	m := newTestResult().WithUpdateHint(hint)
+	view := m.View()
+	if !strings.Contains(view, "v2.1.0") {
+		t.Errorf("expected version in hint, view:\n%s", view)
+	}
+	if !strings.Contains(view, "typeburn version --check-update") {
+		t.Errorf("expected command in hint, view:\n%s", view)
+	}
+}
+
+// TestRenderUpdateHint_InjectionGuard checks that non-semver Latest is silently suppressed.
+func TestRenderUpdateHint_InjectionGuard(t *testing.T) {
+	cases := []struct {
+		name   string
+		latest string
+	}{
+		{"ansi escape", "\x1b[31mv2.1.0\x1b[0m"},
+		{"shell injection", "v2.1.0; rm -rf /"},
+		{"empty string", ""},
+		{"plain text", "latest"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			hint := &update.Result{Latest: c.latest, UpgradeAvailable: true}
+			m := newTestResult().WithUpdateHint(hint)
+			got := m.renderUpdateHint()
+			if got != "" {
+				t.Errorf("expected empty for invalid semver %q, got %q", c.latest, got)
+			}
+		})
+	}
 }
 
 // TestAccColorRole checks the accuracy color thresholds.

@@ -13,7 +13,7 @@ LDFLAGS := -s -w \
 	-X $(MODULE).Commit=$(COMMIT) \
 	-X $(MODULE).Date=$(DATE)
 
-SIZE_LIMIT ?= 8388608
+SIZE_LIMIT ?= 10485760
 
 .PHONY: build run test test-race lint fmt clean version snapshot release size-check notui-noexit-check
 
@@ -47,7 +47,7 @@ version: build
 	@$(BIN_DIR)/$(BINARY) --version
 
 # v2 CLI measurement after cobra/fang/x/term: 5,302,642 bytes on darwin/arm64.
-# Keep an 8 MiB guard so dependency growth is deliberate.
+# v2.1 adds net/http for update-check (~260 KB): cap raised to 10 MiB.
 size-check: build
 	@actual=$$(stat -f%z $(BIN_DIR)/$(BINARY) 2>/dev/null || stat -c%s $(BIN_DIR)/$(BINARY)); \
 	if [ $$actual -gt $(SIZE_LIMIT) ]; then \

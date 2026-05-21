@@ -81,7 +81,8 @@ func runTUICommand(ctx context.Context, e env, req runRequest) error {
 		}
 		codeText = text
 	}
-	model := app.New(theme.Load(themeName, theme.EnvNoColor()), settings, codeText, "")
+	hint := resolveUpdateHint(ctx, settings)
+	model := app.New(theme.Load(themeName, theme.EnvNoColor()), settings, codeText, "", hint)
 	start := ui.StartTestMsg{
 		Mode: req.mode, Length: req.length, QuoteLen: req.quoteLen, CodeText: codeText,
 	}

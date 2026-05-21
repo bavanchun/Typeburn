@@ -11,6 +11,28 @@ release section is extracted verbatim and passed to GoReleaser via
 
 ## [Unreleased]
 
+## [2.1.0] - unreleased
+
+### Added
+
+- **Update check** (`internal/update`): pure-stdlib package that fetches the
+  latest GitHub release, caches the result for 24 h under
+  `$XDG_STATE_HOME/typeburn/update-check.json`, and compares semver.
+- `typeburn version --check-update` explicit flag: always hits the network,
+  prints a human-readable or `--json` result regardless of config.
+- `update_check` config key (boolean, default `false`, opt-in):
+  `typeburn config set update_check on`. When enabled, every TUI launch
+  performs an opportunistic background check (800 ms timeout); if a newer
+  stable release is found, the Result screen shows a muted footer hint.
+- Result-screen update-available footer: `↑ v2.1.0 available — run "typeburn version --check-update"`.
+  Belt-and-suspenders semver injection guard at both cache-load and render time.
+
+### Changed
+
+- Size cap raised from 8 MiB → 10 MiB (net/http adds ~260 KB).
+- `typeburn config list` and `typeburn config set` now include `update_check`.
+- `parseBool` now accepts `on`/`off`/`yes`/`no` in addition to `true`/`false`/`1`/`0`.
+
 ## [2.0.0] - 2026-05-20
 
 ### Added

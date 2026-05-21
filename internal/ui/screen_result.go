@@ -6,6 +6,7 @@ import (
 	"github.com/bavanchun/Typeburn/internal/config"
 	"github.com/bavanchun/Typeburn/internal/metrics"
 	"github.com/bavanchun/Typeburn/internal/theme"
+	"github.com/bavanchun/Typeburn/internal/update"
 	"github.com/bavanchun/Typeburn/internal/words"
 )
 
@@ -22,6 +23,10 @@ type ResultModel struct {
 	quoteLen words.QuoteLen
 	codeText string // ModeCode snippet, so restart-same re-runs it (not "")
 	isBest   bool   // set externally by Phase 8; false = badge hidden
+
+	// updateHint is set when an opportunistic check found a newer release.
+	// Nil means no footer hint. Set via WithUpdateHint after NewResult.
+	updateHint *update.Result
 
 	w, h int
 	th   theme.Theme
@@ -52,6 +57,17 @@ func (m ResultModel) SetSize(w, h int) ResultModel {
 // Called by the root after history persistence (Phase 8).
 func (m ResultModel) WithBest(best bool) ResultModel {
 	m.isBest = best
+	return m
+}
+
+// UpdateHint returns the current update hint (may be nil).
+func (m ResultModel) UpdateHint() *update.Result { return m.updateHint }
+
+// WithUpdateHint attaches an update hint to the result model.
+// The hint renders as a single muted footer line if non-nil and the version
+// string passes semver validation (injection guard applied at render time too).
+func (m ResultModel) WithUpdateHint(hint *update.Result) ResultModel {
+	m.updateHint = hint
 	return m
 }
 

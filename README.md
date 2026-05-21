@@ -111,6 +111,23 @@ a ★ personal best.
 See [docs/cli-reference.md](./docs/cli-reference.md) for the full subcommand
 surface, JSON shapes, exit codes, and raw `--no-tui` limitations.
 
+### Check for updates
+
+```sh
+typeburn version --check-update          # always hits network, human-readable
+typeburn version --check-update --json   # machine-readable JSON
+```
+
+Opt-in automatic check on TUI launch (result cached 24 h):
+
+```sh
+typeburn config set update_check on
+```
+
+When enabled, every TUI launch runs a background check with an 800 ms timeout.
+If a newer stable release is found, the Result screen shows a muted footer hint:
+`↑ v2.1.0 available — run "typeburn version --check-update"`.
+
 The minimum usable terminal size is **60 columns × 20 rows**. If the terminal is
 too small the app shows a resize prompt and resumes automatically once you resize.
 

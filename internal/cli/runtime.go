@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"os"
+	"time"
 
 	tea "charm.land/bubbletea/v2"
 
@@ -12,6 +13,8 @@ import (
 	"github.com/bavanchun/Typeburn/internal/codetext"
 	"github.com/bavanchun/Typeburn/internal/config"
 	"github.com/bavanchun/Typeburn/internal/storage"
+	"github.com/bavanchun/Typeburn/internal/update"
+	"github.com/bavanchun/Typeburn/internal/version"
 )
 
 type env struct {
@@ -77,8 +80,29 @@ func WithModelRunner(run func(context.Context, tea.Model) error) Option {
 	return func(e *env) { e.runModel = run }
 }
 
+// resolveUpdateHint performs the opportunistic update check when the user has
+// opted in (settings.UpdateCheck == true) and the build has a real release version.
+// Uses an 800ms timeout — tighter than the explicit --check-update path (1.5s) so
+// TUI launch latency on a cache miss stays imperceptible.
+// Returns nil on any error or dev/pseudo-version — caller always gets a clean hint or nothing.
+func resolveUpdateHint(ctx context.Context, settings config.Settings) *update.Result {
+	if !settings.UpdateCheck {
+		return nil
+	}
+	ver := version.Resolve().Version
+	ctx, cancel := context.WithTimeout(ctx, 800*time.Millisecond)
+	defer cancel()
+	r, err := update.Check(ctx, ver, false)
+	if err != nil || r == nil || !r.UpgradeAvailable {
+		return nil
+	}
+	return r
+}
+
 func runHomeTUI(ctx context.Context, codeText, codeHint string) error {
-	return runModelTUI(ctx, app.NewFromDisk(codeText, codeHint))
+	settings := storage.LoadSettings()
+	hint := resolveUpdateHint(ctx, settings)
+	return runModelTUI(ctx, app.NewFromDisk(codeText, codeHint, hint))
 }
 
 func runModelTUI(ctx context.Context, model tea.Model) error {

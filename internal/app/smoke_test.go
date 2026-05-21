@@ -22,7 +22,7 @@ func sandboxedModel(t *testing.T) Model {
 	tmp := t.TempDir()
 	t.Setenv("XDG_CONFIG_HOME", tmp)
 	t.Setenv("XDG_DATA_HOME", tmp)
-	return New(theme.Default(), config.Defaults(), "", "")
+	return New(theme.Default(), config.Defaults(), "", "", nil)
 }
 
 // sm_sendSize sends a WindowSizeMsg and returns the new model.
@@ -161,7 +161,7 @@ func TestSmoke_ResultMsg_HistoryPersisted(t *testing.T) {
 	t.Setenv("XDG_DATA_HOME", tmp)
 	t.Setenv("NO_COLOR", "")
 
-	m := tea.Model(New(theme.Default(), config.Defaults(), "", ""))
+	m := tea.Model(New(theme.Default(), config.Defaults(), "", "", nil))
 	m = sm_sendSize(m, 80, 24)
 
 	m, _ = m.Update(ui.ResultMsg{
@@ -209,7 +209,7 @@ func TestSmoke_Settings_ThemeRowCycles(t *testing.T) {
 	t.Setenv("XDG_DATA_HOME", tmp)
 	t.Setenv("NO_COLOR", "")
 
-	m := tea.Model(New(theme.Default(), config.Defaults(), "", ""))
+	m := tea.Model(New(theme.Default(), config.Defaults(), "", "", nil))
 	m = sm_sendSize(m, 80, 24)
 
 	// Navigate to Settings (Theme row sel=0 by default).
@@ -240,7 +240,7 @@ func TestSmoke_Settings_ThemeAppliesLive(t *testing.T) {
 	t.Setenv("XDG_DATA_HOME", tmp)
 	t.Setenv("NO_COLOR", "")
 
-	m := tea.Model(New(theme.Default(), config.Defaults(), "", ""))
+	m := tea.Model(New(theme.Default(), config.Defaults(), "", "", nil))
 	m = sm_sendSize(m, 100, 40)
 	m, _ = sm_sendKey(m, '2', 0) // → Settings, Theme row (sel=0)
 
@@ -269,7 +269,7 @@ func TestSmoke_Settings_BlinkAppliesLive(t *testing.T) {
 	t.Setenv("XDG_CONFIG_HOME", tmp)
 	t.Setenv("XDG_DATA_HOME", tmp)
 
-	m := tea.Model(New(theme.Default(), config.Defaults(), "", ""))
+	m := tea.Model(New(theme.Default(), config.Defaults(), "", "", nil))
 	m = sm_sendSize(m, 100, 40)
 	m, _ = sm_sendKey(m, '2', 0) // Settings
 

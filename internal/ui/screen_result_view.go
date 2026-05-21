@@ -3,12 +3,18 @@ package ui
 import (
 	"fmt"
 	"math"
+	"regexp"
 	"strings"
 
 	"charm.land/lipgloss/v2"
 
 	"github.com/bavanchun/Typeburn/internal/theme"
 )
+
+// validSemverFooter rejects any version string that could carry ANSI/control
+// sequences before it reaches the TUI. Belt-and-suspenders on top of the cache
+// load-time guard in internal/update.
+var validSemverFooter = regexp.MustCompile(`^v?\d+\.\d+\.\d+([-+.][\w.-]+)?$`)
 
 // resultHints returns the footer hint set for the result screen per mockups §3.
 func resultHints() []Hint {
@@ -25,12 +31,17 @@ func resultHints() []Hint {
 // Layout mirrors mockups §3.
 func (m ResultModel) View() string {
 	footer := RenderFooter(resultHints(), m.w, m.th)
+	updateLine := m.renderUpdateHint()
 
 	panel := m.renderPanel()
 
 	// Vertical padding: pin footer to bottom.
 	panelLines := strings.Count(panel, "\n") + 1
-	used := panelLines + 1 + 1 // panel + blank + footer
+	updateLineCount := 0
+	if updateLine != "" {
+		updateLineCount = 1
+	}
+	used := panelLines + 1 + updateLineCount + 1 // panel + blank + [update hint +] footer
 	spacer := m.h - used
 	if spacer < 1 {
 		spacer = 1
@@ -39,12 +50,30 @@ func (m ResultModel) View() string {
 	var b strings.Builder
 	b.WriteString(panel)
 	b.WriteString(strings.Repeat("\n", spacer))
+	if updateLine != "" {
+		b.WriteString(updateLine)
+		b.WriteString("\n")
+	}
 	b.WriteString(footer)
 
 	if m.w > 0 && m.h > 0 {
 		return lipgloss.Place(m.w, m.h, lipgloss.Center, lipgloss.Center, b.String())
 	}
 	return b.String()
+}
+
+// renderUpdateHint returns the update-available footer line, or "" if no hint
+// or if the version string fails semver validation (injection guard).
+func (m ResultModel) renderUpdateHint() string {
+	if m.updateHint == nil {
+		return ""
+	}
+	latest := m.updateHint.Latest
+	if !validSemverFooter.MatchString(latest) {
+		return ""
+	}
+	hint := fmt.Sprintf("↑ %s available — run \"typeburn version --check-update\"", latest)
+	return m.th.Style(theme.RoleTextMuted).Render(hint)
 }
 
 // renderPanel builds the rounded-border result panel with all content sections.

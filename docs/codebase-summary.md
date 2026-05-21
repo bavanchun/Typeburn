@@ -4,6 +4,28 @@
 
 ## Package Overview
 
+### `internal/update` — GitHub Release Update Check
+
+**Purpose:** Pure-stdlib (no bubbletea/lipgloss) package that fetches the latest GitHub release, compares semver, and caches the result. Opt-in feature; never called on `--no-tui` paths.
+
+**Key types:**
+- `Release`: GitHub API payload (TagName, Draft, Prerelease, PublishedAt, HTMLURL)
+- `Result`: {SchemaVersion, Current, Latest, UpgradeAvailable, ReleaseURL, CheckedAt}
+
+**Entry points:**
+- `Check(ctx, currentVer, force) (*Result, error)`: returns nil,nil for dev/unknown versions; uses cache unless force=true
+- `FetchLatest(ctx, currentVer) (Release, error)`: raw HTTP call; ErrRateLimit/ErrUpstream sentinels
+- `Compare(a, b string) int`: semver comparison (-1/0/1), tolerates leading v, strips pre-release suffix
+- `IsPrerelease(tag string) bool`: detects -rc/-beta/-alpha/-pre and v0.0.0- prefix
+
+**Cache:** `$XDG_STATE_HOME/typeburn/update-check.json` (default `~/.local/state/typeburn/`), 24 h TTL, 7 d max-age, schema-version + semver re-validation + URL-prefix check on load (injection guard).
+
+**Test seams:** package-level vars `fetchURL` (HTTP endpoint) and `cacheFilePath` (temp dir in tests).
+
+**Files:** `result.go`, `compare.go`, `compare_test.go`, `prerelease.go`, `prerelease_test.go`, `client.go`, `client_test.go`, `cache.go`, `cache_test.go`, `check.go`, `check_test.go`.
+
+---
+
 ### `internal/version` — Build-Time Version Injection
 
 **Purpose:** Expose the release version and commit metadata to the `--version` flag and error messages. Supports two injection paths: ldflags-stamped binaries (GoReleaser, `make release`) and fallback to module build info (bare `go install`).

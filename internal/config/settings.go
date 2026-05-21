@@ -30,13 +30,15 @@ func LengthsFor(m Mode) []int {
 	}
 }
 
-// Settings is the persisted user configuration. v1 exposes exactly these four
-// controls; nothing else is configurable.
+// Settings is the persisted user configuration.
 type Settings struct {
 	Theme         string `json:"theme"`          // one of theme.Available()
 	DefaultMode   Mode   `json:"default_mode"`   // seeds the Home screen
 	DefaultLength int    `json:"default_length"` // valid for DefaultMode
 	BlinkCursor   bool   `json:"blink_cursor"`   // typing-screen cursor blink
+	// UpdateCheck enables an opt-in opportunistic update check on TUI launch.
+	// Default is false to preserve offline-first posture.
+	UpdateCheck bool `json:"update_check"`
 }
 
 // Defaults returns the baseline configuration used on first run or whenever
@@ -47,6 +49,7 @@ func Defaults() Settings {
 		DefaultMode:   ModeTime,
 		DefaultLength: 30,
 		BlinkCursor:   false,
+		UpdateCheck:   false,
 	}
 }
 
