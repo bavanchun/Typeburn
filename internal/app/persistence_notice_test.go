@@ -32,7 +32,7 @@ func TestPersistNotice_HistoryFailureShownThenDismissed(t *testing.T) {
 	t.Setenv("XDG_DATA_HOME", blockedXDG(t))
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 
-	m := tea.Model(New(theme.Default(), config.Defaults(), "", ""))
+	m := tea.Model(New(theme.Default(), config.Defaults(), "", "", nil))
 	m = sm_sendSize(m, 80, 24)
 
 	m, _ = m.Update(ui.ResultMsg{
@@ -65,7 +65,7 @@ func TestPersistNotice_SettingsFailureSetsError(t *testing.T) {
 	t.Setenv("XDG_CONFIG_HOME", blockedXDG(t))
 	t.Setenv("XDG_DATA_HOME", t.TempDir())
 
-	m := New(theme.Default(), config.Defaults(), "", "")
+	m := New(theme.Default(), config.Defaults(), "", "", nil)
 	s := m.settings
 	s.BlinkCursor = !s.BlinkCursor
 	m = m.applySettings(s) // value receiver → use the returned model

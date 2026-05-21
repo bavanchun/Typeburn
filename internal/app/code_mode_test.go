@@ -21,7 +21,7 @@ func codeTestModel(t *testing.T, codeText, codeHint string) Model {
 	tmp := t.TempDir()
 	t.Setenv("XDG_CONFIG_HOME", tmp)
 	t.Setenv("XDG_DATA_HOME", tmp)
-	return New(theme.Default(), config.Defaults(), codeText, codeHint)
+	return New(theme.Default(), config.Defaults(), codeText, codeHint, nil)
 }
 
 // TestCodeMode_StartTestMsgRoutesToTyping verifies StartTestMsg{Mode:ModeCode}
@@ -127,7 +127,7 @@ func TestCodeMode_ResultNotNewBest(t *testing.T) {
 	tmp := t.TempDir()
 	t.Setenv("XDG_CONFIG_HOME", tmp)
 	t.Setenv("XDG_DATA_HOME", tmp)
-	m := tea.Model(New(theme.Default(), config.Defaults(), codeText, ""))
+	m := tea.Model(New(theme.Default(), config.Defaults(), codeText, "", nil))
 	m, _ = m.Update(tea.WindowSizeMsg{Width: 80, Height: 24})
 	m, _ = m.Update(ui.StartTestMsg{Mode: config.ModeCode, CodeText: codeText})
 

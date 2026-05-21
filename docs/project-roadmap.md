@@ -190,6 +190,9 @@
   `version`, `config`, `replay`), JSON outputs, schema-versioned replay logs,
   and raw `run --no-tui`; v1 root aliases remain compatible. Ship date:
   2026-05-20.
+- 🔄 **v2.1.0 (Update Check):** opt-in `update_check` config key, opportunistic
+  TUI launch check (800 ms timeout, 24 h cache), Result-screen footer hint, and
+  `typeburn version --check-update` explicit flag with `--json` support.
 
 ### Next (Optional)
 1. **Gather user feedback** on missing features (Vim motions? more themes?)

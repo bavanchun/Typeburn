@@ -5,16 +5,18 @@ import (
 	"github.com/bavanchun/Typeburn/internal/storage"
 	"github.com/bavanchun/Typeburn/internal/theme"
 	"github.com/bavanchun/Typeburn/internal/ui"
+	"github.com/bavanchun/Typeburn/internal/update"
 )
 
 // NewFromDisk builds the root model loading persisted settings from disk.
 // Falls back to config.Defaults() if the file is missing or corrupt.
 // codeText is the loaded snippet (empty string = no code mode); codeHint is
-// a user-facing reason string when loading failed (empty = no error).
-func NewFromDisk(codeText, codeHint string) Model {
+// a user-facing reason string when loading failed (empty = no error);
+// updateHint is non-nil when an opportunistic check found a newer release.
+func NewFromDisk(codeText, codeHint string, updateHint *update.Result) Model {
 	s := storage.LoadSettings()
 	th := theme.Load(s.Theme, theme.EnvNoColor())
-	return New(th, s, codeText, codeHint)
+	return New(th, s, codeText, codeHint, updateHint)
 }
 
 // applySettings applies a settings change to the LIVE model the program

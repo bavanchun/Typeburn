@@ -21,6 +21,12 @@ func DataDir() (string, error) {
 	return resolveDir("XDG_DATA_HOME", filepath.Join(".local", "share"))
 }
 
+// StateDir returns the directory for runtime state (e.g. update-check cache):
+// $XDG_STATE_HOME/typeburn, falling back to ~/.local/state/typeburn.
+func StateDir() (string, error) {
+	return resolveDir("XDG_STATE_HOME", filepath.Join(".local", "state"))
+}
+
 // resolveDir prefers an absolute XDG env var; otherwise it joins the user's
 // home with the conventional fallback subpath. macOS has no XDG vars by
 // default, so the HOME fallback is the normal path there.

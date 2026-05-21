@@ -33,7 +33,7 @@ func NewRoot(opts ...Option) *cobra.Command {
 			}
 			printVersion, textPath := Decide(args)
 			if printVersion {
-				return runVersion(cmd, false)
+				return runVersion(cmd, false, false)
 			}
 			return launchHome(cmd.Context(), e, textPath)
 		},

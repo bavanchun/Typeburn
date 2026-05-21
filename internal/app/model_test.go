@@ -7,11 +7,14 @@ import (
 	tea "charm.land/bubbletea/v2"
 
 	"github.com/bavanchun/Typeburn/internal/config"
+	"github.com/bavanchun/Typeburn/internal/metrics"
 	"github.com/bavanchun/Typeburn/internal/theme"
+	"github.com/bavanchun/Typeburn/internal/ui"
+	"github.com/bavanchun/Typeburn/internal/update"
 )
 
 func newTestModel() Model {
-	return New(theme.Default(), config.Defaults(), "", "")
+	return New(theme.Default(), config.Defaults(), "", "", nil)
 }
 
 func press(code rune, mod tea.KeyMod) tea.KeyPressMsg {
@@ -67,6 +70,39 @@ func TestCtrlCQuits(t *testing.T) {
 	if _, ok := cmd().(tea.QuitMsg); !ok {
 		t.Fatalf("ctrl+c should return tea.Quit, got %T", cmd())
 	}
+}
+
+// TestUpdateHint_ForwardedToResult checks that an updateHint set on Model is
+// forwarded to the ResultModel via handleResultMsg.
+func TestUpdateHint_ForwardedToResult(t *testing.T) {
+	hint := &update.Result{Latest: "v2.1.0", UpgradeAvailable: true}
+	m := New(theme.Default(), config.Defaults(), "", "", hint)
+
+	resultMsg := ui.ResultMsg{
+		Result: metrics.Result{NetWPM: 80, Accuracy: 95, DurationMs: 30000},
+		Mode:   config.ModeTime,
+		Length: 30,
+	}
+	m2 := m.handleResultMsg(resultMsg)
+	if m2.result.UpdateHint() == nil {
+		t.Error("updateHint should be forwarded to ResultModel")
+	}
+}
+
+// TestUpdateHint_NilSafe checks that nil updateHint doesn't cause panics via handleResultMsg.
+func TestUpdateHint_NilSafe(t *testing.T) {
+	defer func() {
+		if r := recover(); r != nil {
+			t.Fatalf("handleResultMsg panicked with nil updateHint: %v", r)
+		}
+	}()
+	m := New(theme.Default(), config.Defaults(), "", "", nil)
+	resultMsg := ui.ResultMsg{
+		Result: metrics.Result{NetWPM: 80, Accuracy: 95, DurationMs: 30000},
+		Mode:   config.ModeTime,
+		Length: 30,
+	}
+	_ = m.handleResultMsg(resultMsg)
 }
 
 func TestViewRendersActiveScreen(t *testing.T) {

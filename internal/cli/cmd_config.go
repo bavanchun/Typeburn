@@ -89,6 +89,7 @@ func configRows(s config.Settings) [][]string {
 		{"default_mode", string(s.DefaultMode)},
 		{"default_length", strconv.Itoa(s.DefaultLength)},
 		{"blink_cursor", strconv.FormatBool(s.BlinkCursor)},
+		{"update_check", strconv.FormatBool(s.UpdateCheck)},
 	}
 }
 
@@ -126,9 +127,15 @@ func configSet(s *config.Settings, key, value string) error {
 	case "blink_cursor":
 		v, ok := parseBool(value)
 		if !ok {
-			return usageError("blink_cursor must be true, false, 1, or 0")
+			return usageError("blink_cursor must be true, false, 1, 0, on, off, yes, or no")
 		}
 		s.BlinkCursor = v
+	case "update_check":
+		v, ok := parseBool(value)
+		if !ok {
+			return usageError("update_check must be true, false, 1, 0, on, off, yes, or no")
+		}
+		s.UpdateCheck = v
 	default:
 		return usageError("unknown config key %q", key)
 	}
@@ -136,10 +143,10 @@ func configSet(s *config.Settings, key, value string) error {
 }
 
 func parseBool(value string) (bool, bool) {
-	switch value {
-	case "true", "1":
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "true", "1", "on", "yes":
 		return true, true
-	case "false", "0":
+	case "false", "0", "off", "no":
 		return false, true
 	default:
 		return false, false

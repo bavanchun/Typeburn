@@ -1,6 +1,12 @@
 package config
 
-import "testing"
+import (
+	"encoding/json"
+	"testing"
+)
+
+// jsonUnmarshal is a thin alias so test bodies stay concise.
+func jsonUnmarshal(data []byte, v any) error { return json.Unmarshal(data, v) }
 
 // TestDefaults_Values verifies the out-of-the-box settings.
 func TestDefaults_Values(t *testing.T) {
@@ -203,6 +209,27 @@ func TestXDGPaths_XDGEnvTakesPrecedence(t *testing.T) {
 	// Path must start with the XDG override, not ~/.config.
 	if len(got) < len(dir) || got[:len(dir)] != dir {
 		t.Errorf("ConfigDir should be under %q, got %q", dir, got)
+	}
+}
+
+// TestDefaults_UpdateCheckFalse verifies update_check defaults to false (opt-in).
+func TestDefaults_UpdateCheckFalse(t *testing.T) {
+	if Defaults().UpdateCheck {
+		t.Error("UpdateCheck: want false by default (opt-in)")
+	}
+}
+
+// TestLoadSettings_MissingUpdateCheckField verifies pre-v2.1 settings files
+// (without the update_check key) load with UpdateCheck == false.
+func TestLoadSettings_MissingUpdateCheckField(t *testing.T) {
+	// JSON without update_check — simulates an existing v2.0 settings file.
+	raw := `{"theme":"default","default_mode":"time","default_length":30,"blink_cursor":false}`
+	var s Settings
+	if err := jsonUnmarshal([]byte(raw), &s); err != nil {
+		t.Fatalf("json.Unmarshal: %v", err)
+	}
+	if s.UpdateCheck {
+		t.Error("UpdateCheck: want false when field is absent from JSON")
 	}
 }
 

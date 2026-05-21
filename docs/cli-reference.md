@@ -72,10 +72,73 @@ typeburn config list
 typeburn config list --json
 typeburn config get theme
 typeburn config set theme nord
+typeburn config set update_check on
 ```
 
-Keys: `theme`, `default_mode`, `default_length`, `blink_cursor`.
+Keys: `theme`, `default_mode`, `default_length`, `blink_cursor`, `update_check`.
+
+| Key | Values | Default | Notes |
+|---|---|---|---|
+| `theme` | name string | `default` | Built-in theme name |
+| `default_mode` | `time\|words\|quote\|code` | `time` | |
+| `default_length` | positive int | `30` | Seconds or word count |
+| `blink_cursor` | `true\|false` | `false` | |
+| `update_check` | `on\|off` (also `true\|false\|yes\|no\|1\|0`) | `off` | Opt-in opportunistic check |
+
 `config set` is strict: invalid values exit 1 before writing `settings.json`.
+
+### update_check
+
+When `update_check` is `on`, each TUI launch fires an opportunistic GitHub
+release check with an 800 ms timeout. On success the result is cached for 24 h
+at `$XDG_STATE_HOME/typeburn/update-check.json` (default
+`~/.local/state/typeburn/update-check.json`). If a newer stable release exists,
+the Result screen shows a muted footer hint.
+
+The check is **always opt-in**. It is never triggered by `--no-tui` runs.
+
+## Version
+
+```sh
+typeburn version
+typeburn version --json
+typeburn version --check-update
+typeburn version --check-update --json
+```
+
+`--check-update` always hits the network (ignores cache). Output:
+
+Human-readable (no upgrade):
+```
+typeburn v2.0.0 (abc1234, 2026-05-20)  ✓ up to date
+```
+
+Human-readable (upgrade available):
+```
+typeburn v2.0.0 (abc1234, 2026-05-20)
+
+A newer version is available: v2.1.0
+
+Upgrade:
+  brew upgrade typeburn
+  curl -fsSL https://raw.githubusercontent.com/bavanchun/Typeburn/main/install.sh | sh
+  go install github.com/bavanchun/Typeburn@latest
+```
+
+JSON schema (`--check-update --json`):
+```json
+{
+  "version": {"version": "v2.0.0", "commit": "abc1234", "date": "2026-05-20T00:00:00Z"},
+  "update_check": {
+    "schema_version": 1,
+    "current": "v2.0.0",
+    "latest": "v2.1.0",
+    "upgrade_available": true,
+    "release_url": "https://github.com/bavanchun/Typeburn/releases/tag/v2.1.0",
+    "checked_at": "2026-05-21T10:00:00Z"
+  }
+}
+```
 
 ## Replay
 
