@@ -20,7 +20,7 @@
 
 **Cache:** `$XDG_STATE_HOME/typeburn/update-check.json` (default `~/.local/state/typeburn/`), 24 h TTL, 7 d max-age, schema-version + semver re-validation + URL-prefix check on load (injection guard).
 
-**Test seams:** package-level vars `fetchURL` (HTTP endpoint) and `cacheFilePath` (temp dir in tests).
+**Test seams:** `getFetchURL()`/`setFetchURL()` and `getCacheFilePath()`/`setCacheFilePath()` — mutex-guarded accessors around the HTTP endpoint and temp-dir overrides used in tests.
 
 **Files:** `result.go`, `compare.go`, `compare_test.go`, `prerelease.go`, `prerelease_test.go`, `client.go`, `client_test.go`, `cache.go`, `cache_test.go`, `check.go`, `check_test.go`.
 
@@ -163,10 +163,11 @@ and `wordTarget` math shared by TUI and CLI.
 
 **Entry points:**
 - `Compute(log []typing.Keystroke, startMs, durationMs) Result`: compute all metrics post-hoc
+- `LiveWPM(log []typing.Keystroke, elapsedMs int64) float64`: lightweight O(n) live WPM for in-progress display; returns 0 below 500 ms guard; counts only forward keystrokes (Typed != 0)
 - `AFKTrim(log, durationMs) ([]typing.Keystroke, int64)`: remove trailing AFK seconds (Time mode only, >7s)
 - `Consistency(wpmPerSecond []float64) float64`: 100 × tanh(1 − CV)
 
-**Files:** compute.go, consistency.go, per_second.go, afk_trim.go, compute_test.go, consistency_test.go, afk_trim_test.go.
+**Files:** compute.go, consistency.go, per_second.go, afk_trim.go, live_wpm.go, compute_test.go, consistency_test.go, afk_trim_test.go, live_wpm_test.go.
 
 ---
 
