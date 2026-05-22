@@ -49,15 +49,15 @@ func TestVersionJSON_Unchanged(t *testing.T) {
 }
 
 func TestVersionCheckUpdate_UpgradeAvailable(t *testing.T) {
-	orig := checkFn
-	checkFn = stubCheck(&update.Result{
+	orig := getCheckFn()
+	setCheckFn(stubCheck(&update.Result{
 		Current:          "v2.0.0",
 		Latest:           "v2.1.0",
 		UpgradeAvailable: true,
 		ReleaseURL:       "https://github.com/bavanchun/Typeburn/releases/tag/v2.1.0",
 		CheckedAt:        time.Now().UTC(),
-	}, nil)
-	defer func() { checkFn = orig }()
+	}, nil))
+	defer setCheckFn(orig)
 
 	var out bytes.Buffer
 	if err := versionRoot(t, &out, &bytes.Buffer{}, "version", "--check-update"); err != nil {
@@ -73,13 +73,13 @@ func TestVersionCheckUpdate_UpgradeAvailable(t *testing.T) {
 }
 
 func TestVersionCheckUpdate_UpToDate(t *testing.T) {
-	orig := checkFn
-	checkFn = stubCheck(&update.Result{
+	orig := getCheckFn()
+	setCheckFn(stubCheck(&update.Result{
 		Current:   "v2.0.0",
 		Latest:    "v2.0.0",
 		CheckedAt: time.Now().UTC(),
-	}, nil)
-	defer func() { checkFn = orig }()
+	}, nil))
+	defer setCheckFn(orig)
 
 	var out bytes.Buffer
 	if err := versionRoot(t, &out, &bytes.Buffer{}, "version", "--check-update"); err != nil {
@@ -91,9 +91,9 @@ func TestVersionCheckUpdate_UpToDate(t *testing.T) {
 }
 
 func TestVersionCheckUpdate_DevSkip(t *testing.T) {
-	orig := checkFn
-	checkFn = stubCheck(nil, nil) // nil,nil = dev skip
-	defer func() { checkFn = orig }()
+	orig := getCheckFn()
+	setCheckFn(stubCheck(nil, nil)) // nil,nil = dev skip
+	defer setCheckFn(orig)
 
 	var out bytes.Buffer
 	if err := versionRoot(t, &out, &bytes.Buffer{}, "version", "--check-update"); err != nil {
@@ -105,9 +105,9 @@ func TestVersionCheckUpdate_DevSkip(t *testing.T) {
 }
 
 func TestVersionCheckUpdate_Error(t *testing.T) {
-	orig := checkFn
-	checkFn = stubCheck(nil, errors.New("network unreachable"))
-	defer func() { checkFn = orig }()
+	orig := getCheckFn()
+	setCheckFn(stubCheck(nil, errors.New("network unreachable")))
+	defer setCheckFn(orig)
 
 	var out, errOut bytes.Buffer
 	// Human mode: error goes to stderr, exit code 0.
@@ -122,9 +122,9 @@ func TestVersionCheckUpdate_Error(t *testing.T) {
 func TestVersionCheckUpdate_JSONError(t *testing.T) {
 	// --json --check-update with a check error must emit valid JSON only,
 	// not JSON followed by the raw error string (the old double-emit bug).
-	orig := checkFn
-	checkFn = stubCheck(nil, errors.New("network unreachable"))
-	defer func() { checkFn = orig }()
+	orig := getCheckFn()
+	setCheckFn(stubCheck(nil, errors.New("network unreachable")))
+	defer setCheckFn(orig)
 
 	var out, errOut bytes.Buffer
 	if err := versionRoot(t, &out, &errOut, "version", "--json", "--check-update"); err != nil {
@@ -156,16 +156,16 @@ func TestVersionCheckUpdate_JSONError(t *testing.T) {
 }
 
 func TestVersionCheckUpdate_JSONWrapper(t *testing.T) {
-	orig := checkFn
-	checkFn = stubCheck(&update.Result{
+	orig := getCheckFn()
+	setCheckFn(stubCheck(&update.Result{
 		SchemaVersion:    1,
 		Current:          "v2.0.0",
 		Latest:           "v2.1.0",
 		UpgradeAvailable: true,
 		ReleaseURL:       "https://github.com/bavanchun/Typeburn/releases/tag/v2.1.0",
 		CheckedAt:        time.Now().UTC(),
-	}, nil)
-	defer func() { checkFn = orig }()
+	}, nil))
+	defer setCheckFn(orig)
 
 	var out bytes.Buffer
 	if err := versionRoot(t, &out, &bytes.Buffer{}, "version", "--json", "--check-update"); err != nil {

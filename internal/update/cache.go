@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/bavanchun/Typeburn/internal/config"
@@ -23,12 +24,27 @@ var validSemverRe = regexp.MustCompile(`^v?\d+\.\d+\.\d+([-+.][\w.-]+)?$`)
 
 const releaseURLPrefix = "https://github.com/bavanchun/Typeburn/"
 
-// cacheFilePath is a var so tests can override it via t.TempDir().
-var cacheFilePath = ""
+// cacheFilePath is a var so tests can override it via setCacheFilePath.
+var (
+	cacheFileMu   sync.Mutex
+	cacheFilePath = ""
+)
+
+func getCacheFilePath() string {
+	cacheFileMu.Lock()
+	defer cacheFileMu.Unlock()
+	return cacheFilePath
+}
+
+func setCacheFilePath(p string) {
+	cacheFileMu.Lock()
+	defer cacheFileMu.Unlock()
+	cacheFilePath = p
+}
 
 func getCachePath() (string, error) {
-	if cacheFilePath != "" {
-		return cacheFilePath, nil
+	if p := getCacheFilePath(); p != "" {
+		return p, nil
 	}
 	dir, err := config.StateDir()
 	if err != nil {

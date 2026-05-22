@@ -30,9 +30,9 @@ func TestCheck_UpgradeAvailable(t *testing.T) {
 	defer withTempCache(t)()
 	srv := stubServer(t, Release{TagName: "v2.1.0", HTMLURL: "https://github.com/bavanchun/Typeburn/releases/tag/v2.1.0"})
 	defer srv.Close()
-	origURL := fetchURL
-	fetchURL = srv.URL
-	defer func() { fetchURL = origURL }()
+	origURL := getFetchURL()
+	setFetchURL(srv.URL)
+	defer setFetchURL(origURL)
 
 	r, err := Check(context.Background(), "v2.0.0", true)
 	if err != nil {
@@ -56,9 +56,9 @@ func TestCheck_UpToDate(t *testing.T) {
 	defer withTempCache(t)()
 	srv := stubServer(t, Release{TagName: "v2.0.0", HTMLURL: "https://github.com/bavanchun/Typeburn/releases/tag/v2.0.0"})
 	defer srv.Close()
-	origURL := fetchURL
-	fetchURL = srv.URL
-	defer func() { fetchURL = origURL }()
+	origURL := getFetchURL()
+	setFetchURL(srv.URL)
+	defer setFetchURL(origURL)
 
 	r, err := Check(context.Background(), "v2.0.0", true)
 	if err != nil {
@@ -76,9 +76,9 @@ func TestCheck_PrereleaseIgnored(t *testing.T) {
 	defer withTempCache(t)()
 	srv := stubServer(t, Release{TagName: "v2.1.0-rc.1", Prerelease: true})
 	defer srv.Close()
-	origURL := fetchURL
-	fetchURL = srv.URL
-	defer func() { fetchURL = origURL }()
+	origURL := getFetchURL()
+	setFetchURL(srv.URL)
+	defer setFetchURL(origURL)
 
 	r, err := Check(context.Background(), "v2.0.0", true)
 	if err != nil {
@@ -117,9 +117,9 @@ func TestCheck_CacheHit(t *testing.T) {
 func TestCheck_PrereleaseCached(t *testing.T) {
 	defer withTempCache(t)()
 	srv := stubServer(t, Release{TagName: "v2.1.0-rc.1", Prerelease: true})
-	origURL := fetchURL
-	fetchURL = srv.URL
-	defer func() { fetchURL = origURL }()
+	origURL := getFetchURL()
+	setFetchURL(srv.URL)
+	defer setFetchURL(origURL)
 
 	// force=true → fetch + (now) cache the synthetic no-upgrade result.
 	r1, err := Check(context.Background(), "v2.0.0", true)
@@ -158,9 +158,9 @@ func TestCheck_ForceBypassesCache(t *testing.T) {
 	// Server says there IS an upgrade — force=true should bypass cache.
 	srv := stubServer(t, Release{TagName: "v2.1.0", HTMLURL: "https://github.com/bavanchun/Typeburn/releases/tag/v2.1.0"})
 	defer srv.Close()
-	origURL := fetchURL
-	fetchURL = srv.URL
-	defer func() { fetchURL = origURL }()
+	origURL := getFetchURL()
+	setFetchURL(srv.URL)
+	defer setFetchURL(origURL)
 
 	r, err := Check(context.Background(), "v2.0.0", true)
 	if err != nil {

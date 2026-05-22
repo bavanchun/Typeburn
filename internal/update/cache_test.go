@@ -10,9 +10,9 @@ import (
 func withTempCache(t *testing.T) func() {
 	t.Helper()
 	dir := t.TempDir()
-	orig := cacheFilePath
-	cacheFilePath = filepath.Join(dir, "update-check.json")
-	return func() { cacheFilePath = orig }
+	orig := getCacheFilePath()
+	setCacheFilePath(filepath.Join(dir, "update-check.json"))
+	return func() { setCacheFilePath(orig) }
 }
 
 func TestCacheSaveLoad_RoundTrip(t *testing.T) {
@@ -148,10 +148,10 @@ func TestCacheLoad_InvalidReleaseURL(t *testing.T) {
 
 func TestCacheSave_CreatesParentDir(t *testing.T) {
 	dir := t.TempDir()
-	orig := cacheFilePath
+	orig := getCacheFilePath()
 	// Use a nested path whose parent doesn't exist yet.
-	cacheFilePath = filepath.Join(dir, "nested", "deep", "update-check.json")
-	defer func() { cacheFilePath = orig }()
+	setCacheFilePath(filepath.Join(dir, "nested", "deep", "update-check.json"))
+	defer setCacheFilePath(orig)
 
 	r := &Result{
 		SchemaVersion: cacheSchemaVersion,
@@ -162,7 +162,7 @@ func TestCacheSave_CreatesParentDir(t *testing.T) {
 	if err := cacheSave(r); err != nil {
 		t.Fatalf("cacheSave should create parent dirs: %v", err)
 	}
-	if _, err := os.Stat(cacheFilePath); err != nil {
+	if _, err := os.Stat(getCacheFilePath()); err != nil {
 		t.Errorf("cache file not created: %v", err)
 	}
 }
