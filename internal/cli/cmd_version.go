@@ -101,8 +101,7 @@ func renderVersionCheckJSON(cmd *cobra.Command, info version.Info, result *updat
 				Error string `json:"error"`
 			}{checkErr.Error()},
 		}
-		_ = enc.Encode(out)
-		return checkErr
+		return enc.Encode(out)
 	}
 	if result == nil {
 		out := struct {

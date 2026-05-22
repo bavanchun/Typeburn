@@ -119,6 +119,42 @@ func TestVersionCheckUpdate_Error(t *testing.T) {
 	}
 }
 
+func TestVersionCheckUpdate_JSONError(t *testing.T) {
+	// --json --check-update with a check error must emit valid JSON only,
+	// not JSON followed by the raw error string (the old double-emit bug).
+	orig := checkFn
+	checkFn = stubCheck(nil, errors.New("network unreachable"))
+	defer func() { checkFn = orig }()
+
+	var out, errOut bytes.Buffer
+	if err := versionRoot(t, &out, &errOut, "version", "--json", "--check-update"); err != nil {
+		t.Fatalf("version --json --check-update with error should exit 0, got: %v", err)
+	}
+	if errOut.Len() > 0 {
+		t.Errorf("no output on stderr expected in --json mode, got: %s", errOut.String())
+	}
+	var got map[string]any
+	if err := json.Unmarshal(out.Bytes(), &got); err != nil {
+		t.Fatalf("output must be valid JSON, got parse error: %v\noutput: %s", err, out.String())
+	}
+	for _, key := range []string{"version", "commit", "date", "go_version", "os", "arch"} {
+		v, ok := got["version"].(map[string]any)
+		if !ok {
+			t.Fatalf("version key must be an object, got: %T", got["version"])
+		}
+		if _, ok := v[key]; !ok {
+			t.Errorf("version object missing key %q", key)
+		}
+	}
+	uc, ok := got["update_check"].(map[string]any)
+	if !ok {
+		t.Fatalf("expected update_check object, got: %v", got["update_check"])
+	}
+	if uc["error"] != "network unreachable" {
+		t.Errorf("update_check.error = %q, want %q", uc["error"], "network unreachable")
+	}
+}
+
 func TestVersionCheckUpdate_JSONWrapper(t *testing.T) {
 	orig := checkFn
 	checkFn = stubCheck(&update.Result{
