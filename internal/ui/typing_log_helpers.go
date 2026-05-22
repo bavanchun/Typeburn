@@ -1,21 +1,15 @@
 package ui
 
-import "github.com/bavanchun/Typeburn/internal/typing"
+import (
+	"github.com/bavanchun/Typeburn/internal/metrics"
+	"github.com/bavanchun/Typeburn/internal/typing"
+)
 
 // liveWPM estimates current WPM from forward keystrokes in the log.
 // Used for the live header display; returns 0 when elapsed < 500ms (too noisy).
 // Full accuracy is computed via metrics.Compute at test completion.
 func liveWPM(log []typing.Keystroke, elapsedMs int64) float64 {
-	if elapsedMs < 500 || len(log) == 0 {
-		return 0
-	}
-	var forward int
-	for _, k := range log {
-		if k.Typed != 0 {
-			forward++
-		}
-	}
-	return float64(forward) / 5.0 / (float64(elapsedMs) / 60000.0)
+	return metrics.LiveWPM(log, elapsedMs)
 }
 
 // typedFromLog reconstructs the current typed-rune slice by replaying the
