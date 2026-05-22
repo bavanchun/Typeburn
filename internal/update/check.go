@@ -30,13 +30,15 @@ func Check(ctx context.Context, currentVer string, force bool) (*Result, error) 
 
 	// Treat draft/prerelease as "no stable upgrade available".
 	if rel.Draft || rel.Prerelease || IsPrerelease(rel.TagName) {
-		return &Result{
+		r := &Result{
 			SchemaVersion:    cacheSchemaVersion,
 			Current:          currentVer,
 			Latest:           currentVer,
 			UpgradeAvailable: false,
 			CheckedAt:        time.Now().UTC(),
-		}, nil
+		}
+		_ = cacheSave(r) // best-effort; TTL suppresses repeat network hits during prerelease windows
+		return r, nil
 	}
 
 	upgrade := Compare(currentVer, rel.TagName) < 0

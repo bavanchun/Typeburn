@@ -8,12 +8,28 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"sync"
 	"time"
 )
 
 // fetchURL is the GitHub Releases API endpoint. It is a var so tests can
 // override it with an httptest.Server URL without touching real network.
-var fetchURL = "https://api.github.com/repos/bavanchun/Typeburn/releases/latest"
+var (
+	fetchURLMu sync.Mutex
+	fetchURL   = "https://api.github.com/repos/bavanchun/Typeburn/releases/latest"
+)
+
+func getFetchURL() string {
+	fetchURLMu.Lock()
+	defer fetchURLMu.Unlock()
+	return fetchURL
+}
+
+func setFetchURL(u string) {
+	fetchURLMu.Lock()
+	defer fetchURLMu.Unlock()
+	fetchURL = u
+}
 
 const bodyLimit = 64 * 1024
 
@@ -42,7 +58,7 @@ func FetchLatest(ctx context.Context, currentVer string) (Release, error) {
 		},
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, fetchURL, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, getFetchURL(), nil)
 	if err != nil {
 		return Release{}, fmt.Errorf("update: build request: %w", err)
 	}

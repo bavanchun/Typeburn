@@ -71,21 +71,38 @@ func injectBorderTitle(panel, title string) string {
 	return string(newTop)
 }
 
-// stripANSI removes ANSI SGR escape sequences (ESC [ ... m) from s so the
-// visual character width can be measured accurately for border title injection.
+// stripANSI removes ANSI CSI escape sequences (ESC [ ... finalByte 0x40-0x7E)
+// from s so the visual character width can be measured accurately for border
+// title injection. Only CSI (ESC[) is handled; OSC/SS3 are not emitted by
+// lipgloss panel borders and are out of scope. A non-[ introducer (e.g. ESC M)
+// is treated as a 2-byte sequence and drops exactly one byte.
 func stripANSI(s string) string {
 	var out strings.Builder
-	inEsc := false
+	const (
+		stNorm = iota
+		stEsc  // saw ESC, expecting introducer
+		stCSI  // inside CSI params/intermediates, waiting for final byte
+	)
+	state := stNorm
 	for _, r := range s {
-		switch {
-		case r == '\x1b':
-			inEsc = true
-		case inEsc:
-			if r == 'm' {
-				inEsc = false
+		switch state {
+		case stNorm:
+			if r == '\x1b' {
+				state = stEsc
+			} else {
+				out.WriteRune(r)
 			}
-		default:
-			out.WriteRune(r)
+		case stEsc:
+			if r == '[' {
+				state = stCSI
+			} else {
+				state = stNorm // non-[ introducer: drop it, done with this escape
+			}
+		case stCSI:
+			if r >= '@' && r <= '~' { // CSI final byte 0x40..0x7E
+				state = stNorm
+			}
+			// else: param/intermediate byte — keep dropping
 		}
 	}
 	return out.String()

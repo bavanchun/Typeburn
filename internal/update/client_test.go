@@ -110,8 +110,8 @@ func TestFetchLatest_BodyCap(t *testing.T) {
 
 // fetchLatestFrom is a test seam that overrides the target URL.
 func fetchLatestFrom(ctx context.Context, currentVer, url string) (Release, error) {
-	orig := fetchURL
-	fetchURL = url
-	defer func() { fetchURL = orig }()
+	orig := getFetchURL()
+	setFetchURL(url)
+	defer setFetchURL(orig)
 	return FetchLatest(ctx, currentVer)
 }

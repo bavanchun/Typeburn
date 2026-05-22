@@ -1,17 +1,34 @@
 package cli
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"runtime"
+	"sync"
 
 	"github.com/bavanchun/Typeburn/internal/update"
 	"github.com/bavanchun/Typeburn/internal/version"
 	"github.com/spf13/cobra"
 )
 
-// checkFn is the update.Check function; overridden in tests via this seam.
-var checkFn = update.Check
+// checkFn is the update.Check function; overridden in tests via setCheckFn.
+var (
+	checkFnMu sync.Mutex
+	checkFn   = update.Check
+)
+
+func getCheckFn() func(context.Context, string, bool) (*update.Result, error) {
+	checkFnMu.Lock()
+	defer checkFnMu.Unlock()
+	return checkFn
+}
+
+func setCheckFn(fn func(context.Context, string, bool) (*update.Result, error)) {
+	checkFnMu.Lock()
+	defer checkFnMu.Unlock()
+	checkFn = fn
+}
 
 func newVersionCmd() *cobra.Command {
 	var asJSON, checkUpdate bool
@@ -43,7 +60,7 @@ func runVersion(cmd *cobra.Command, asJSON, checkUpdate bool) error {
 		return renderVersionJSON(cmd, info)
 	}
 
-	result, err := checkFn(cmd.Context(), info.Version, true)
+	result, err := getCheckFn()(cmd.Context(), info.Version, true)
 
 	if asJSON {
 		return renderVersionCheckJSON(cmd, info, result, err)
@@ -101,8 +118,7 @@ func renderVersionCheckJSON(cmd *cobra.Command, info version.Info, result *updat
 				Error string `json:"error"`
 			}{checkErr.Error()},
 		}
-		_ = enc.Encode(out)
-		return checkErr
+		return enc.Encode(out)
 	}
 	if result == nil {
 		out := struct {

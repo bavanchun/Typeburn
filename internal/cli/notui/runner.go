@@ -47,10 +47,7 @@ func runLoop(
 		}
 		done, total := session.Engine.Progress()
 		elapsed := nowMs - session.Engine.StartMs()
-		live := metrics.Compute(session.Engine.Log(), session.Mode, nowMs).NetWPM
-		if elapsed <= 0 {
-			live = 0
-		}
+		live := metrics.LiveWPM(session.Engine.Log(), elapsed)
 		RenderStatus(out, done, total, live)
 		if completed(session, nowMs) {
 			result := metrics.Compute(session.Engine.Log(), session.Mode, endMs(session, nowMs))
