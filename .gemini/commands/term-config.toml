@@ -1,0 +1,87 @@
+description = "Sửa terminal config (wezterm, tmux, zsh, nvim, starship, alacritty, kitty) qua chezmoi source. Dùng khi user yêu cầu sửa/chỉnh/thay đổi config của các tool terminal."
+prompt = """
+# Hướng dẫn: Sửa terminal config qua chezmoi
+
+Toàn bộ terminal config được quản lý bởi chezmoi. **KHÔNG BAO GIỜ edit trực tiếp `~/.config/`** — chezmoi sẽ overwrite khi apply tiếp theo. Luôn edit trong chezmoi source rồi apply.
+
+**Chezmoi root:** `/Users/vchun/.local/share/chezmoi`
+
+---
+
+## Bước 1 — Map app → file nguồn
+
+Dựa vào argument hoặc ngữ cảnh request, xác định file nguồn trong chezmoi:
+
+| App | Source file | Target sau apply |
+|-----|-------------|-----------------|
+| `wezterm` | `dot_config/wezterm/wezterm.lua` | `~/.config/wezterm/wezterm.lua` |
+| `tmux` | `dot_config/tmux/tmux.conf` | `~/.config/tmux/tmux.conf` |
+| `tmux-status` / `statusline` | `dot_config/tmux/statusline.conf` | `~/.config/tmux/statusline.conf` |
+| `tmux-theme` | `dot_config/tmux/theme.conf` | `~/.config/tmux/theme.conf` |
+| `zsh` / `zshrc` | `dot_zshrc` | `~/.zshrc` |
+| `nvim` / `neovim` | `dot_config/nvim/` (directory) | `~/.config/nvim/` |
+| `starship` | `dot_config/starship.toml` | `~/.config/starship.toml` |
+| `alacritty` | `dot_config/alacritty/alacritty.toml` | `~/.config/alacritty/alacritty.toml` |
+| `kitty` | `dot_config/kitty/kitty.conf` | `~/.config/kitty/kitty.conf` |
+
+Nếu user cung cấp path `~/.config/...`, nhắc nhở: "File đó do chezmoi quản lý — tôi sẽ edit trong source tại `/Users/vchun/.local/share/chezmoi/...` thay thế."
+
+---
+
+## Bước 2 — Đọc rồi edit
+
+Luôn dùng `Read` tool đọc file nguồn trước, rồi dùng `Edit` tool để sửa.
+
+---
+
+## Bước 3 — Apply
+
+Sau khi edit xong, sync sang `~/.config/`:
+
+```bash
+chezmoi apply ~/.config/<target-subpath>
+```
+
+Ví dụ:
+- Sửa wezterm → `chezmoi apply ~/.config/wezterm/wezterm.lua`
+- Sửa tmux → `chezmoi apply ~/.config/tmux/tmux.conf`
+- Sửa zsh → `chezmoi apply ~/.zshrc`
+- Sửa nvim → `chezmoi apply ~/.config/nvim`
+
+---
+
+## Bước 4 — Verify
+
+Kiểm tra trạng thái:
+
+```bash
+chezmoi status
+```
+
+Kết quả mong muốn: empty (không có dòng nào = clean state). Nếu còn diff, báo cho user biết.
+
+---
+
+## Bước 5 — Commit và push lên GitHub
+
+**Luôn tự động commit và push** ngay sau khi apply xong — không hỏi user. Dùng message rõ ràng theo format `<app>: <mô tả ngắn>`:
+
+```bash
+git -C /Users/vchun/.local/share/chezmoi add <source-file-path>
+git -C /Users/vchun/.local/share/chezmoi commit -m "<app>: <mô tả ngắn thay đổi>"
+git -C /Users/vchun/.local/share/chezmoi push
+```
+
+---
+
+## Tham khảo: Chezmoi naming conventions
+
+| Prefix/Suffix | Ý nghĩa |
+|--------------|---------|
+| `dot_xxx` | `.xxx` (hidden file/dir) |
+| `dot_config/x` | `~/.config/x` |
+| `.tmpl` | Template — rendered khi apply |
+| `symlink_xxx.tmpl` | Tạo symlink thay vì copy file |
+| `run_after_*` | Script chạy sau mỗi lần apply |
+| `run_onchange_*` | Script chạy khi content thay đổi |
+"""

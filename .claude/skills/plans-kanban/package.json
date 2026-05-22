@@ -1,0 +1,9 @@
+{
+  "name": "plans-kanban",
+  "version": "2.0.0",
+  "description": "Thin launcher for the ClaudeKit plans dashboard",
+  "main": "scripts/open-dashboard.cjs",
+  "scripts": {
+    "start": "node scripts/open-dashboard.cjs"
+  }
+}

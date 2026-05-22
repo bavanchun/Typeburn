@@ -1,0 +1,53 @@
+# --- ck-managed-agents-start ---
+[agents.brainstormer]
+description = "Use this agent when you need to brainstorm software solutions, evaluate architectural approaches, or debate technical decisions before implementation. Examples: - <example>\n    Context: User wants to add a new feature to their application\n    user: \"I want to add real-time notifications to my web app\"\n    assistant: \"Let me use the brainstormer agent to explore the best approaches for implementing real-time notifications\"\n    <commentary>\n    The user needs architectural guidance for a new featu"
+config_file = "agents/brainstormer.toml"
+
+[agents.code_reviewer]
+description = "Comprehensive code review with scout-based edge case detection. Use after implementing features, before PRs, for quality assessment, security audits, or performance optimization."
+config_file = "agents/code_reviewer.toml"
+
+[agents.code_simplifier]
+description = "Simplifies and refines code for clarity, consistency, and maintainability while preserving all functionality. Focuses on recently modified code unless instructed otherwise."
+config_file = "agents/code_simplifier.toml"
+
+[agents.debugger]
+description = "Use this agent when you need to investigate issues, analyze system behavior, diagnose performance problems, examine database structures, collect and analyze logs from servers or CI/CD pipelines, run tests for debugging purposes, or optimize system performance. This includes troubleshooting errors, identifying bottlenecks, analyzing failed deployments, investigating test failures, and creating diagnostic reports. Examples:\\n\\n<example>\\nContext: The user needs to investigate why an API endpoint i"
+config_file = "agents/debugger.toml"
+
+[agents.docs_manager]
+description = "Use this agent when you need to manage technical documentation, establish implementation standards, analyze and update existing documentation based on code changes, write or update Product Development Requirements (PDRs), organize documentation for developer productivity, or produce documentation summary reports. This includes tasks like reviewing documentation structure, ensuring docs are up-to-date with codebase changes, creating new documentation for features, and maintaining consistency acro"
+config_file = "agents/docs_manager.toml"
+
+[agents.fullstack_developer]
+description = "Execute implementation phases from parallel plans. Handles backend (Node.js, APIs, databases), frontend (React, TypeScript), and infrastructure tasks. Designed for parallel execution with strict file ownership boundaries. Use when implementing a specific phase from `/ck:plan --parallel` output."
+config_file = "agents/fullstack_developer.toml"
+
+[agents.git_manager]
+description = "Stage, commit, and push code changes with conventional commits. Use when user says \"commit\", \"push\", or finishes a feature/fix."
+config_file = "agents/git_manager.toml"
+
+[agents.journal_writer]
+description = "Use this agent when:\\n- A test suite fails repeatedly despite multiple fix attempts\\n- A critical bug is discovered in production or staging\\n- An implementation approach proves fundamentally flawed and requires complete redesign\\n- External dependencies (APIs, services, libraries) cause blocking issues\\n- Performance bottlenecks are discovered that significantly impact user experience\\n- Security vulnerabilities are identified\\n- Database migrations fail or cause data integrity issues\\n- CI/CD "
+config_file = "agents/journal_writer.toml"
+
+[agents.planner]
+description = "Use this agent when you need to research, analyze, and create comprehensive implementation plans for new features, system architectures, or complex technical solutions. This agent should be invoked before starting any significant implementation work, when evaluating technical trade-offs, or when you need to understand the best approach for solving a problem. Examples: <example>Context: User needs to implement a new authentication system. user: 'I need to add OAuth2 authentication to our app' ass"
+config_file = "agents/planner.toml"
+
+[agents.project_manager]
+description = "Use this agent when you need comprehensive project oversight and coordination. Examples: <example>Context: User has completed a major feature implementation and needs to track progress against the implementation plan. user: 'I just finished implementing the WebSocket terminal communication feature. Can you check our progress and update the plan?' assistant: 'I'll use the project-manager agent to analyze the implementation against our plan, track progress, and provide a comprehensive status repor"
+config_file = "agents/project_manager.toml"
+
+[agents.researcher]
+description = "Use this agent when you need to conduct comprehensive research on software development topics, including investigating new technologies, finding documentation, exploring best practices, or gathering information about plugins, packages, and open source projects. This agent excels at synthesizing information from multiple sources including searches, website content, YouTube videos, and technical documentation to produce detailed research reports. <example>Context: The user needs to research a new "
+config_file = "agents/researcher.toml"
+
+[agents.tester]
+description = "Use this agent when you need to validate code quality through testing, including running unit and integration tests, analyzing test coverage, validating error handling, checking performance requirements, or verifying build processes. This agent should be called after implementing new features or making significant code changes to ensure everything works as expected. Examples:\\n\\n<example>\\nContext: The user has just finished implementing a new API endpoint and wants to ensure it works correctly."
+config_file = "agents/tester.toml"
+
+[agents.ui_ux_designer]
+description = "Use this agent when the user needs UI/UX design work including interface designs, wireframes, design systems, user research, responsive layouts, animations, or design documentation. Examples:\\n\\n<example>\\nContext: User wants to create a new landing page design\\nuser: \"I need a modern landing page design for our SaaS product with a hero section, features, and pricing\"\\nassistant: \"I'll use the Task tool to launch the ui-ux-designer agent to create a comprehensive landing page design with wirefra"
+config_file = "agents/ui_ux_designer.toml"
+# --- ck-managed-agents-end ---

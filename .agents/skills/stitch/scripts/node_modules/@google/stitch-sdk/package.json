@@ -1,0 +1,81 @@
+{
+  "name": "@google/stitch-sdk",
+  "version": "0.3.5",
+  "type": "module",
+  "private": false,
+  "description": "Generate UI screens from text prompts and extract their HTML and screenshots programmatically.",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/google-labs-code/stitch-sdk.git",
+    "directory": "packages/sdk"
+  },
+  "keywords": [
+    "stitch",
+    "mcp",
+    "ui",
+    "generative-ai",
+    "google"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/src/index.js",
+      "types": "./dist/src/index.d.ts"
+    },
+    "./ai": {
+      "import": "./dist/src/ai.js",
+      "types": "./dist/src/ai.d.ts"
+    },
+    "./adk": {
+      "import": "./dist/src/adk.js",
+      "types": "./dist/src/adk.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "!dist/tsconfig.tsbuildinfo",
+    "!dist/test",
+    "!dist/**/*.tsbuildinfo",
+    "!dist/package.json",
+    "README.md"
+  ],
+  "publishConfig": {
+    "registry": "https://wombat-dressing-room.appspot.com",
+    "access": "public",
+    "tag": "latest"
+  },
+  "scripts": {
+    "build": "bun scripts/inject-version.ts && tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:integration": "vitest run --dir test/integration",
+    "prepublishOnly": "npm run build && npm run test"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.23.0",
+    "cheerio": "^1.0.0-rc.12",
+    "zod": "^4.3.5"
+  },
+  "devDependencies": {
+    "@a2a-js/sdk": "^0.3.13",
+    "@google-cloud/storage": "^7.19.0",
+    "@google/adk": "^0.6.1",
+    "@google/genai": "^1.48.0",
+    "@mikro-orm/core": "^6.6.12",
+    "@mikro-orm/sqlite": "^6.6.12",
+    "@swc/core": "^1.15.18",
+    "@types/node": "^20.0.0",
+    "ai": "^6.0.116",
+    "lodash-es": "^4.18.1",
+    "sqlite3": "^5.1.7",
+    "domhandler": "5.0.3",
+    "typescript": "^5.5.0",
+    "vitest": "^1.6.0"
+  }
+}
