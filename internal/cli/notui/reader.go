@@ -60,8 +60,22 @@ func ReadEvent(r *bufio.Reader) (Event, error) {
 }
 
 func discardEscape(r *bufio.Reader) {
-	for r.Buffered() > 0 {
-		b, err := r.ReadByte()
+	b, err := r.ReadByte() // always block — handles ESC arriving at a read-buffer boundary
+	if err != nil {
+		return
+	}
+	// Preserve abort/EOF signals so the outer ReadEvent loop can handle them.
+	// Without this, ESC then Ctrl-C would silently drop 0x03 and make the
+	// session un-abortable.
+	if b == 0x03 || b == 0x04 {
+		_ = r.UnreadByte()
+		return
+	}
+	if b != '[' && b != 'O' { // standalone ESC or 2-byte sequence — done
+		return
+	}
+	for {
+		b, err = r.ReadByte()
 		if err != nil {
 			return
 		}
