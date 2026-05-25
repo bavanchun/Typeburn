@@ -23,3 +23,12 @@ vendor/
 
 # Built binary (make build target)
 typeburn
+
+# Dependencies
+node_modules/
+**/node_modules/
+.venv/
+**/.venv/
+.agents/
+.agent/
+.claude/session-state/
