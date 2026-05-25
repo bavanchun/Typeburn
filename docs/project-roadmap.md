@@ -190,9 +190,16 @@
   `version`, `config`, `replay`), JSON outputs, schema-versioned replay logs,
   and raw `run --no-tui`; v1 root aliases remain compatible. Ship date:
   2026-05-20.
-- 🔄 **v2.1.0 (Update Check):** opt-in `update_check` config key, opportunistic
+- ✅ **v2.1.0 (Update Check):** opt-in `update_check` config key, opportunistic
   TUI launch check (800 ms timeout, 24 h cache), Result-screen footer hint, and
-  `typeburn version --check-update` explicit flag with `--json` support.
+  `typeburn version --check-update` explicit flag with `--json` support. Ship date: 2026-05-21.
+- ✅ **v2.1.1 (Defect Fixes):** 6 audited defects — `--no-tui` O(n²) live WPM
+  replaced with `metrics.LiveWPM` O(1); `version --json --check-update` double-error
+  silenced; `stripANSI` non-SGR CSI handling fixed; update-cache prerelease bypass;
+  `--no-tui` split-read ESC parser; `internal/update` globals race via mutex accessors.
+  Ship date: 2026-05-22.
+- ✅ **v2.1.2 (Maintenance):** CHANGELOG back-fill (v2.1.0/v2.1.1 entries), internal
+  tooling housekeeping. No user-visible changes. Ship date: 2026-05-25.
 
 ### Next (Optional)
 1. **Gather user feedback** on missing features (Vim motions? more themes?)
@@ -227,6 +234,6 @@
 
 ## Conclusion
 
-**Typeburn v2.0.0 is the current planned release — feature-complete and production-ready after CI.** The codebase is clean, tested, and well-documented. Post-1.0 work has been additive or corrective, with v2.0.0 adding a professional scriptable CLI while preserving v1 root aliases.
+**Typeburn v2.1.2 is the current stable release.** The codebase is clean, tested, and well-documented. Post-1.0 work has been additive or corrective, with v2.0.0 adding a professional scriptable CLI, v2.1.0 adding opt-in update-check, and v2.1.1 resolving 6 audited defects.
 
 M1 (timer re-arm) and M2 (new-best precision) — the identified correctness bugs — were fixed in v1.0 (d6369de) and v1.0.1 respectively. v1.4.0 fixed a Settings live-apply bug (changes were persisted but not applied in-session) and improved the wide-terminal typing layout. Remaining backlog is additive or cosmetic.
