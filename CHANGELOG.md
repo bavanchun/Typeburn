@@ -11,7 +11,30 @@ release section is extracted verbatim and passed to GoReleaser via
 
 ## [Unreleased]
 
-## [2.1.0] - unreleased
+## [2.1.2] - 2026-05-25
+
+### Changed
+
+- Internal tooling and documentation housekeeping; no user-visible changes.
+
+## [2.1.1] - 2026-05-22
+
+### Fixed
+
+- `--no-tui` live WPM: O(n²) recompute replaced with O(1) incremental
+  `metrics.LiveWPM` — eliminates lag on long Time-mode tests.
+- `typeburn version --json --check-update`: double-emitted error on network
+  failure now silenced; JSON output is always valid.
+- `stripANSI`: non-SGR CSI sequences (e.g. cursor-movement) no longer corrupt
+  the Result panel border-title width calculation.
+- Update cache: pre-release builds no longer exhaust the 800 ms timeout budget
+  on every TUI launch.
+- `--no-tui` ESC parser: split-read escape sequences no longer leave a stray
+  `[` character in the typed output.
+- `internal/update` package globals: synchronized via mutex accessors,
+  eliminating a latent data race.
+
+## [2.1.0] - 2026-05-21
 
 ### Added
 
