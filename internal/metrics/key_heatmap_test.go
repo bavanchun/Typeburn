@@ -124,6 +124,25 @@ func TestKeyHeatmap_AttemptsCountAllForward(t *testing.T) {
 	}
 }
 
+// TestKeyHeatmap_CapsAtTopN confirms the result is bounded to the top 8 keys.
+func TestKeyHeatmap_CapsAtTopN(t *testing.T) {
+	// 12 distinct keys each with one miss → only the top 8 should survive.
+	var log []typing.Keystroke
+	for _, target := range "abcdefghijkl" {
+		log = append(log, ks('x', target, false))
+	}
+	got := metrics.KeyHeatmap(log)
+	if len(got) != 8 {
+		t.Errorf("want top-8 cap, got %d entries: %#v", len(got), got)
+	}
+	// Tie on misses/attempts → key asc, so the survivors are a..h.
+	for i, want := range "abcdefgh" {
+		if got[i].Key != want {
+			t.Errorf("entry %d: want key %q, got %q", i, want, got[i].Key)
+		}
+	}
+}
+
 // TestCompute_PopulatesKeyMisses confirms Compute fills Result.KeyMisses, and
 // that early-return paths leave it nil.
 func TestCompute_PopulatesKeyMisses(t *testing.T) {

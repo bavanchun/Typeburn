@@ -30,6 +30,10 @@ func (m ResultModel) renderKeyHeatmap(innerW int) string {
 
 	const prefix = "most missed:  "
 	width := lipgloss.Width(prefix)
+	if width > innerW {
+		// Pathologically narrow panel — show the faint fallback rather than overflow.
+		return m.th.Style(theme.RoleTextFaint).Render("no missed keys")
+	}
 
 	var b strings.Builder
 	b.WriteString(labelStyle.Render(prefix))

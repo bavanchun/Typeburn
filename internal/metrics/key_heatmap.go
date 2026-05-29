@@ -20,8 +20,12 @@ type KeyMiss struct {
 	Attempts int    `json:"attempts"`
 }
 
+// heatmapTopN caps how many missed keys KeyHeatmap returns. Every surface
+// (Result screen, CLI JSON, CLI table) inherits this bound.
+const heatmapTopN = 8
+
 // KeyHeatmap tallies per-key misses across the keystroke log via a single pass,
-// then returns only the keys with ≥1 miss, sorted deterministically:
+// then returns the top heatmapTopN keys with ≥1 miss, sorted deterministically:
 // Misses desc → Attempts desc → Key asc.
 //
 // A counted keystroke is a forward keystroke (Typed != 0) aimed at a real target
@@ -66,6 +70,9 @@ func KeyHeatmap(log []typing.Keystroke) []KeyMiss {
 		}
 		return out[i].Key < out[j].Key
 	})
+	if len(out) > heatmapTopN {
+		out = out[:heatmapTopN]
+	}
 	return out
 }
 
