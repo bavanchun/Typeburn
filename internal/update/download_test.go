@@ -50,7 +50,7 @@ func TestDownloadVerified_HappyPath(t *testing.T) {
 	defer setDownloadBase(old)
 
 	dir := t.TempDir()
-	got, err := downloadVerified(context.Background(), "v2.2.0", "linux", "amd64", dir)
+	got, err := downloadVerified(context.Background(), "v2.2.0", "linux", "amd64", dir, nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -80,7 +80,7 @@ func TestDownloadVerified_ChecksumMismatch(t *testing.T) {
 	defer setDownloadBase(old)
 
 	dir := t.TempDir()
-	got, err := downloadVerified(context.Background(), "v2.2.0", "linux", "amd64", dir)
+	got, err := downloadVerified(context.Background(), "v2.2.0", "linux", "amd64", dir, nil)
 	if err == nil {
 		t.Error("expected checksum mismatch error, got nil")
 	}

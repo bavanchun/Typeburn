@@ -41,12 +41,24 @@ func TestApply_SwapsBinary(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	out, err := Apply(context.Background(), "2.2.0", "v2.3.0", exec, "linux", "amd64")
+	var stages []Stage
+	out, err := Apply(context.Background(), "2.2.0", "v2.3.0", exec, "linux", "amd64",
+		func(s Stage) { stages = append(stages, s) })
 	if err != nil {
 		t.Fatalf("Apply: %v", err)
 	}
 	if out.From != "2.2.0" || out.To != "v2.3.0" {
 		t.Errorf("outcome = %+v, want 2.2.0 → v2.3.0", out)
+	}
+	// The reporter must see each stage, in order, on a successful update.
+	want := []Stage{StageDownloading, StageVerifying, StageInstalling}
+	if len(stages) != len(want) {
+		t.Fatalf("stages = %v, want %v", stages, want)
+	}
+	for i := range want {
+		if stages[i] != want[i] {
+			t.Errorf("stage[%d] = %s, want %s", i, stages[i], want[i])
+		}
 	}
 
 	got, _ := os.ReadFile(exec)
@@ -81,7 +93,7 @@ func TestApply_FailureLeavesOriginal(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if _, err := Apply(context.Background(), "2.2.0", "v2.3.0", exec, "linux", "amd64"); err == nil {
+	if _, err := Apply(context.Background(), "2.2.0", "v2.3.0", exec, "linux", "amd64", nil); err == nil {
 		t.Error("expected failure on non-archive payload")
 	}
 	got, _ := os.ReadFile(exec)

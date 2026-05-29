@@ -162,10 +162,11 @@ func downloadTo(ctx context.Context, client *http.Client, rawURL, dest string, s
 // downloaded asset always matches the release being installed — never the
 // caller's current version. On any failure no archive path is returned and
 // temporaries are removed.
-func downloadVerified(ctx context.Context, rawTag, goos, goarch, destDir string) (string, error) {
+func downloadVerified(ctx context.Context, rawTag, goos, goarch, destDir string, reportFn func(Stage)) (string, error) {
 	name := assetName(rawTag, goos, goarch)
 	client := newDownloadClient()
 
+	report(reportFn, StageDownloading)
 	sumPath := filepath.Join(destDir, "checksums.txt")
 	if err := downloadTo(ctx, client, assetURL(rawTag, "checksums.txt"), sumPath, checksumsSizeCap); err != nil {
 		return "", err
@@ -182,6 +183,8 @@ func downloadVerified(ctx context.Context, rawTag, goos, goarch, destDir string)
 	if err := downloadTo(ctx, client, assetURL(rawTag, name), archivePath, archiveSizeCap); err != nil {
 		return "", err
 	}
+
+	report(reportFn, StageVerifying)
 	if err := verifySHA256(archivePath, want); err != nil {
 		_ = os.Remove(archivePath)
 		return "", err

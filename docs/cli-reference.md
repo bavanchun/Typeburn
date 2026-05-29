@@ -13,6 +13,7 @@ bare `typeburn` opens the TUI, `typeburn --version` prints the banner, and
 | `typeburn history` | Print saved history as a table or JSON |
 | `typeburn config` | Read or update persisted settings |
 | `typeburn version` | Print version info as text or JSON |
+| `typeburn update` | Check for and install a newer release |
 | `typeburn replay` | Compute metrics from a schema-versioned keystroke log |
 
 ## Exit Codes
@@ -139,6 +140,44 @@ JSON schema (`--check-update --json`):
   }
 }
 ```
+
+## Update
+
+```sh
+typeburn update --check
+typeburn update [--yes]
+```
+
+Flags:
+
+| Flag | Purpose |
+|---|---|
+| `--check` | Detect if upgrade available and print release notes (no download/install) |
+| `--yes` | Skip confirmation prompt; use in scripts |
+
+`--check` always hits the network (no cache). Output when no upgrade available:
+```
+you are on the latest version (v2.0.0).
+```
+
+Output when upgrade available:
+```
+typeburn v2.1.0 is available (you have v2.0.0).
+Release notes: https://github.com/bavanchun/Typeburn/releases/tag/v2.1.0
+Run 'typeburn update' to upgrade.
+```
+
+Interactive install (default) prompts for confirmation, then prints progress lines:
+```
+updating v2.0.0 → v2.1.0 ...
+  downloading...
+  verifying...
+  installing...
+updated v2.0.0 → v2.1.0. restart typeburn to use the new version.
+```
+
+Non-interactive installs (e.g. in CI) require `--yes` or exit 1.
+Managed installs (Homebrew) refuse with error; use the appropriate package manager.
 
 ## Replay
 

@@ -23,7 +23,7 @@
 **Test seams:** `getFetchURL()`/`setFetchURL()` and `getCacheFilePath()`/`setCacheFilePath()` — mutex-guarded accessors around the HTTP endpoint and temp-dir overrides used in tests.
 
 **Self-update pipeline (`typeburn update`):**
-- `Apply(ctx, currentVer, tag, execPath, goos, goarch) (Outcome, error)`: the single entry point. Acquires an O_EXCL lock in the install dir, downloads + verifies the archive, extracts the binary, and atomically swaps it over `execPath`. `tag` MUST come from a live `Check(force=true)` Result, never the on-disk cache.
+- `Apply(ctx, currentVer, tag, execPath, goos, goarch, reportFn) (Outcome, error)`: the single entry point. Acquires an O_EXCL lock in the install dir, downloads + verifies the archive, extracts the binary, and atomically swaps it over `execPath`. `tag` MUST come from a live `Check(force=true)` Result, never the on-disk cache. `reportFn` (optional, pass nil to silence) is called with each `Stage` (downloading → verifying → installing) for progress reporting.
 - `Preflight(execPath, env) Plan`: classifies the install (self-managed / Homebrew / `go install`) and probes the install dir's writability, so the CLI can refuse managed installs and fail fast on a read-only dir.
 - Trust model: TLS + published SHA-256 checksums only — detects corruption/truncation, not a compromised host (binaries are unsigned; see SECURITY.md).
 - `download.go`: redirect-restricted client (follows only GitHub-owned asset hosts / same host), size caps (50 MiB archive, 64 KiB checksums), O_EXCL temp writes; `assetName`/`assetURL` mirror the GoReleaser naming.
@@ -31,12 +31,13 @@
 - `archive.go`: `.tar.gz`/`.zip` extraction accepting only the exact top-level regular-file member (path-traversal + symlink hardened, decompression-capped).
 - `selfpath.go`: `classifyInstall`, `goBinDir`, `canWrite`, `instructionFor`.
 - `lock.go`: O_EXCL `.typeburn-update.lock` serialization.
+- `progress.go`: `Stage` enum (downloading/verifying/installing) + `String()` for human labels; `report(fn, stage)` safely invokes optional progress callback.
 - `replace_unix.go` / `replace_windows.go`: atomic same-dir rename; the Windows path moves the running exe aside with rollback + crash recovery (`restoreInterruptedUpdate`).
 
 **Test seams:** `getFetchURL()`/`setFetchURL()` and `getCacheFilePath()`/`setCacheFilePath()` (check); `getDownloadBase()`/`setDownloadBase()` (self-update download).
 
 **Files (check):** `result.go`, `compare.go`, `prerelease.go`, `client.go`, `cache.go`, `check.go` (+ `_test.go`).
-**Files (self-update):** `download.go`, `verify.go`, `archive.go`, `selfpath.go`, `lock.go`, `preflight.go`, `apply.go`, `replace_unix.go`, `replace_windows.go` (+ `_test.go`).
+**Files (self-update):** `download.go`, `verify.go`, `archive.go`, `selfpath.go`, `lock.go`, `progress.go`, `preflight.go`, `apply.go`, `replace_unix.go`, `replace_windows.go` (+ `_test.go`).
 
 ---
 

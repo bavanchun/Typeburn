@@ -126,7 +126,7 @@ typeburn config set update_check on
 
 When enabled, every TUI launch runs a background check with an 800 ms timeout.
 If a newer stable release is found, the Result screen shows a muted footer hint:
-`↑ v2.1.0 available — run "typeburn version --check-update"`.
+`↑ v2.1.0 available — run "typeburn update"`.
 
 ### Self-update
 
