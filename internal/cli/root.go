@@ -46,6 +46,7 @@ func NewRoot(opts ...Option) *cobra.Command {
 	root.AddCommand(newHistoryCmd(e))
 	root.AddCommand(newConfigCmd(e))
 	root.AddCommand(newReplayCmd())
+	root.AddCommand(newUpdateCmd(e))
 	return root
 }
 

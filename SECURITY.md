@@ -49,3 +49,16 @@ sha256sum -c checksums.txt --ignore-missing
 
 Cryptographic signing (e.g. cosign/Sigstore) may be added in a future release;
 it is explicitly out of scope for v1.0.0.
+
+### Self-update (`typeburn update`)
+
+The built-in `typeburn update` command inherits this exact trust model. It
+fetches the release archive and `checksums.txt` over HTTPS and verifies the
+archive's SHA-256 before replacing the running binary. Because the binaries are
+unsigned and the checksums are produced by the same pipeline, this verifies
+**integrity in transit, not provenance** — it detects a corrupted or truncated
+download, not a compromised release host or a malicious GitHub account. It is
+equivalent to trusting `curl install.sh | sh`. The downloader only follows
+redirects to GitHub-owned asset hosts and caps archive size to bound a hostile
+response. If you require independently verifiable artifacts, keep using a
+build-from-source-at-a-pinned-tag workflow rather than self-update.
