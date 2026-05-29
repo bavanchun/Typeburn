@@ -4,9 +4,63 @@ import (
 	"fmt"
 	"strings"
 
+	"charm.land/lipgloss/v2"
+
 	"github.com/bavanchun/Typeburn/internal/config"
 	"github.com/bavanchun/Typeburn/internal/theme"
 )
+
+// heatmapMaxEntries caps how many missed keys the Result line shows.
+const heatmapMaxEntries = 8
+
+// renderKeyHeatmap renders the "most missed" key line from m.res.KeyMisses,
+// capped to heatmapMaxEntries and to innerW visible columns (never overflowing
+// the panel). A clean run (no misses) renders a faint "no missed keys".
+//
+// Theme roles only — the plain text is identical under NO_COLOR/mono (attributes
+// differ, layout does not).
+func (m ResultModel) renderKeyHeatmap(innerW int) string {
+	if len(m.res.KeyMisses) == 0 {
+		return m.th.Style(theme.RoleTextFaint).Render("no missed keys")
+	}
+
+	labelStyle := m.th.Style(theme.RoleTextMuted)
+	keyStyle := m.th.Style(theme.RoleTextPrimary)
+	countStyle := m.th.Style(theme.RoleError)
+
+	const prefix = "most missed:  "
+	width := lipgloss.Width(prefix)
+	if width > innerW {
+		// Pathologically narrow panel — show the faint fallback rather than overflow.
+		return m.th.Style(theme.RoleTextFaint).Render("no missed keys")
+	}
+
+	var b strings.Builder
+	b.WriteString(labelStyle.Render(prefix))
+
+	added := 0
+	for _, km := range m.res.KeyMisses {
+		if added >= heatmapMaxEntries {
+			break
+		}
+		sep := ""
+		if added > 0 {
+			sep = "   "
+		}
+		entry := fmt.Sprintf("%s ×%d", km.Label, km.Misses)
+		if width+lipgloss.Width(sep+entry) > innerW {
+			break
+		}
+		width += lipgloss.Width(sep + entry)
+
+		b.WriteString(sep)
+		b.WriteString(keyStyle.Render(km.Label))
+		b.WriteString(" ")
+		b.WriteString(countStyle.Render(fmt.Sprintf("×%d", km.Misses)))
+		added++
+	}
+	return b.String()
+}
 
 // accColorRole picks the appropriate theme role for accuracy display.
 // ≥97 → RoleSuccess, <90 → RoleWarning, else → RoleTextPrimary.

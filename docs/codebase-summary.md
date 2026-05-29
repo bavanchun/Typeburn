@@ -159,15 +159,17 @@ and `wordTarget` math shared by TUI and CLI.
 **Purpose:** Pure computation of typing test metrics from keystroke log. Zero UI dependencies. Formulas verified against researcher-02-typing-metrics.md.
 
 **Key types:**
-- `Result`: {NetWPM, RawWPM, Accuracy, Consistency, CPS, TimeMs, CharCount, ErrorCount, ErrorHistory, WPMHistory, ...} — final test metrics
+- `Result`: {NetWPM, RawWPM, Accuracy, Consistency, CPS, TimeMs, CharCount, ErrorCount, ErrorHistory, WPMHistory, KeyMisses, ...} — final test metrics
+- `KeyMiss`: {Key (folded rune), Label (display, e.g. "␣"), Misses, Attempts} — per-key fumble tally entry
 
 **Entry points:**
-- `Compute(log []typing.Keystroke, startMs, durationMs) Result`: compute all metrics post-hoc
+- `Compute(log []typing.Keystroke, startMs, durationMs) Result`: compute all metrics post-hoc; populates `Result.KeyMisses` (nil on empty/zero-duration logs)
+- `KeyHeatmap(log []typing.Keystroke) []KeyMiss`: per-key miss tally over the log — every wrong forward keystroke vs a real target (corrected fumbles included), case-folded, keys with ≥1 miss only, sorted misses desc → attempts desc → key asc. Surfaced on the Result screen and in CLI `key_misses` (JSON) / `most_missed_*` (table).
 - `LiveWPM(log []typing.Keystroke, elapsedMs int64) float64`: lightweight O(n) live WPM for in-progress display; returns 0 below 500 ms guard; counts only forward keystrokes (Typed != 0)
 - `AFKTrim(log, durationMs) ([]typing.Keystroke, int64)`: remove trailing AFK seconds (Time mode only, >7s)
 - `Consistency(wpmPerSecond []float64) float64`: 100 × tanh(1 − CV)
 
-**Files:** compute.go, consistency.go, per_second.go, afk_trim.go, live_wpm.go, compute_test.go, consistency_test.go, afk_trim_test.go, live_wpm_test.go.
+**Files:** compute.go, consistency.go, per_second.go, afk_trim.go, live_wpm.go, key_heatmap.go, compute_test.go, consistency_test.go, afk_trim_test.go, live_wpm_test.go, key_heatmap_test.go.
 
 ---
 

@@ -61,6 +61,19 @@
 
 ### Medium Priority (Feature Enhancements)
 
+#### Per-Key Error Heatmap — ✅ IMPLEMENTED (unreleased, version TBD at ship)
+- **Description:** Post-hoc per-key miss tally — counts every wrong forward
+  keystroke against a real target (corrected fumbles included), case-folded,
+  top 8. Surfaced on the Result screen ("most missed:" line) and in CLI output
+  (`key_misses` JSON array + `most_missed_*` table rows).
+- **Implementation:** Pure replay in `internal/metrics` (`KeyHeatmap` +
+  `Result.KeyMisses`); no persistence, no schema change (rides the ephemeral
+  `metrics.Result`). Result-screen render is theme-role only (NO_COLOR/mono safe).
+- **Status:** Implemented on `feat/key-error-heatmap`; ships in the next release.
+- **Deferred follow-ups:** lifetime/aggregate heatmap across history, per-key
+  error-*rate* coloring, finger/row grouping, configurable N, ASCII space-glyph
+  fallback.
+
 #### Code Mode (Custom Text Input)
 - **Description:** Paste arbitrary text for typing test instead of word/quote selection
 - **Effort:** ~3 days

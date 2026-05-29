@@ -26,6 +26,10 @@ func TestReplayJSON(t *testing.T) {
 	if !strings.Contains(out.String(), `"net_wpm"`) || !strings.Contains(out.String(), `"mode": "words"`) {
 		t.Fatalf("unexpected replay JSON:\n%s", out.String())
 	}
+	// key_misses is additive to the CLI contract; the all-correct fixture has none.
+	if !strings.Contains(out.String(), `"key_misses"`) {
+		t.Fatalf("replay JSON missing key_misses field:\n%s", out.String())
+	}
 }
 
 func TestReplayErrors(t *testing.T) {
