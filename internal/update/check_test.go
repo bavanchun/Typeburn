@@ -142,6 +142,47 @@ func TestCheck_PrereleaseCached(t *testing.T) {
 	}
 }
 
+func TestCheck_ReleaseURL_HostileDropped(t *testing.T) {
+	defer withTempCache(t)()
+	srv := stubServer(t, Release{TagName: "v2.1.0", HTMLURL: "https://evil.example/x"})
+	defer srv.Close()
+	origURL := getFetchURL()
+	setFetchURL(srv.URL)
+	defer setFetchURL(origURL)
+
+	r, err := Check(context.Background(), "v2.0.0", true)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if r == nil {
+		t.Fatal("expected non-nil result")
+	}
+	if r.ReleaseURL != "" {
+		t.Errorf("ReleaseURL: want empty for non-repo URL, got %q", r.ReleaseURL)
+	}
+}
+
+func TestCheck_ReleaseURL_ValidPassthrough(t *testing.T) {
+	defer withTempCache(t)()
+	validURL := "https://github.com/bavanchun/Typeburn/releases/tag/v2.1.0"
+	srv := stubServer(t, Release{TagName: "v2.1.0", HTMLURL: validURL})
+	defer srv.Close()
+	origURL := getFetchURL()
+	setFetchURL(srv.URL)
+	defer setFetchURL(origURL)
+
+	r, err := Check(context.Background(), "v2.0.0", true)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if r == nil {
+		t.Fatal("expected non-nil result")
+	}
+	if r.ReleaseURL != validURL {
+		t.Errorf("ReleaseURL: want %q, got %q", validURL, r.ReleaseURL)
+	}
+}
+
 func TestCheck_ForceBypassesCache(t *testing.T) {
 	defer withTempCache(t)()
 	// Pre-populate a fresh cache saying up-to-date.
