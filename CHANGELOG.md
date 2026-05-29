@@ -11,6 +11,8 @@ release section is extracted verbatim and passed to GoReleaser via
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-05-30
+
 ### Added
 
 - `typeburn update` self-update command. Downloads the matching release archive,
