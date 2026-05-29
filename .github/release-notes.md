@@ -1,15 +1,13 @@
-## [2.3.0] - 2026-05-30
+## [2.4.0] - 2026-05-30
 
-### Added
+### Changed
 
-- `typeburn update` self-update command. Downloads the matching release archive,
-  verifies it against the published SHA-256 `checksums.txt` over HTTPS, extracts
-  the binary, and atomically replaces the running executable in place (Linux,
-  macOS, Windows). `--check` reports availability without installing; `--yes`
-  skips the confirmation prompt. Package-manager builds (Homebrew, `go install`)
-  are refused with the matching upgrade command and a distinct exit code;
-  non-interactive streams refuse unless `--yes` is given. Integrity is
-  checksum-only (unsigned binaries) — the same trust model as the install
-  script.
+- The in-app "update available" hint on the result screen now points at
+  `typeburn update` (the self-updater) instead of the check-only
+  `typeburn version --check-update`.
+- `typeburn update` now prints `downloading` / `verifying` / `installing`
+  progress lines during the swap instead of blocking silently, and surfaces the
+  release-notes URL (`Release notes: <url>`) before installing — matching the
+  output of `typeburn version --check-update`.
 
-[2.3.0]: https://github.com/bavanchun/Typeburn/releases/tag/v2.3.0
+[2.4.0]: https://github.com/bavanchun/Typeburn/releases/tag/v2.4.0
