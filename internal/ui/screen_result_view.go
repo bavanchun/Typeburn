@@ -92,6 +92,8 @@ func (m ResultModel) renderPanel() string {
 	inner.WriteString("\n\n")
 	inner.WriteString(m.renderCharStats())
 	inner.WriteString("\n")
+	inner.WriteString(m.renderKeyHeatmap(innerW))
+	inner.WriteString("\n")
 	inner.WriteString(m.renderMeta())
 
 	// Build bordered panel, then inject "result" title on the top border line.
