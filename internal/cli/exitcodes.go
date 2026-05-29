@@ -3,12 +3,19 @@ package cli
 import "fmt"
 
 const (
-	ExitOK       = 0
-	ExitUsage    = 1
-	ExitIO       = 2
-	ExitAbort    = 3
-	ExitInternal = 4
+	ExitOK             = 0
+	ExitUsage          = 1
+	ExitIO             = 2
+	ExitAbort          = 3
+	ExitInternal       = 4
+	ExitManagedInstall = 5 // `update` refused: binary is managed by brew / go install
 )
+
+// managedInstallError signals that a self-update was refused because the binary
+// is package-manager-managed. It carries ExitManagedInstall so scripts can branch.
+func managedInstallError(format string, args ...any) error {
+	return &ExitError{Code: ExitManagedInstall, Err: fmt.Errorf(format, args...)}
+}
 
 // ExitError carries the process exit code for command failures.
 type ExitError struct {

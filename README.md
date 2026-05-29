@@ -128,6 +128,27 @@ When enabled, every TUI launch runs a background check with an 800 ms timeout.
 If a newer stable release is found, the Result screen shows a muted footer hint:
 `↑ v2.1.0 available — run "typeburn version --check-update"`.
 
+### Self-update
+
+```sh
+typeburn update            # confirm, then download + install the latest release
+typeburn update --check    # report availability only, never installs
+typeburn update --yes      # skip the confirmation prompt (needed for non-interactive use)
+```
+
+`update` downloads the matching release archive, verifies it against the
+published SHA-256 `checksums.txt` over HTTPS, then atomically replaces the
+running binary in place. Integrity rests on TLS + checksums — the **same trust
+model as `curl install.sh | sh`**. Release binaries are unsigned, so this
+detects a corrupted or truncated download, **not** a compromised release host
+(see [SECURITY.md](./SECURITY.md)).
+
+Builds installed by a package manager are **not** self-updated: a Homebrew or
+`go install` binary prints the matching upgrade command (`brew upgrade typeburn`
+/ `go install github.com/bavanchun/Typeburn@latest`) and exits without touching
+anything. On a non-interactive stream (pipe/redirect) `update` refuses unless
+`--yes` is passed, rather than blocking on a prompt.
+
 The minimum usable terminal size is **60 columns × 20 rows**. If the terminal is
 too small the app shows a resize prompt and resumes automatically once you resize.
 

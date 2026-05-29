@@ -4,9 +4,9 @@
 
 ## Package Overview
 
-### `internal/update` — GitHub Release Update Check
+### `internal/update` — GitHub Release Update Check + Self-Update
 
-**Purpose:** Pure-stdlib (no bubbletea/lipgloss) package that fetches the latest GitHub release, compares semver, and caches the result. Opt-in feature; never called on `--no-tui` paths.
+**Purpose:** Pure-stdlib (no bubbletea/lipgloss) package that fetches the latest GitHub release, compares semver, and caches the result (the update *check*), plus the self-update *pipeline* that downloads, verifies, and atomically installs a new binary. Opt-in feature; the check is never called on `--no-tui` paths.
 
 **Key types:**
 - `Release`: GitHub API payload (TagName, Draft, Prerelease, PublishedAt, HTMLURL)
@@ -22,7 +22,21 @@
 
 **Test seams:** `getFetchURL()`/`setFetchURL()` and `getCacheFilePath()`/`setCacheFilePath()` — mutex-guarded accessors around the HTTP endpoint and temp-dir overrides used in tests.
 
-**Files:** `result.go`, `compare.go`, `compare_test.go`, `prerelease.go`, `prerelease_test.go`, `client.go`, `client_test.go`, `cache.go`, `cache_test.go`, `check.go`, `check_test.go`.
+**Self-update pipeline (`typeburn update`):**
+- `Apply(ctx, currentVer, tag, execPath, goos, goarch) (Outcome, error)`: the single entry point. Acquires an O_EXCL lock in the install dir, downloads + verifies the archive, extracts the binary, and atomically swaps it over `execPath`. `tag` MUST come from a live `Check(force=true)` Result, never the on-disk cache.
+- `Preflight(execPath, env) Plan`: classifies the install (self-managed / Homebrew / `go install`) and probes the install dir's writability, so the CLI can refuse managed installs and fail fast on a read-only dir.
+- Trust model: TLS + published SHA-256 checksums only — detects corruption/truncation, not a compromised host (binaries are unsigned; see SECURITY.md).
+- `download.go`: redirect-restricted client (follows only GitHub-owned asset hosts / same host), size caps (50 MiB archive, 64 KiB checksums), O_EXCL temp writes; `assetName`/`assetURL` mirror the GoReleaser naming.
+- `verify.go`: `parseChecksums` + streaming `verifySHA256` (case-insensitive).
+- `archive.go`: `.tar.gz`/`.zip` extraction accepting only the exact top-level regular-file member (path-traversal + symlink hardened, decompression-capped).
+- `selfpath.go`: `classifyInstall`, `goBinDir`, `canWrite`, `instructionFor`.
+- `lock.go`: O_EXCL `.typeburn-update.lock` serialization.
+- `replace_unix.go` / `replace_windows.go`: atomic same-dir rename; the Windows path moves the running exe aside with rollback + crash recovery (`restoreInterruptedUpdate`).
+
+**Test seams:** `getFetchURL()`/`setFetchURL()` and `getCacheFilePath()`/`setCacheFilePath()` (check); `getDownloadBase()`/`setDownloadBase()` (self-update download).
+
+**Files (check):** `result.go`, `compare.go`, `prerelease.go`, `client.go`, `cache.go`, `check.go` (+ `_test.go`).
+**Files (self-update):** `download.go`, `verify.go`, `archive.go`, `selfpath.go`, `lock.go`, `preflight.go`, `apply.go`, `replace_unix.go`, `replace_windows.go` (+ `_test.go`).
 
 ---
 
@@ -66,13 +80,17 @@ executes it, and maps returned errors to process exit codes.
 ### `internal/cli` — Scriptable CLI Surface
 
 **Purpose:** cobra/fang command surface: `run`, `history`, `version`,
-`config`, and `replay`. Owns exit codes and command validation.
+`config`, `replay`, and `update`. Owns exit codes and command validation.
 
 **Key behavior:**
 - `run` launches the TUI directly into Typing via `ui.StartTestMsg`, or uses
   `internal/cli/notui` for raw terminal mode.
 - `history` and `config` expose XDG persistence without opening the TUI.
 - `replay` decodes `schema_version: 1` keystroke logs and calls `metrics.Compute`.
+- `update` (`cmd_update.go`) wires `update.Check(force)` + `update.Preflight` +
+  `update.Apply` into the self-update flow: `--check` is detect-only; managed
+  installs refuse with `ExitManagedInstall`; non-tty refuses without `--yes`.
+  Test seams: `setApplyFn`, `execPathFn`, `isInteractive`.
 - `output` renders plain tables and deterministic indented JSON.
 
 **Files:** `internal/cli/*.go`, `internal/cli/output/*.go`,

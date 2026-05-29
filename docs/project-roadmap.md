@@ -74,6 +74,24 @@
   error-*rate* coloring, finger/row grouping, configurable N, ASCII space-glyph
   fallback.
 
+#### Self-Update Command (`typeburn update`) — ✅ IMPLEMENTED (unreleased)
+- **Description:** `typeburn update` downloads the matching release archive,
+  verifies it against the published SHA-256 `checksums.txt` over HTTPS, extracts
+  the binary, and atomically replaces the running executable (Linux/macOS via
+  same-dir rename; Windows via move-aside + rollback + crash recovery). `--check`
+  is detect-only; `--yes` skips the confirmation prompt.
+- **Implementation:** Hand-rolled stdlib pipeline in `internal/update`
+  (`download`/`verify`/`archive`/`selfpath`/`lock`/`preflight`/`apply` +
+  platform `replace_*`), wired by `internal/cli/cmd_update.go`. Tag derived from
+  a live `Check(force=true)`, never the cache; O_EXCL temps + lock; redirect
+  allowlist to GitHub-owned hosts; size caps.
+- **Trust model:** checksum-only (unsigned), identical to `install.sh` — detects
+  corruption/truncation, not a compromised host. Homebrew/`go install` builds are
+  refused with the matching upgrade command (`ExitManagedInstall`).
+- **Status:** Implemented; ships in the next release.
+- **Deferred follow-ups:** code signing (cosign/Sigstore), delta updates,
+  rollback-to-previous, `--version <tag>` pinned downgrade.
+
 #### Code Mode (Custom Text Input)
 - **Description:** Paste arbitrary text for typing test instead of word/quote selection
 - **Effort:** ~3 days
