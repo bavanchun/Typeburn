@@ -37,7 +37,8 @@ func itoa(n int) string {
 // Post-fix records carry NetWPM directly. Legacy records (written before this
 // field existed) unmarshal NetWPM as 0.0, so we fall back to float64(WPM) to
 // keep the same integer scale — otherwise a new 60.x run would falsely beat a
-// stored legacy 80.
+// stored legacy 80. The 0.0-vs-legacy ambiguity is benign: a genuine run that
+// yields NetWPM 0.0 also has WPM == 0, so float64(WPM) returns the correct 0.
 func effWPM(r Record) float64 {
 	if r.NetWPM == 0 {
 		return float64(r.WPM)

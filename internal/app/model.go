@@ -12,18 +12,6 @@ import (
 	"github.com/bavanchun/Typeburn/internal/update"
 )
 
-// Screen enumerates the top-level screens. Routing switches on this value.
-type Screen int
-
-const (
-	ScreenHome Screen = iota
-	ScreenTyping
-	ScreenResult
-	ScreenSettings
-	ScreenHistory
-	ScreenCodePaste
-)
-
 // Model is the root Elm model.
 type Model struct {
 	screen   Screen
