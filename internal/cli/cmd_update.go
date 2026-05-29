@@ -24,13 +24,13 @@ var (
 	applyFn   = update.Apply
 )
 
-func getApplyFn() func(context.Context, string, string, string, string, string) (update.Outcome, error) {
+func getApplyFn() func(context.Context, string, string, string, string, string, func(update.Stage)) (update.Outcome, error) {
 	applyFnMu.Lock()
 	defer applyFnMu.Unlock()
 	return applyFn
 }
 
-func setApplyFn(fn func(context.Context, string, string, string, string, string) (update.Outcome, error)) {
+func setApplyFn(fn func(context.Context, string, string, string, string, string, func(update.Stage)) (update.Outcome, error)) {
 	applyFnMu.Lock()
 	defer applyFnMu.Unlock()
 	applyFn = fn
@@ -106,6 +106,8 @@ func runUpdate(cmd *cobra.Command, yes, check bool) error {
 		return ioError("install directory %s is not writable; re-run with sufficient permissions or reinstall", plan.Dir)
 	}
 
+	printReleaseNotes(cmd.OutOrStdout(), result.ReleaseURL)
+
 	if !yes {
 		if !isInteractive(cmd.InOrStdin()) {
 			return usageError("refusing to prompt on a non-interactive stream; re-run with --yes")
@@ -120,12 +122,14 @@ func runUpdate(cmd *cobra.Command, yes, check bool) error {
 		}
 	}
 
-	fmt.Fprintf(cmd.OutOrStdout(), "updating %s → %s ...\n", ver, result.Latest)
-	out, err := getApplyFn()(cmd.Context(), ver, result.Latest, execPath, runtime.GOOS, runtime.GOARCH)
+	out := cmd.OutOrStdout()
+	fmt.Fprintf(out, "updating %s → %s ...\n", ver, result.Latest)
+	progress := func(s update.Stage) { fmt.Fprintf(out, "  %s...\n", s) }
+	outcome, err := getApplyFn()(cmd.Context(), ver, result.Latest, execPath, runtime.GOOS, runtime.GOARCH, progress)
 	if err != nil {
 		return ioError("update failed: %v", err)
 	}
-	fmt.Fprintf(cmd.OutOrStdout(), "updated %s → %s. restart typeburn to use the new version.\n", out.From, out.To)
+	fmt.Fprintf(out, "updated %s → %s. restart typeburn to use the new version.\n", outcome.From, outcome.To)
 	return nil
 }
 
@@ -139,11 +143,22 @@ func reportCheck(cmd *cobra.Command, ver string, result *update.Result, checkErr
 	case checkErr != nil:
 		fmt.Fprintf(cmd.ErrOrStderr(), "could not check for updates: %v\n", checkErr)
 	case result.UpgradeAvailable:
-		fmt.Fprintf(out, "typeburn %s is available (you have %s).\nRun 'typeburn update' to upgrade.\n", result.Latest, ver)
+		fmt.Fprintf(out, "typeburn %s is available (you have %s).\n", result.Latest, ver)
+		printReleaseNotes(out, result.ReleaseURL)
+		fmt.Fprintln(out, "Run 'typeburn update' to upgrade.")
 	default:
 		fmt.Fprintf(out, "you are on the latest version (%s).\n", ver)
 	}
 	return nil
+}
+
+// printReleaseNotes writes a "Release notes: <url>" line when url is non-empty,
+// matching the wording of `version --check-update`. url is already repo-guarded
+// upstream in update.Check, so no further validation is needed here.
+func printReleaseNotes(w io.Writer, url string) {
+	if url != "" {
+		fmt.Fprintf(w, "Release notes: %s\n", url)
+	}
 }
 
 func confirmUpdate(cmd *cobra.Command, cur, latest string) (bool, error) {

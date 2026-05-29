@@ -72,7 +72,7 @@ func (m ResultModel) renderUpdateHint() string {
 	if !validSemverFooter.MatchString(latest) {
 		return ""
 	}
-	hint := fmt.Sprintf("↑ %s available — run \"typeburn version --check-update\"", latest)
+	hint := fmt.Sprintf("↑ %s available — run \"typeburn update\"", latest)
 	return m.th.Style(theme.RoleTextMuted).Render(hint)
 }
 

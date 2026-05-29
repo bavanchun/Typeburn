@@ -25,10 +25,17 @@ func upgradeResult() *update.Result {
 	}
 }
 
-// recordingApply returns an applyFn stub and a pointer to its called-flag.
-func recordingApply(called *bool) func(context.Context, string, string, string, string, string) (update.Outcome, error) {
-	return func(_ context.Context, from, to, _, _, _ string) (update.Outcome, error) {
+// recordingApply returns an applyFn stub and a pointer to its called-flag. It
+// drives the progress reporter through every stage so callers can assert the
+// CLI prints the step lines.
+func recordingApply(called *bool) func(context.Context, string, string, string, string, string, func(update.Stage)) (update.Outcome, error) {
+	return func(_ context.Context, from, to, _, _, _ string, reportFn func(update.Stage)) (update.Outcome, error) {
 		*called = true
+		if reportFn != nil {
+			reportFn(update.StageDownloading)
+			reportFn(update.StageVerifying)
+			reportFn(update.StageInstalling)
+		}
 		return update.Outcome{From: from, To: to}, nil
 	}
 }
@@ -74,8 +81,27 @@ func TestUpdate_CheckReportsAvailability(t *testing.T) {
 	if !strings.Contains(out.String(), "v2.3.0") {
 		t.Errorf("expected latest version in output, got:\n%s", out.String())
 	}
+	if !strings.Contains(out.String(), "Release notes: https://github.com/bavanchun/Typeburn/releases/tag/v2.3.0") {
+		t.Errorf("expected release-notes URL, got:\n%s", out.String())
+	}
 	if called {
 		t.Error("--check must not install")
+	}
+}
+
+func TestUpdate_CheckOmitsReleaseNotesWhenEmpty(t *testing.T) {
+	orig := getCheckFn()
+	r := upgradeResult()
+	r.ReleaseURL = "" // guarded away upstream (non-repo URL) → no notes line
+	setCheckFn(stubCheck(r, nil))
+	defer setCheckFn(orig)
+
+	var out bytes.Buffer
+	if err := updateRoot(t, &out, &bytes.Buffer{}, &bytes.Buffer{}, "update", "--check"); err != nil {
+		t.Fatalf("update --check: %v", err)
+	}
+	if strings.Contains(out.String(), "Release notes:") {
+		t.Errorf("expected no release-notes line for empty URL, got:\n%s", out.String())
 	}
 }
 
@@ -181,6 +207,16 @@ func TestUpdate_YesSkipsPromptAndInstalls(t *testing.T) {
 	}
 	if !strings.Contains(out.String(), "updated") {
 		t.Errorf("expected 'updated' confirmation, got:\n%s", out.String())
+	}
+	// Each progress stage must surface to the user during the swap.
+	for _, stage := range []string{"downloading", "verifying", "installing"} {
+		if !strings.Contains(out.String(), stage) {
+			t.Errorf("expected %q progress line, got:\n%s", stage, out.String())
+		}
+	}
+	// Release notes URL must be shown before the install.
+	if !strings.Contains(out.String(), "Release notes: https://github.com/bavanchun/Typeburn/releases/tag/v2.3.0") {
+		t.Errorf("expected release-notes URL, got:\n%s", out.String())
 	}
 }
 

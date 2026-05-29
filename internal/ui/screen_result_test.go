@@ -348,7 +348,7 @@ func TestResultView_UpdateHint_Present(t *testing.T) {
 	if !strings.Contains(view, "v2.1.0") {
 		t.Errorf("expected version in hint, view:\n%s", view)
 	}
-	if !strings.Contains(view, "typeburn version --check-update") {
+	if !strings.Contains(view, "typeburn update") {
 		t.Errorf("expected command in hint, view:\n%s", view)
 	}
 }
