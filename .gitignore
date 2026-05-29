@@ -32,3 +32,4 @@ node_modules/
 .agents/
 .agent/
 .claude/session-state/
+.claude/agent-memory/
