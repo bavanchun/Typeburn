@@ -137,6 +137,7 @@
 | m3 | Parent dir not fsync'd on atomic write | MINOR | Power loss durability (acceptable for local data) | Document trade-off | Accepted |
 | m4 | MissedChars field always 0 | MINOR | Field advertised but unusable (no target delivery) | Remove field | ✅ Removed (v1.0.1) |
 | m5 | CJK runes not width-aware | MINOR | Text overflow in 60-col terminals with CJK quotes | Use lipgloss.Width if CJK added | Deferred |
+| m6 | effWPM legacy-0 ambiguity | MINOR | Legacy records with NetWPM==0 fall back to WPM; a real all-wrong run also yields both 0 — result is correct, no schema change needed | Reviewed-and-accepted (YAGNI) | Accepted |
 
 ### Design Constraints
 

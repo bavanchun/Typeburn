@@ -50,8 +50,9 @@ func countCompletedWords(typed, target []rune) int {
 	for i, r := range target {
 		if r == ' ' {
 			if inWord {
-				// Check if this word AND its space are covered by typed.
-				// Space position is i; we need typed[i] to exist and be a space.
+				// Word counts complete once typing has advanced past its
+				// trailing-space position (position-based progress; the char
+				// itself isn't re-checked here).
 				if i < len(typed) {
 					completed++
 				}
