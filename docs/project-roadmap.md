@@ -74,7 +74,7 @@
   error-*rate* coloring, finger/row grouping, configurable N, ASCII space-glyph
   fallback.
 
-#### Self-Update Command (`typeburn update`) — ✅ IMPLEMENTED (unreleased)
+#### Self-Update Command (`typeburn update`) — ✅ SHIPPED in v2.3.0 (2026-05-30)
 - **Description:** `typeburn update` downloads the matching release archive,
   verifies it against the published SHA-256 `checksums.txt` over HTTPS, extracts
   the binary, and atomically replaces the running executable (Linux/macOS via
@@ -88,7 +88,7 @@
 - **Trust model:** checksum-only (unsigned), identical to `install.sh` — detects
   corruption/truncation, not a compromised host. Homebrew/`go install` builds are
   refused with the matching upgrade command (`ExitManagedInstall`).
-- **Status:** Implemented; ships in the next release.
+- **Status:** Shipped in v2.3.0 (squash-merged via #33).
 - **Deferred follow-ups:** code signing (cosign/Sigstore), delta updates,
   rollback-to-previous, `--version <tag>` pinned downgrade.
 
