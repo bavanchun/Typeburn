@@ -21,6 +21,8 @@ type Result struct {
 
 	DurationMs int64       // effective test duration (endMs - startMs, after AFK trim)
 	PerSecond  []PerSecond // per-second breakdown
+
+	KeyMisses []KeyMiss // per-key fumble tally (nil on empty/zero-duration logs)
 }
 
 // Compute derives all metrics from the keystroke log, mode, and caller-supplied
@@ -111,6 +113,7 @@ func Compute(log []typing.Keystroke, mode config.Mode, endMs int64) Result {
 		Errors:         incorrect,
 		DurationMs:     durationMs,
 		PerSecond:      perSec,
+		KeyMisses:      KeyHeatmap(log),
 	}
 }
 
