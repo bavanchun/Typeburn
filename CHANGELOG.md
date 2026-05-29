@@ -11,6 +11,8 @@ release section is extracted verbatim and passed to GoReleaser via
 
 ## [Unreleased]
 
+## [2.4.0] - 2026-05-30
+
 ### Changed
 
 - The in-app "update available" hint on the result screen now points at
