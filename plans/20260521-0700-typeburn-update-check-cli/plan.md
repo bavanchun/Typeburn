@@ -9,7 +9,7 @@ description: >-
   Locked: opt-in default-OFF, all three install methods printed verbatim,
   pre-releases filtered, dev-build skip, no self-upgrade. Ships in v2.1.0
   (separate from v2.0.0 in flight via PR #18).
-status: pending
+status: completed
 priority: P2
 branch: "feat/update-check-v2.1"
 tags: [feature, cli, network, release]

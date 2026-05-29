@@ -1,7 +1,7 @@
 ---
 title: "Obsidian vault integration for project management"
 description: "One-way sync of plans/ and docs/ into a separate Obsidian vault via MCP. Replaces Jira/Trello/Notion/Linear with local markdown-native project tracking."
-status: in_progress
+status: completed
 priority: P2
 branch: "main"
 tags: [obsidian, tooling, project-management, mcp]

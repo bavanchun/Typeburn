@@ -72,4 +72,4 @@ Every change — code, docs, config, release prep — follows:
 
 ## Documentation
 
-`docs/` is the source of truth: `codebase-summary.md` (per-package detail), `system-architecture.md`, `project-roadmap.md` (M2 new-best-precision is the tracked fast-follow), `code-standards.md`, `project-overview-pdr.md`. Update them when behavior or structure changes. Plans live in `plans/`; session journals in `docs/journals/`.
+`docs/` is the source of truth: `codebase-summary.md` (per-package detail), `system-architecture.md`, `project-roadmap.md` (shipped release history + deferred backlog), `code-standards.md`, `project-overview-pdr.md`. Update them when behavior or structure changes. Plans live in `plans/`; session journals in `docs/journals/`.

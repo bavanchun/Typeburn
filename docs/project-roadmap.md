@@ -221,7 +221,7 @@
 - **Artifact:** Binary in ./bin/typeburn
 - **Distribution:** GitHub Releases (source + pre-built linux/darwin binaries)
 - **Installation:** `go install Typeburn@latest` (via go.mod/go.sum versioning)
-- **Minimum Go:** 1.26+
+- **Minimum Go:** 1.25+
 - **Minimum terminal:** 60 cols × 20 rows (ANSI 256-color or truecolor recommended)
 
 ### Support Policy

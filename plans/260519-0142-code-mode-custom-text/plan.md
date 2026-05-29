@@ -4,7 +4,7 @@ description: >-
   ModeCode: type CLI-supplied text/code with full-literal whitespace; new
   codetext loader + isolated code renderer; TDD per phase, protected-main PR
   flow
-status: pending
+status: completed
 priority: P2
 branch: feat/v1.2.0-code-mode
 tags:
