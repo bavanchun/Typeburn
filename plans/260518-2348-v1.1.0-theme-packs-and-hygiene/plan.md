@@ -3,7 +3,7 @@ title: v1.1.0 — Theme Packs + Hygiene
 description: >-
   6 theme packs + bundled hygiene fixes; parallel phases, per-phase commits,
   protected-main PR flow
-status: pending
+status: completed
 priority: P2
 branch: feat/v1.1.0-theme-packs-hygiene
 tags:
