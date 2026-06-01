@@ -266,6 +266,6 @@
 
 ## Conclusion
 
-**Typeburn v2.1.2 is the current stable release.** The codebase is clean, tested, and well-documented. Post-1.0 work has been additive or corrective, with v2.0.0 adding a professional scriptable CLI, v2.1.0 adding opt-in update-check, and v2.1.1 resolving 6 audited defects.
+**Typeburn v2.4.0 is the current stable release.** The codebase is clean, tested, and well-documented. Post-1.0 work has been additive or corrective: v2.0.0 added a professional scriptable CLI, v2.1.x added opt-in update checks plus audited defect cleanup, v2.2.0 added per-key error heatmaps, v2.3.0 added the self-update command, and v2.4.0 polished the update discovery and progress UX.
 
 M1 (timer re-arm) and M2 (new-best precision) — the identified correctness bugs — were fixed in v1.0 (d6369de) and v1.0.1 respectively. v1.4.0 fixed a Settings live-apply bug (changes were persisted but not applied in-session) and improved the wide-terminal typing layout. Remaining backlog is additive or cosmetic.
