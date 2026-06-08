@@ -5,14 +5,9 @@ import (
 	"github.com/bavanchun/Typeburn/internal/typing"
 )
 
-// liveWPM estimates current WPM from forward keystrokes in the log.
+// liveWPMFromCount estimates current WPM from a forward-keystroke count.
 // Used for the live header display; returns 0 when elapsed < 500ms (too noisy).
 // Full accuracy is computed via metrics.Compute at test completion.
-func liveWPM(log []typing.Keystroke, elapsedMs int64) float64 {
-	return metrics.LiveWPM(log, elapsedMs)
-}
-
-// liveWPMFromCount estimates current WPM from a forward-keystroke count.
 func liveWPMFromCount(forward int, elapsedMs int64) float64 {
 	return metrics.LiveWPMFromCount(forward, elapsedMs)
 }
