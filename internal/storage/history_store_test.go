@@ -18,6 +18,7 @@ func makeRecord(offsetSec int, wpm int) Record {
 		Mode:        "time",
 		Length:      30,
 		WPM:         wpm,
+		NetWPM:      float64(wpm) + 0.42,
 		RawWPM:      float64(wpm) + 5,
 		Accuracy:    97.0,
 		Consistency: 90.0,

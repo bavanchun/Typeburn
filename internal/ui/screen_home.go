@@ -109,6 +109,15 @@ func (m HomeModel) WithCodeText(text, hint string) HomeModel {
 	return m
 }
 
+// WithSettings returns a copy with theme and keymap updated, preserving
+// modeIdx and lenIdx so the user's current selection is not reset when a
+// setting changes (same preservation pattern as WithCodeText).
+func (m HomeModel) WithSettings(th theme.Theme, km config.Keymap) HomeModel {
+	m.th = th
+	m.km = km
+	return m
+}
+
 // currentMode returns the currently selected config.Mode.
 func (m HomeModel) currentMode() config.Mode { return modeOrder[m.modeIdx] }
 

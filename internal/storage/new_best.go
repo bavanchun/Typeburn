@@ -1,5 +1,7 @@
 package storage
 
+import "strconv"
+
 // BestBucketKey returns the comparison key for new-best scoping.
 // For time and words modes the key includes the length parameter so that, e.g.,
 // a 60s best does not suppress a 30s best. Quote mode has no numeric length
@@ -9,28 +11,11 @@ func BestBucketKey(mode string, length int) string {
 	case "time", "words":
 		// Include length so time/30 and time/60 are separate leaderboards.
 		key := mode + "/"
-		// Inline int-to-string to avoid importing fmt/strconv in this tiny file.
-		key += itoa(length)
+		key += strconv.Itoa(length)
 		return key
 	default:
 		return mode
 	}
-}
-
-// itoa converts a non-negative integer to its decimal string representation
-// without importing fmt or strconv.
-func itoa(n int) string {
-	if n == 0 {
-		return "0"
-	}
-	buf := [20]byte{}
-	pos := len(buf)
-	for n > 0 {
-		pos--
-		buf[pos] = byte('0' + n%10)
-		n /= 10
-	}
-	return string(buf[pos:])
 }
 
 // EffectiveWPM returns the effective WPM for new-best comparison as a float64.

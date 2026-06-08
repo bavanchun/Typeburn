@@ -13,6 +13,13 @@ func TestBestBucketKey(t *testing.T) {
 		{name: "words includes length", mode: "words", length: 50, want: "words/50"},
 		{name: "quote ignores length", mode: "quote", length: 0, want: "quote"},
 		{name: "code ignores length", mode: "code", length: 0, want: "code"},
+		// Edge cases
+		{name: "time zero length", mode: "time", length: 0, want: "time/0"},
+		{name: "time negative length", mode: "time", length: -1, want: "time/-1"},
+		{name: "words zero", mode: "words", length: 0, want: "words/0"},
+		{name: "code with length", mode: "code", length: 42, want: "code"},
+		{name: "unknown mode", mode: "unknown", length: 10, want: "unknown"},
+		{name: "empty mode", mode: "", length: 10, want: ""},
 	}
 
 	for _, tt := range tests {

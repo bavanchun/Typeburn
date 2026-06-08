@@ -232,7 +232,7 @@ func TestTyping_Tick_RecomputesWPM(t *testing.T) {
 	m2, _ := m.Update(tickMsg{t: future})
 
 	// With at least one char typed, headerWPM should be > 0 if elapsed ≥ 500ms;
-	// elapsed here is ~400ms so liveWPM returns 0 (below 500ms guard). That
+	// elapsed here is ~400ms so the live-WPM helper returns 0 (below 500ms guard). That
 	// is correct behaviour — we just assert no panic and the type round-trips.
 	_ = m2.headerWPM
 }
