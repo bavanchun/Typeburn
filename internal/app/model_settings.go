@@ -37,7 +37,7 @@ func (m Model) applySettings(s config.Settings) Model {
 	// Rebuild theme from the new name, then propagate to every sub-model.
 	m.theme = theme.Load(s.Theme, theme.EnvNoColor())
 	// Preserve the loaded code text and hint across settings changes.
-	m.home = ui.NewHome(s, m.theme, m.keys, m.codeText, m.codeHint).SetSize(m.w, m.h)
+	m.home = m.home.WithSettings(m.theme, m.keys).SetSize(m.w, m.h)
 	m.typing = m.typing.ApplySettings(s, m.theme)
 	m.result = m.result.ApplyTheme(m.theme)
 	sel := m.sett.Sel()
