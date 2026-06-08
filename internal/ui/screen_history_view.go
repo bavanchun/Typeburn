@@ -5,6 +5,7 @@ import (
 
 	"charm.land/lipgloss/v2"
 
+	"github.com/bavanchun/Typeburn/internal/storage"
 	"github.com/bavanchun/Typeburn/internal/theme"
 )
 
@@ -46,7 +47,7 @@ func (m HistoryModel) View() string {
 
 		// Windowed rows.
 		vis := m.visibleCount()
-		bests := bestWPMPerBucket(m.rows)
+		bests := storage.BestWPMPerBucket(m.rows)
 
 		end := m.top + vis
 		if end > n {
@@ -54,12 +55,12 @@ func (m HistoryModel) View() string {
 		}
 		for i := m.top; i < end; i++ {
 			r := rows[i]
-			key := histBucketKey(r.Mode, r.Length)
+			key := storage.BestBucketKey(r.Mode, r.Length)
 			// Compare effective WPM against the persisted bucket best.
 			// Float equality is safe here: we compare the same stored value
-			// (effWPM(r)) against what bestWPMPerBucket already derived from
+			// (EffectiveWPM(r)) against what BestWPMPerBucket already derived from
 			// the same records — no recomputation drift possible.
-			isBestRow := effWPM(r) == bests[key]
+			isBestRow := storage.EffectiveWPM(r) == bests[key]
 			body.WriteString(renderHistoryRow(r, i == m.sel, isBestRow, m.th))
 			body.WriteString("\n")
 		}
