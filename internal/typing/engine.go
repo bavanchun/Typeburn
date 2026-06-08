@@ -1,7 +1,7 @@
 package typing
 
 import (
-	"github.com/bavanchun/Typeburn/internal/config"
+	"github.com/bavanchun/Typeburn/internal/mode"
 )
 
 // Keystroke records a single typed or deleted character event.
@@ -24,7 +24,7 @@ type Engine struct {
 	typed      []rune
 	log        []Keystroke
 	startMs    int64 // 0 until first Apply call
-	mode       config.Mode
+	mode       mode.Mode
 	wordTarget int // Words: N words to complete; Time: limit in ms; Quote: unused (0)
 }
 
@@ -32,7 +32,7 @@ type Engine struct {
 // For ModeWords, wordTarget is the number of words to type.
 // For ModeTime, wordTarget is the time limit in milliseconds.
 // For ModeQuote, wordTarget is ignored (0).
-func New(target string, mode config.Mode, wordTarget int) *Engine {
+func New(target string, mode mode.Mode, wordTarget int) *Engine {
 	return &Engine{
 		target:     []rune(target),
 		mode:       mode,
@@ -143,12 +143,30 @@ func (e *Engine) Log() []Keystroke {
 	return out
 }
 
+// Typed returns the current typed buffer after applying backspaces.
+func (e *Engine) Typed() []rune {
+	out := make([]rune, len(e.typed))
+	copy(out, e.typed)
+	return out
+}
+
+// ForwardKeystrokes returns how many non-backspace events are in the log.
+func (e *Engine) ForwardKeystrokes() int {
+	n := 0
+	for _, k := range e.log {
+		if k.Typed != 0 {
+			n++
+		}
+	}
+	return n
+}
+
 // Progress returns (done, total) for the current mode:
 //   - ModeWords / ModeTime: (completedWords, wordTarget)
 //   - ModeQuote:            (typedRunes, totalTargetRunes)
 func (e *Engine) Progress() (done, total int) {
 	switch e.mode {
-	case config.ModeQuote:
+	case mode.ModeQuote:
 		typed := len(e.typed)
 		if typed > len(e.target) {
 			typed = len(e.target)

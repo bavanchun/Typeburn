@@ -47,3 +47,15 @@ func TestLiveWPM(t *testing.T) {
 		})
 	}
 }
+
+func TestLiveWPMFromCount(t *testing.T) {
+	if got := LiveWPMFromCount(25, 60000); got != 5 {
+		t.Fatalf("LiveWPMFromCount() = %v, want 5", got)
+	}
+	if got := LiveWPMFromCount(25, 499); got != 0 {
+		t.Fatalf("LiveWPMFromCount below guard = %v, want 0", got)
+	}
+	if got := LiveWPMFromCount(0, 60000); got != 0 {
+		t.Fatalf("LiveWPMFromCount zero count = %v, want 0", got)
+	}
+}

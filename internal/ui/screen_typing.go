@@ -105,7 +105,7 @@ func (m TypingModel) handleTick(msg tickMsg) (TypingModel, tea.Cmd) {
 
 	// Recompute live WPM at ~250ms cadence to limit style recomputation.
 	if m.nowMs-m.lastPaintMs >= 250 {
-		m.headerWPM = liveWPM(m.eng.Log(), elapsed)
+		m.headerWPM = liveWPMFromCount(m.eng.ForwardKeystrokes(), elapsed)
 		m.lastPaintMs = m.nowMs
 	}
 

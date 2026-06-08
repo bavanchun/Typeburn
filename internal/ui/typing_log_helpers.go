@@ -12,6 +12,11 @@ func liveWPM(log []typing.Keystroke, elapsedMs int64) float64 {
 	return metrics.LiveWPM(log, elapsedMs)
 }
 
+// liveWPMFromCount estimates current WPM from a forward-keystroke count.
+func liveWPMFromCount(forward int, elapsedMs int64) float64 {
+	return metrics.LiveWPMFromCount(forward, elapsedMs)
+}
+
 // typedFromLog reconstructs the current typed-rune slice by replaying the
 // keystroke log. Engine.typed is unexported; the log is the public API.
 // Backspace events (Typed==0) pop the last rune, mirroring Engine internals.
