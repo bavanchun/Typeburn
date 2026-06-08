@@ -1,7 +1,7 @@
 package typing
 
 import (
-	"github.com/bavanchun/Typeburn/internal/config"
+	"github.com/bavanchun/Typeburn/internal/mode"
 )
 
 // Complete reports whether the test is finished according to the active mode.
@@ -17,13 +17,13 @@ import (
 //     '\n'/'\t' are ordinary target runes).
 func (e *Engine) Complete(nowMs int64) bool {
 	switch e.mode {
-	case config.ModeTime:
+	case mode.ModeTime:
 		return nowMs >= int64(e.wordTarget)
 
-	case config.ModeWords:
+	case mode.ModeWords:
 		return countCompletedWords(e.typed, e.target) >= e.wordTarget
 
-	case config.ModeQuote, config.ModeCode:
+	case mode.ModeQuote, mode.ModeCode:
 		return runesEqual(e.typed, e.target)
 
 	default:

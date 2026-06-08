@@ -3,31 +3,22 @@
 // types to disk.
 package config
 
+import "github.com/bavanchun/Typeburn/internal/mode"
+
 // Mode identifies a test mode. Stored as a string for forward-compatible JSON.
-type Mode string
+type Mode = mode.Mode
 
 const (
-	ModeTime  Mode = "time"
-	ModeWords Mode = "words"
-	ModeQuote Mode = "quote"
-	// ModeCode types a user-supplied snippet verbatim (CLI --text). It has
-	// no numeric length and completes on an exact full-text match (like
-	// quote). Whitespace/newlines/tabs are literal.
-	ModeCode Mode = "code"
+	ModeTime  = mode.ModeTime
+	ModeWords = mode.ModeWords
+	ModeQuote = mode.ModeQuote
+	ModeCode  = mode.ModeCode
 )
 
 // LengthsFor returns the selectable length options for a mode. Quote mode has
 // no numeric length (the quote itself bounds the test) so it returns nil.
 func LengthsFor(m Mode) []int {
-	switch m {
-	case ModeWords:
-		return []int{10, 25, 50, 100}
-	case ModeQuote, ModeCode:
-		// No numeric length: the quote / supplied snippet bounds the test.
-		return nil
-	default: // ModeTime
-		return []int{15, 30, 60, 120}
-	}
+	return mode.LengthsFor(m)
 }
 
 // Settings is the persisted user configuration.

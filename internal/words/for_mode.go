@@ -1,7 +1,7 @@
 package words
 
 import (
-	"github.com/bavanchun/Typeburn/internal/config"
+	"github.com/bavanchun/Typeburn/internal/mode"
 )
 
 // ForMode returns the target string for a typing test given the active mode
@@ -14,11 +14,11 @@ import (
 //   - ModeWords: length is the word count (10/25/50/100); returns exactly that
 //     many space-separated words.
 //   - ModeQuote: ql selects the desired quote bucket; length is ignored.
-func ForMode(g *Generator, mode config.Mode, length int, ql QuoteLen) string {
-	switch mode {
-	case config.ModeWords:
+func ForMode(g *Generator, m mode.Mode, length int, ql QuoteLen) string {
+	switch m {
+	case mode.ModeWords:
 		return g.Words(length)
-	case config.ModeQuote:
+	case mode.ModeQuote:
 		return g.Quote(ql).Text
 	default: // ModeTime and any future modes default to a time buffer
 		return g.TimeBuffer()
