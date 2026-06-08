@@ -1,7 +1,7 @@
 package metrics
 
 import (
-	"github.com/bavanchun/Typeburn/internal/config"
+	"github.com/bavanchun/Typeburn/internal/mode"
 	"github.com/bavanchun/Typeburn/internal/typing"
 )
 
@@ -39,7 +39,7 @@ type Result struct {
 //   - A char typed wrong then corrected via backspace counts as Correct → 100%.
 //   - An uncorrected error counts as Incorrect → penalises accuracy.
 //   - Zero chars typed → Accuracy = 100, all others = 0.
-func Compute(log []typing.Keystroke, mode config.Mode, endMs int64) Result {
+func Compute(log []typing.Keystroke, mode mode.Mode, endMs int64) Result {
 	if len(log) == 0 {
 		return Result{Accuracy: 100}
 	}

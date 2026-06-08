@@ -15,5 +15,13 @@ func LiveWPM(log []typing.Keystroke, elapsedMs int64) float64 {
 			forward++
 		}
 	}
+	return LiveWPMFromCount(forward, elapsedMs)
+}
+
+// LiveWPMFromCount estimates current net WPM from a forward-keystroke count.
+func LiveWPMFromCount(forward int, elapsedMs int64) float64 {
+	if elapsedMs < 500 || forward <= 0 {
+		return 0
+	}
 	return float64(forward) / 5.0 / (float64(elapsedMs) / 60000.0)
 }

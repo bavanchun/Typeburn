@@ -45,7 +45,7 @@ func (m TypingModel) View() string {
 		stream = RenderCodeStream(
 			m.eng.States(),
 			[]rune(m.target),
-			typedFromLog(m.eng.Log()),
+			m.eng.Typed(),
 			cw,
 			streamHeight,
 			m.th,
@@ -54,7 +54,7 @@ func (m TypingModel) View() string {
 		stream = RenderWordStream(
 			m.eng.States(),
 			[]rune(m.target),
-			typedFromLog(m.eng.Log()),
+			m.eng.Typed(),
 			cw,
 			m.th,
 		)

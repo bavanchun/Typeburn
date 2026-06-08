@@ -20,43 +20,6 @@ const (
 	colConsW = 7
 )
 
-// effWPM returns the effective WPM for new-best comparison as a float64.
-// Records written before the NetWPM field was added unmarshal as 0.0; the
-// fallback to float64(WPM) keeps the same integer scale so an old record's
-// best is not unfairly overridden by any new run with a lower rounded WPM.
-func effWPM(r storage.Record) float64 {
-	if r.NetWPM == 0 {
-		return float64(r.WPM)
-	}
-	return r.NetWPM
-}
-
-// bestWPMPerBucket returns the highest effective WPM for each mode+length bucket
-// across all provided records. The key format matches storage.IsNewBest scoping.
-// Effective WPM uses the persisted NetWPM float when present, falling back to
-// float64(WPM) for legacy records so the scale comparison is consistent.
-func bestWPMPerBucket(rows []storage.Record) map[string]float64 {
-	bests := make(map[string]float64)
-	for _, r := range rows {
-		key := histBucketKey(r.Mode, r.Length)
-		eff := effWPM(r)
-		if prev, ok := bests[key]; !ok || eff > prev {
-			bests[key] = eff
-		}
-	}
-	return bests
-}
-
-// histBucketKey mirrors storage.modeKey logic for UI use.
-func histBucketKey(mode string, length int) string {
-	switch mode {
-	case "time", "words":
-		return fmt.Sprintf("%s/%d", mode, length)
-	default:
-		return mode
-	}
-}
-
 // renderHistoryHeader renders the UPPERCASE header row with border rules above
 // and below, styled in RoleTextMuted per mockups §5.
 func renderHistoryHeader(th theme.Theme) string {

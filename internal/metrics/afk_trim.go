@@ -1,7 +1,7 @@
 package metrics
 
 import (
-	"github.com/bavanchun/Typeburn/internal/config"
+	"github.com/bavanchun/Typeburn/internal/mode"
 	"github.com/bavanchun/Typeburn/internal/typing"
 )
 
@@ -18,8 +18,8 @@ const afkThresholdMs int64 = 7000 // strictly greater than this triggers AFK tri
 //
 // Returns the (possibly unchanged) log and the effective endMs to use for
 // metric computation. The log itself is never modified; only endMs changes.
-func TrimAFK(log []typing.Keystroke, mode config.Mode, endMs int64) ([]typing.Keystroke, int64) {
-	if mode != config.ModeTime {
+func TrimAFK(log []typing.Keystroke, m mode.Mode, endMs int64) ([]typing.Keystroke, int64) {
+	if m != mode.ModeTime {
 		return log, endMs
 	}
 
