@@ -111,6 +111,22 @@ and `wordTarget` math shared by TUI and CLI.
 
 ---
 
+### `internal/mode` — Shared Mode Definitions
+
+**Purpose:** Source-of-truth for typing mode identifiers and selectable length
+policy. Pure package used by `typing`, `metrics`, `words`, `runner`, and
+`config` without pulling in settings/keymap dependencies.
+
+**Key types:**
+- `Mode`: string enum {time, words, quote, code}
+
+**Entry points:**
+- `LengthsFor(mode)`: valid length options; quote/code return nil.
+
+**Files:** mode.go, mode_test.go.
+
+---
+
 ### `internal/app` — Root Elm Model & Routing
 
 **Purpose:** Bubble Tea root model. Routes global messages (StartTestMsg, ResultMsg, AbortMsg, NavHistoryMsg) to sub-models. Manages screen enum + shared state (theme, keymap, terminal size, quit prompt overlay).
@@ -163,9 +179,11 @@ and `wordTarget` math shared by TUI and CLI.
 - `Engine`: {target []rune, typed []rune, log []Keystroke, startMs, mode, wordTarget} — mutable state machine
 
 **Entry points:**
-- `New(target string, mode, wordTarget)`: create engine for a test
+- `New(target string, mode mode.Mode, wordTarget int)`: create engine for a test
 - `Apply(rune, nowMs)`: record keystroke; auto-sets startMs on first call
 - `Backspace(nowMs)`: record deletion marker (Typed=0)
+- `Typed()`: copy current typed buffer without replaying the log
+- `ForwardKeystrokes()`: count forward entries for live metrics without copying the log
 - `IsComplete() bool`: check if test goal met (Time/Words/Quote mode-dependent)
 - `Replay() (final typed/target runes, duration, errors)`: reconstruct final state for metrics
 
@@ -182,10 +200,11 @@ and `wordTarget` math shared by TUI and CLI.
 - `KeyMiss`: {Key (folded rune), Label (display, e.g. "␣"), Misses, Attempts} — per-key fumble tally entry
 
 **Entry points:**
-- `Compute(log []typing.Keystroke, startMs, durationMs) Result`: compute all metrics post-hoc; populates `Result.KeyMisses` (nil on empty/zero-duration logs)
+- `Compute(log []typing.Keystroke, mode mode.Mode, endMs int64) Result`: compute all metrics post-hoc; populates `Result.KeyMisses` (nil on empty/zero-duration logs)
 - `KeyHeatmap(log []typing.Keystroke) []KeyMiss`: per-key miss tally over the log — every wrong forward keystroke vs a real target (corrected fumbles included), case-folded, keys with ≥1 miss only, sorted misses desc → attempts desc → key asc. Surfaced on the Result screen and in CLI `key_misses` (JSON) / `most_missed_*` (table).
-- `LiveWPM(log []typing.Keystroke, elapsedMs int64) float64`: lightweight O(n) live WPM for in-progress display; returns 0 below 500 ms guard; counts only forward keystrokes (Typed != 0)
-- `AFKTrim(log, durationMs) ([]typing.Keystroke, int64)`: remove trailing AFK seconds (Time mode only, >7s)
+- `LiveWPM(log []typing.Keystroke, elapsedMs int64) float64`: log-based live WPM helper; returns 0 below 500 ms guard
+- `LiveWPMFromCount(forward, elapsedMs) float64`: O(1) live WPM helper used by the Typing screen tick path
+- `TrimAFK(log, mode, endMs) ([]typing.Keystroke, int64)`: remove trailing AFK seconds (Time mode only, >7s)
 - `Consistency(wpmPerSecond []float64) float64`: 100 × tanh(1 − CV)
 
 **Files:** compute.go, consistency.go, per_second.go, afk_trim.go, live_wpm.go, key_heatmap.go, compute_test.go, consistency_test.go, afk_trim_test.go, live_wpm_test.go, key_heatmap_test.go.
@@ -201,7 +220,7 @@ and `wordTarget` math shared by TUI and CLI.
 - `quotePack`: {short, medium, long, epic []string} — embedded quotes for each bucket
 
 **Entry points:**
-- `ForMode(mode, length)`: return target string (Time: ~words × 5 chars; Words: exact N words; Quote: random from bucket)
+- `ForMode(generator, mode, length, quoteLen)`: return target string (Time: time buffer; Words: exact N words; Quote: random from bucket)
 - `Word(n)`: return n-th word from wordlist (deterministic, seeded)
 - `Quote(len QuoteLen)`: return random quote from bucket (seeded)
 - `TimeBuffer(seconds)`: generate words for Time mode (~5 chars/word avg)
@@ -212,10 +231,12 @@ and `wordTarget` math shared by TUI and CLI.
 
 ### `internal/config` — Settings, Keymap, XDG Paths
 
-**Purpose:** User-facing configuration (theme, mode, length, cursor blink) + centralized keybindings + XDG directory resolution. Zero UI / storage dependencies.
+**Purpose:** User-facing configuration (theme, mode, length, cursor blink) +
+centralized keybindings + XDG directory resolution. Settings and XDG helpers
+stay storage-agnostic; keymap intentionally centralizes Bubble Tea key bindings.
 
 **Key types:**
-- `Mode`: enum {ModeTime, ModeWords, ModeQuote} — stored as string in JSON
+- `Mode`: alias of `mode.Mode` for persisted settings compatibility
 - `Settings`: {Theme, DefaultMode, DefaultLength, BlinkCursor} — loaded from disk or defaults
 - `Keymap`: keybinds per screen (Home/Typing/Result/Settings/History) — maps Bubble Tea key codes to actions
 - `QuoteLen`: enum for quote bucket selection
@@ -244,7 +265,10 @@ and `wordTarget` math shared by TUI and CLI.
 - `AppendHistory(r Record)`: append + cap to 200 newest + atomic write
 - `LoadSettings()`: read settings.json; return defaults on any error
 - `SaveSettings(s Settings)`: atomic write to XDG_CONFIG
-- `IsNewBest(r Record, history []Record)`: check if WPM is highest for that (mode, length) pair
+- `EffectiveWPM(r Record)`: precise NetWPM comparison with legacy WPM fallback
+- `BestBucketKey(mode, length)`: shared leaderboard bucket key
+- `BestWPMPerBucket(records)`: shared per-bucket bests for UI badges
+- `IsNewBest(history, r)`: check if WPM is highest for that (mode, length) pair
 
 **Data flow:**
 - Settings loaded at startup in `app.NewFromDisk()`
@@ -252,7 +276,8 @@ and `wordTarget` math shared by TUI and CLI.
 - Records appended via `AppendHistory()` immediately after test (from ResultMsg handler)
 - New-best flag computed in root model's `handleResultMsg()`
 
-**Files:** history_store.go, settings_store.go, new_best.go, atomic_write.go, history_record.go, history_store_test.go, settings_store_test.go.
+**Files:** history_store.go, settings_store.go, new_best.go, atomic_write.go,
+history_record.go, history_store_test.go, new_best_test.go, settings_store_test.go.
 
 ---
 

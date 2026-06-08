@@ -36,10 +36,11 @@ monkeytype/
 ├── internal/
 │   ├── app/                  # root Elm model + routing
 │   ├── ui/                   # screen sub-models + components
+│   ├── mode/                 # shared mode enum + length policy
 │   ├── typing/               # pure keystroke engine
 │   ├── metrics/              # pure metric formulas
 │   ├── words/                # word/quote generator
-│   ├── config/               # settings + keybindings
+│   ├── config/               # settings + centralized keybindings
 │   ├── storage/              # persistence + new-best detection
 │   └── theme/                # color/attribute roles
 └── docs/                     # documentation
@@ -227,6 +228,7 @@ func (m HomeModel) View() tea.View {
 ### Pure Computation Guarantee
 
 - **No side effects:** metrics.Compute, typing.Engine.Replay, consistency calculations
+- **Layering:** typing/metrics/words/runner use `internal/mode`, not `internal/config`
 - **Testable standalone:** No dependency on Bubble Tea, storage, or UI
 - **Reusable:** Metrics package suitable for future CLI/server projects
 

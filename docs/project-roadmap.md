@@ -218,6 +218,11 @@
   to disk; typing content width scales to ~82% of wide terminals (floored at
   80) with the block vertically centered.
 - ✅ **v1.5.0 (Distribution):** Go floor lowered to 1.25.0 (from 1.26.2); hardened POSIX `install.sh` with OS/arch detection, latest-tag resolution, sha256 verification, and atomic ~/.local/bin install (no sudo); new `scripts/test-install-sh.sh` offline regression harness (14 cases, localhost fixtures) integrated into CI as `installer` job; GoReleaser config hardened with determinism pins (project_name, builds.binary, archives.name_template) and `release.prerelease: auto`; new Homebrew cask channel (bavanchun/homebrew-tap-typeburn) with token isolation; 7-asset release integrity invariant preserved. Ship date: 2026-05-20.
+- ✅ **Architecture/performance hardening (2026-06-04):** Added benchmark
+  coverage for typing, metrics, storage new-best, and TUI render paths; split
+  shared mode definitions into `internal/mode`; removed hot-path log replay/copy
+  from Typing tick/view; centralized best-bucket helpers in storage so history
+  badges and persistence use the same comparison policy.
 - ✅ **v2.0.0 (Pro CLI):** cobra/fang subcommands (`run`, `history`,
   `version`, `config`, `replay`), JSON outputs, schema-versioned replay logs,
   and raw `run --no-tui`; v1 root aliases remain compatible. Ship date:

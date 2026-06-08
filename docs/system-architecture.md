@@ -103,12 +103,21 @@ Each sub-model has `SetSize(w, h)` to handle WindowSizeMsg; root calls it on res
 
 ### Pure Packages (Zero Bubble Tea Imports)
 
+- **`internal/mode`:** Shared mode enum + selectable length policy. No UI/Bubble Tea.
 - **`internal/typing`:** Engine state machine + keystroke logging. No UI/Bubble Tea.
 - **`internal/metrics`:** WPM/accuracy/consistency computation. No UI/Bubble Tea.
 - **`internal/words`:** Word generator + quote pack. No UI/Bubble Tea.
-- **`internal/config`:** Settings types + keymap. No UI/Bubble Tea.
 - **`internal/storage`:** JSON persistence (atomic write, XDG paths). No UI/Bubble Tea.
 - **`internal/theme`:** Role-based color mapping. No UI/Bubble Tea.
+
+### Configuration Boundary
+
+- **`internal/config`:** Settings types, XDG paths, and centralized keymap.
+  `config.Mode` is a compatibility alias of `mode.Mode`; `config.LengthsFor`
+  delegates to `internal/mode`.
+- `config.Keymap` intentionally owns Bubble Tea key bindings so screen code has
+  one keybinding source. Core packages (`typing`, `metrics`, `words`, `runner`)
+  must not import `internal/config`.
 
 ### UI Package
 
@@ -163,14 +172,14 @@ type Record struct {
   RawWPM    float64
   Accuracy  float64
   Consistency float64
-  Mode      config.Mode
+  Mode      mode.Mode
   Length    int
   Time      time.Time
   // ... other fields
 }
 ```
 
-Persisted to history.json; compared in IsNewBest() logic.
+Persisted to history.json; compared via storage's exported best-bucket helpers.
 
 ### config.Settings
 
@@ -201,8 +210,8 @@ func tickCmd() tea.Cmd {
 
 In TypingModel.Update(tickMsg):
 - Calculate elapsed = now − startMs
-- Replay keystroke log to final state
-- Compute metrics.Compute(log, startMs, elapsed)
+- Compute live WPM from the engine's forward-keystroke count
+- Keep final metrics on the post-test path, not every tick
 - Render live WPM in header
 - Re-arm tick (returned from handleTick)
 
