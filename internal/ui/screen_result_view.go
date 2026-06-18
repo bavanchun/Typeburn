@@ -16,7 +16,7 @@ import (
 // load-time guard in internal/update.
 var validSemverFooter = regexp.MustCompile(`^v?\d+\.\d+\.\d+([-+.][\w.-]+)?$`)
 
-// resultHints returns the footer hint set for the result screen per mockups §3.
+// resultHints returns the footer actions for the result screen.
 func resultHints() []Hint {
 	return []Hint{
 		{Key: "tab", Action: "restart"},
@@ -28,7 +28,6 @@ func resultHints() []Hint {
 
 // View renders the result screen. It places a single rounded-border panel
 // (RoleBorder, surface bg) with title "result" on the top border edge.
-// Layout mirrors mockups §3.
 func (m ResultModel) View() string {
 	footer := RenderFooter(resultHints(), m.w, m.th)
 	updateLine := m.renderUpdateHint()
@@ -109,18 +108,31 @@ func (m ResultModel) renderPanel() string {
 	return injectBorderTitle(panel, titleStyled)
 }
 
-// renderHero renders the big-digit WPM block alongside acc/raw/consistency.
 func (m ResultModel) renderHero(innerW int) string {
-	bigWPM := BigDigits(int(math.Round(m.res.NetWPM)), m.th)
+	finalWPM := int(math.Round(m.res.NetWPM))
+	displayWPM := countUpValue(finalWPM, m.revealStartMs, m.nowMs)
+	bigWPM := BigDigits(finalWPM, m.th)
+	if !revealDone(m.revealStartMs, m.nowMs) {
+		bigWPM = BigDigitsFixed(displayWPM, finalWPM, m.th)
+	}
 
 	wpmLabel := m.th.Style(theme.RoleTextMuted).Render("wpm")
 	if m.isBest {
 		wpmLabel += m.th.Style(theme.RoleSuccess).Render(" ★ new best")
 	}
 
-	accLine := StatCard("acc", fmt.Sprintf("%.0f%%", m.res.Accuracy), accColorRole(m.res.Accuracy), m.th)
-	rawLine := StatCard("raw", fmt.Sprintf("%.0f wpm", m.res.RawWPM), theme.RoleTextPrimary, m.th)
-	consLine := StatCard("consistency", fmt.Sprintf("%.0f%%", m.res.Consistency), theme.RoleTextPrimary, m.th)
+	accLine := revealLine(
+		StatCard("acc", fmt.Sprintf("%.0f%%", m.res.Accuracy), accColorRole(m.res.Accuracy), m.th),
+		cardProgress(0, m.revealStartMs, m.nowMs), m.th,
+	)
+	rawLine := revealLine(
+		StatCard("raw", fmt.Sprintf("%.0f wpm", m.res.RawWPM), theme.RoleTextPrimary, m.th),
+		cardProgress(1, m.revealStartMs, m.nowMs), m.th,
+	)
+	consLine := revealLine(
+		StatCard("consistency", fmt.Sprintf("%.0f%%", m.res.Consistency), theme.RoleTextPrimary, m.th),
+		cardProgress(2, m.revealStartMs, m.nowMs), m.th,
+	)
 	secondaryCol := strings.Join([]string{accLine, rawLine, consLine}, "\n")
 
 	bigLines := strings.Split(bigWPM+"\n"+wpmLabel, "\n")
@@ -140,7 +152,6 @@ func (m ResultModel) renderHero(innerW int) string {
 		}
 		rows[i] = bigLines[i] + "   " + sec
 	}
-	_ = innerW // reserved for future width-aware truncation
 	return strings.Join(rows, "\n")
 }
 
@@ -153,7 +164,8 @@ func (m ResultModel) renderSparkline(innerW int) string {
 		vals[i] = ps.RawWPM
 	}
 
-	graph := Sparkline(vals, innerW, 3, m.th)
+	visible := sparkVisibleBars(len(vals), m.revealStartMs, m.nowMs)
+	graph := sparklineVisible(vals, innerW, 3, visible, m.th)
 	if graph == "" {
 		graph = m.th.Style(theme.RoleTextFaint).Render("(no data)")
 	}

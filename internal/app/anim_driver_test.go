@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/bavanchun/Typeburn/internal/config"
+	"github.com/bavanchun/Typeburn/internal/metrics"
 	"github.com/bavanchun/Typeburn/internal/ui"
 )
 
@@ -62,5 +63,38 @@ func TestFrameTick_DoesNotStartTest(t *testing.T) {
 	got := model.(Model)
 	if got.animActive(got.animNowMs) {
 		t.Errorf("frame tick made an idle typing screen report active")
+	}
+}
+
+func TestResultMsg_BootstrapsFrameLoop(t *testing.T) {
+	m := newTestModel()
+	staleNow := time.Now().UTC().UnixMilli() - 10_000
+	m.animNowMs = staleNow
+	msg := ui.ResultMsg{
+		Result: metrics.Result{NetWPM: 80, Accuracy: 100, DurationMs: 30000},
+		Mode:   config.ModeTime,
+		Length: 30,
+	}
+
+	model, cmd := m.Update(msg)
+	got := model.(Model)
+	if got.screen != ScreenResult {
+		t.Fatalf("screen=%v want ScreenResult", got.screen)
+	}
+	if cmd == nil {
+		t.Fatal("ResultMsg should bootstrap a frame tick")
+	}
+	if !got.result.HasActiveAnim(time.Now().UTC().UnixMilli()) {
+		t.Fatal("result reveal should start fresh even when the shared clock is stale")
+	}
+
+	got.animNowMs = time.Now().UTC().UnixMilli() - 10_000
+	model, cmd = got.Update(msg)
+	next := model.(Model)
+	if cmd == nil {
+		t.Fatal("second ResultMsg should bootstrap a frame tick")
+	}
+	if !next.result.HasActiveAnim(time.Now().UTC().UnixMilli()) {
+		t.Fatal("second result reveal should restart from the current frame time")
 	}
 }
