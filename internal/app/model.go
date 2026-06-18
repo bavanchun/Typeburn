@@ -54,6 +54,11 @@ type Model struct {
 	// moment derives purely from time, mirroring metrics.Compute's replay. Zero
 	// until the first frame tick fires.
 	animNowMs int64
+
+	// transition is a root-owned screen transition (currently Typing→Result),
+	// non-nil only while one is mid-flight. View derives its expiry from
+	// animNowMs; it is nil-ed out lazily in Update on the next message.
+	transition *transitionState
 }
 
 // Update handles global concerns (resize, quit, navigation) and delegates to
@@ -64,6 +69,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// lost. Stamps animNowMs, forwards to the active screen, re-arms iff live.
 	if ft, ok := msg.(ui.FrameTickMsg); ok {
 		return m.handleFrameTick(ft)
+	}
+
+	// Lazily clear an expired transition. View stops using it once animNowMs
+	// passes its end (derived expiry); this nil-out reclaims the snapshot on the
+	// next message without any reliance on a trailing cleanup tick.
+	if m.transition != nil && m.animNowMs >= m.transition.startMs+m.transition.durMs {
+		m.transition = nil
 	}
 
 	// StartTestMsg: Home screen requested a test start.
@@ -82,9 +94,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, m.typing.InitCmd()
 	}
 
-	// ResultMsg: test completed → persist record, detect new-best, show result.
+	// ResultMsg: test completed → persist record, detect new-best, show result,
+	// and (from the typing screen) start the Typing→Result transition.
 	if rm, ok := msg.(ui.ResultMsg); ok {
-		m = m.handleResultMsg(rm)
+		m = m.handleResultWithTransition(rm)
 		return m, ui.FrameTickCmd()
 	}
 
@@ -97,6 +110,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// AbortMsg from typing screen → return to Home.
 	if _, ok := msg.(ui.AbortMsg); ok {
 		m.screen = ScreenHome
+		m.transition = nil // abort cancels any in-flight transition
 		return m, nil
 	}
 
@@ -118,6 +132,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
+		// A resize invalidates the transition snapshot (taken at the old width),
+		// so snap straight to the target screen instead of bleeding old geometry.
+		m.transition = nil
 		m.w, m.h = msg.Width, msg.Height
 		m.home = m.home.SetSize(msg.Width, msg.Height)
 		m.sett = m.sett.SetSize(msg.Width, msg.Height)

@@ -53,9 +53,7 @@ func (m Model) handleFrameTick(msg ui.FrameTickMsg) (tea.Model, tea.Cmd) {
 }
 
 // transitionActive reports whether a root-owned screen transition is mid-flight
-// at nowMs. Transitions span two screens, so only the root can track them; the
-// real state lands with the screen-transition feature, which replaces this body
-// with a live check. Until then there is no transition to be live.
+// at nowMs. Transitions span two screens, so only the root can track them.
 func (m Model) transitionActive(nowMs int64) bool {
-	return false
+	return m.transition != nil && nowMs < m.transition.startMs+m.transition.durMs
 }

@@ -6,6 +6,8 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 
+	"github.com/bavanchun/Typeburn/internal/anim"
+	"github.com/bavanchun/Typeburn/internal/theme"
 	"github.com/bavanchun/Typeburn/internal/ui"
 )
 
@@ -40,32 +42,18 @@ func (m Model) View() tea.View {
 	}
 
 	// Compute the final frame string in one place (single return) so the
-	// persistence notice can be overlaid uniformly. Home/Result/Settings/
-	// History self-place to w×h inside their own View(); Typing and the
-	// placeholder are placed here. With no notice this yields byte-identical
-	// output to the previous per-branch returns.
-	var out string
-	switch m.screen {
-	case ScreenHome:
-		out = m.home.View() // self-placed
-	case ScreenResult:
-		out = m.result.View() // self-placed
-	case ScreenSettings:
-		out = m.sett.View() // self-placed
-	case ScreenHistory:
-		out = m.hist.View() // self-placed
-	case ScreenCodePaste:
-		out = m.codePaste.View() // self-placed
-	case ScreenTyping:
-		out = m.typing.View()
-		if m.w > 0 && m.h > 0 {
-			out = lipgloss.Place(m.w, m.h, lipgloss.Center, lipgloss.Center, out)
-		}
-	default:
-		out = placeholderView(m.screen, m.theme)
-		if m.w > 0 && m.h > 0 {
-			out = lipgloss.Place(m.w, m.h, lipgloss.Center, lipgloss.Center, out)
-		}
+	// persistence notice can be overlaid uniformly. With no transition and no
+	// notice this yields byte-identical output to the previous per-branch returns.
+	out := m.composeScreen(m.screen)
+
+	// Screen transition: while a root-owned transition is mid-flight, blend the
+	// snapshotted outgoing frame with the live incoming frame (out). Expiry is
+	// derived here (View is a value receiver and must not mutate); the actual
+	// nil-out happens lazily in Update on the next message.
+	if m.transitionActive(m.animNowMs) {
+		p := anim.EaseInOutQuad(m.transition.progress(m.animNowMs))
+		noColor := m.theme.Color(theme.RoleBg) == nil
+		out = renderTransition(m.transition.fromFrame, out, p, noColor)
 	}
 
 	// Transient persistence-failure toast: overlay onto the frame's last row
@@ -81,4 +69,35 @@ func (m Model) View() tea.View {
 	}
 
 	return altView(out)
+}
+
+// composeScreen renders a single screen to its final placed frame. Home/Result/
+// Settings/History/CodePaste self-place to w×h inside their own View(); Typing
+// and the placeholder are placed here. Used both for the live View and to
+// snapshot the outgoing frame when starting a transition.
+func (m Model) composeScreen(screen Screen) string {
+	switch screen {
+	case ScreenHome:
+		return m.home.View()
+	case ScreenResult:
+		return m.result.View()
+	case ScreenSettings:
+		return m.sett.View()
+	case ScreenHistory:
+		return m.hist.View()
+	case ScreenCodePaste:
+		return m.codePaste.View()
+	case ScreenTyping:
+		out := m.typing.View()
+		if m.w > 0 && m.h > 0 {
+			out = lipgloss.Place(m.w, m.h, lipgloss.Center, lipgloss.Center, out)
+		}
+		return out
+	default:
+		out := placeholderView(screen, m.theme)
+		if m.w > 0 && m.h > 0 {
+			out = lipgloss.Place(m.w, m.h, lipgloss.Center, lipgloss.Center, out)
+		}
+		return out
+	}
 }
