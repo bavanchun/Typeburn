@@ -48,6 +48,12 @@ type Model struct {
 	// failing persist site and cleared on the next keypress (any key) so the
 	// notice behaves like a dismissible toast; it never blocks input.
 	persistErr string
+
+	// animNowMs is the shared animation clock: the epoch-ms of the most recent
+	// FrameTickMsg. Animated screens read it (stored on the sub-model) so every
+	// moment derives purely from time, mirroring metrics.Compute's replay. Zero
+	// until the first frame tick fires.
+	animNowMs int64
 }
 
 // New builds the root model with the given theme, settings, optional code
@@ -78,6 +84,13 @@ func (m Model) Init() tea.Cmd { return nil }
 // Update handles global concerns (resize, quit, navigation) and delegates to
 // the active screen sub-model.
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	// FrameTickMsg: animation frame. Handled by an explicit root branch (never
+	// the generic delegation below) so the self-stopping re-arm command is not
+	// lost. Stamps animNowMs, forwards to the active screen, re-arms iff live.
+	if ft, ok := msg.(ui.FrameTickMsg); ok {
+		return m.handleFrameTick(ft)
+	}
+
 	// StartTestMsg: Home screen requested a test start.
 	if sm, ok := msg.(ui.StartTestMsg); ok {
 		var t ui.TypingModel
