@@ -49,15 +49,15 @@ draw-in + stat stagger), a new-best celebration burst, and screen transitions
 | 1 | [Anim core package](./phase-01-anim-core-package.md) | ✅ Done (PR #40) |
 | 2 | [Frame driver](./phase-02-frame-driver.md) | ✅ Done (PR #41) |
 | 3 | [Caret animation](./phase-03-caret-animation.md) | ✅ Done (PR #42) |
-| 4 | [Result reveal](./phase-04-result-reveal.md) | ⬜ Pending |
-| 5 | [New-best celebration](./phase-05-new-best-celebration.md) | ⬜ Pending |
-| 6 | [Screen transitions](./phase-06-screen-transitions.md) | ⬜ Pending |
-| 7 | [Hardening and docs](./phase-07-hardening-and-docs.md) | ⬜ Pending |
+| 4 | [Result reveal](./phase-04-result-reveal.md) | ✅ Done (PR #44) |
+| 5 | [New-best celebration](./phase-05-new-best-celebration.md) | ✅ Done (PR #45) |
+| 6 | [Screen transitions](./phase-06-screen-transitions.md) | ✅ Done (PR #46) |
+| 7 | [Hardening and docs](./phase-07-hardening-and-docs.md) | ✅ Done (PR #47) |
 
-> **Phases 4–7 are not yet implemented.** See
+> **All phases shipped.** The animation system is complete on `main`. See
 > [`handover-phases-04-07-cook-continuation.md`](./handover-phases-04-07-cook-continuation.md)
-> for the exact state of `main`, the per-phase PR workflow, and the deviations
-> from this plan that the remaining phases must build on.
+> for the build history and the plan deviations that were applied (e.g.
+> `ui.FrameTickCmd` location, the wall-clock reveal/transition start).
 
 ## Build order & dependencies
 
