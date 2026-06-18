@@ -56,31 +56,6 @@ type Model struct {
 	animNowMs int64
 }
 
-// New builds the root model with the given theme, settings, optional code
-// text/hint, and an optional update hint.
-// codeText is the snippet loaded from --text (empty = Code disabled);
-// codeHint is a user-facing load-failure reason (empty = no error);
-// updateHint is non-nil when an opportunistic check found a newer release.
-func New(th theme.Theme, settings config.Settings, codeText, codeHint string, updateHint *update.Result) Model {
-	km := config.DefaultKeymap()
-	home := ui.NewHome(settings, th, km, codeText, codeHint)
-	m := Model{
-		screen:     ScreenHome,
-		theme:      th,
-		keys:       km,
-		settings:   settings,
-		home:       home,
-		codeText:   codeText,
-		codeHint:   codeHint,
-		updateHint: updateHint,
-	}
-	m.sett = ui.NewSettings(settings, th, km)
-	return m
-}
-
-// Init performs no startup command.
-func (m Model) Init() tea.Cmd { return nil }
-
 // Update handles global concerns (resize, quit, navigation) and delegates to
 // the active screen sub-model.
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -110,7 +85,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// ResultMsg: test completed → persist record, detect new-best, show result.
 	if rm, ok := msg.(ui.ResultMsg); ok {
 		m = m.handleResultMsg(rm)
-		return m, nil
+		return m, ui.FrameTickCmd()
 	}
 
 	// NavHistoryMsg: navigate to History screen (load fresh from disk).

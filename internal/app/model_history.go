@@ -46,7 +46,11 @@ func (m Model) handleResultMsg(msg ui.ResultMsg) Model {
 		m.persistErr = "Couldn't save result to disk"
 	}
 
-	m.result = ui.NewResult(msg, m.theme, m.keys).WithBest(isBest).WithUpdateHint(m.updateHint).SetSize(m.w, m.h)
+	m.result = ui.NewResult(msg, m.theme, m.keys).
+		WithBest(isBest).
+		WithUpdateHint(m.updateHint).
+		WithRevealStart(nowUTC().UnixMilli()).
+		SetSize(m.w, m.h)
 	m.screen = ScreenResult
 	return m
 }

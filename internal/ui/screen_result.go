@@ -13,16 +13,13 @@ import (
 // ResultModel is the sub-model for the post-test result screen. It renders
 // big-digit WPM, accuracy/raw/consistency stats, a WPM-over-time sparkline,
 // char counts, and test metadata — all from a completed metrics.Result.
-//
-// isBest is set by Phase 8 (history persistence) and gates the ★ new best
-// badge. It defaults false.
 type ResultModel struct {
 	res      metrics.Result
 	mode     config.Mode
 	length   int
 	quoteLen words.QuoteLen
 	codeText string // ModeCode snippet, so restart-same re-runs it (not "")
-	isBest   bool   // set externally by Phase 8; false = badge hidden
+	isBest   bool   // set by the root after new-best detection; false = hidden
 
 	// updateHint is set when an opportunistic check found a newer release.
 	// Nil means no footer hint. Set via WithUpdateHint after NewResult.
@@ -32,14 +29,14 @@ type ResultModel struct {
 	th   theme.Theme
 	km   config.Keymap
 
-	// nowMs is the shared animation clock, stamped from each FrameTickMsg. The
-	// result reveal derives every animated value purely from it; real reveal
-	// timing is wired in a later phase.
-	nowMs int64
+	// revealStartMs and nowMs drive the Result reveal. A zero revealStartMs
+	// means static/settled rendering, which keeps direct NewResult callers stable.
+	revealStartMs int64
+	nowMs         int64
 }
 
 // NewResult constructs a ResultModel from a completed ResultMsg. The isBest
-// field defaults to false; Phase 8 will set it after a history lookup.
+// field defaults to false; the root sets it after a history lookup.
 func NewResult(msg ResultMsg, th theme.Theme, km config.Keymap) ResultModel {
 	return ResultModel{
 		res:      msg.Result,
@@ -59,7 +56,6 @@ func (m ResultModel) SetSize(w, h int) ResultModel {
 }
 
 // WithBest sets the isBest flag, enabling the ★ new best badge in the View.
-// Called by the root after history persistence (Phase 8).
 func (m ResultModel) WithBest(best bool) ResultModel {
 	m.isBest = best
 	return m
@@ -76,16 +72,15 @@ func (m ResultModel) WithUpdateHint(hint *update.Result) ResultModel {
 	return m
 }
 
-// Update handles key events for the result screen per design §8.4.
+// Update handles key events for the result screen.
 //
 //   - tab / enter  → restart SAME test (same mode, length, quoteLen)
 //   - ctrl+r       → new test (fresh pick via Home)
 //   - esc / 1      → Home
-//   - 3            → History (placeholder until Phase 8)
+//   - 3            → History
 //   - ctrl+c       → quit (handled globally by root; forwarded here for completeness)
 func (m ResultModel) Update(msg tea.Msg) (ResultModel, tea.Cmd) {
 	if ft, ok := msg.(FrameTickMsg); ok {
-		// Animation frame: store the shared clock so the reveal can advance.
 		m.nowMs = ft.T.UnixMilli()
 		return m, nil
 	}
@@ -122,10 +117,10 @@ func (m ResultModel) restartSameCmd() tea.Cmd {
 	}
 }
 
-// HasActiveAnim reports whether the result screen has a live animation at nowMs,
-// so the frame driver knows whether to keep running 33ms frames. Real reveal /
-// celebration timing is wired in later phases; for now it reports idle.
-func (m ResultModel) HasActiveAnim(nowMs int64) bool { return false }
+// HasActiveAnim reports whether the result reveal is still running at nowMs.
+func (m ResultModel) HasActiveAnim(nowMs int64) bool {
+	return !revealDone(m.revealStartMs, nowMs)
+}
 
 // NavHistoryMsg is emitted when the user navigates to the History screen from
 // the Result screen. The root routes it to ScreenHistory.
