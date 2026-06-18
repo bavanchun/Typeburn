@@ -107,6 +107,7 @@ Each sub-model has `SetSize(w, h)` to handle WindowSizeMsg; root calls it on res
 - **`internal/typing`:** Engine state machine + keystroke logging. No UI/Bubble Tea.
 - **`internal/metrics`:** WPM/accuracy/consistency computation. No UI/Bubble Tea.
 - **`internal/words`:** Word generator + quote pack. No UI/Bubble Tea.
+- **`internal/anim`:** Easing, color/value interpolation, tween, clock. Pure functions of time; no UI/Bubble Tea.
 - **`internal/storage`:** JSON persistence (atomic write, XDG paths). No UI/Bubble Tea.
 - **`internal/theme`:** Role-based color mapping. No UI/Bubble Tea.
 
@@ -216,6 +217,23 @@ In TypingModel.Update(tickMsg):
 - Re-arm tick (returned from handleTick)
 
 **AFK (Away From Keyboard) trimming:** Time mode only. If last keystroke >7s ago, trim trailing empty seconds from metric buckets.
+
+---
+
+## Animation System (Dual-Tick Model)
+
+Two independent tick loops run by design — the existing timer is never coupled to motion:
+
+1. **100ms timer tick** (`timer.go`, above): WPM / Time-mode completion. Also carries the caret **blink** (derived from `nowMs`, no fast frames needed). Untouched by the animation work.
+2. **~33ms frame tick** (`ui.FrameTickCmd` / `app/anim_driver.go`): drives visual motion and is **self-stopping** — it re-arms only while `animActive` (the active screen's `HasActiveAnim(nowMs)` OR a live root transition). A fully idle app schedules **zero** frame ticks; the loop bootstraps on the idle→active edge (first keystroke, ResultMsg, transition start) and self-stops when every tween settles.
+
+**Shared clock.** The root stamps `animNowMs` from each `FrameTickMsg` and forwards it to the active sub-model, which stores it; `View` reads the stored value. Every animation is a pure function of `(startMs, nowMs, durMs)` (mirrors `metrics.Compute` replay), so frames are deterministic and unit-testable via an injected clock.
+
+**Moments.** Caret (blink + new-cell fade + trail, on the typing hot path; a prefix-token cache keeps per-frame work to the ≤3 animated cells), Result reveal (WPM count-up, sparkline draw-in, staggered cards), new-best celebration (one-shot sparkle burst), and the Typing→Result transition (crossfade / wipe).
+
+**Invariants.** Every settled frame is byte-identical to the pre-animation static render. Mid-animation stays **layout-identical** — same line count and per-line rune width — so the celebration overlays glyphs onto blank cells without reflow.
+
+**NO_COLOR auto-adapt seam.** A single check — `theme.Color(Role) == nil` — tells each animation whether color is available. With color it interpolates RGB (`anim.LerpColor`); without it swaps to attribute-only variants (blink→reverse, fade→bold step, trail→faint, transition→row wipe) that preserve the exact cell layout. There is no reduced-motion toggle; motion is always on and degrades by attribute, never by layout.
 
 ---
 
