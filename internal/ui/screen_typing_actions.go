@@ -9,10 +9,14 @@ import (
 	"github.com/bavanchun/Typeburn/internal/theme"
 )
 
-// restartSame resets engine and timer but keeps the same target text.
+// restartSame resets engine and timer but keeps the same target text. It also
+// clears caret state and the token cache so a stale fade never renders on the
+// fresh test's first frame.
 func (m TypingModel) restartSame() TypingModel {
 	m.eng = runner.RebuildEngine(m.target, m.mode, m.length)
 	m.startMs, m.nowMs, m.lastPaintMs, m.headerWPM = 0, 0, 0, 0
+	m.lastKeyMs, m.frameLoopArmed = 0, false
+	m.wordCache.invalidate()
 	return m
 }
 
@@ -52,6 +56,7 @@ func (m TypingModel) TargetText() string { return m.target }
 func (m TypingModel) ApplySettings(s config.Settings, th theme.Theme) TypingModel {
 	m.blink = s.BlinkCursor
 	m.th = th
+	m.wordCache.invalidate() // theme change alters base token styles
 	return m
 }
 

@@ -34,7 +34,13 @@ func (m TypingModel) View() string {
 	)
 
 	// Select renderer based on mode: Code uses the literal code stream renderer;
-	// all other modes use the word stream renderer (golden-tested, unchanged).
+	// all other modes use the word stream renderer. Both take the per-frame caret
+	// animation; a settled caret renders identically to the static stream.
+	states := m.eng.States()
+	target := []rune(m.target)
+	typed := m.eng.Typed()
+	ca := m.caretAnimState(states)
+
 	var stream string
 	if m.mode == config.ModeCode {
 		// streamHeight = total height minus fixed overhead rows; clamp ≥1.
@@ -42,22 +48,9 @@ func (m TypingModel) View() string {
 		if streamHeight < 1 {
 			streamHeight = 1
 		}
-		stream = RenderCodeStream(
-			m.eng.States(),
-			[]rune(m.target),
-			m.eng.Typed(),
-			cw,
-			streamHeight,
-			m.th,
-		)
+		stream = renderCodeStreamAnim(states, target, typed, cw, streamHeight, m.th, ca)
 	} else {
-		stream = RenderWordStream(
-			m.eng.States(),
-			[]rune(m.target),
-			m.eng.Typed(),
-			cw,
-			m.th,
-		)
+		stream = renderWordStreamAnim(states, target, typed, cw, m.th, ca, m.wordCache)
 	}
 
 	footer := RenderFooter(TypingHints(), m.w, m.th)

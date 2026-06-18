@@ -103,7 +103,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.typing = t.SetSize(m.w, m.h)
 		m.screen = ScreenTyping
-		return m, nil
+		// Bootstrap the 100ms tick so the caret blinks before the first keystroke.
+		return m, m.typing.InitCmd()
 	}
 
 	// ResultMsg: test completed → persist record, detect new-best, show result.
