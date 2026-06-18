@@ -117,9 +117,15 @@ func (m ResultModel) restartSameCmd() tea.Cmd {
 	}
 }
 
-// HasActiveAnim reports whether the result reveal is still running at nowMs.
+// HasActiveAnim reports whether the result reveal OR a new-best celebration is
+// still running at nowMs. The celebration window (celebrateMs) is longer than
+// the reveal, so an isBest result keeps the frame loop alive until the burst
+// settles; an ordinary result self-stops when the reveal finishes.
 func (m ResultModel) HasActiveAnim(nowMs int64) bool {
-	return !revealDone(m.revealStartMs, nowMs)
+	if !revealDone(m.revealStartMs, nowMs) {
+		return true
+	}
+	return m.isBest && m.revealStartMs > 0 && nowMs < m.revealStartMs+celebrateMs
 }
 
 // NavHistoryMsg is emitted when the user navigates to the History screen from
