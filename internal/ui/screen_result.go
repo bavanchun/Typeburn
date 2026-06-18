@@ -31,6 +31,11 @@ type ResultModel struct {
 	w, h int
 	th   theme.Theme
 	km   config.Keymap
+
+	// nowMs is the shared animation clock, stamped from each FrameTickMsg. The
+	// result reveal derives every animated value purely from it; real reveal
+	// timing is wired in a later phase.
+	nowMs int64
 }
 
 // NewResult constructs a ResultModel from a completed ResultMsg. The isBest
@@ -79,6 +84,11 @@ func (m ResultModel) WithUpdateHint(hint *update.Result) ResultModel {
 //   - 3            → History (placeholder until Phase 8)
 //   - ctrl+c       → quit (handled globally by root; forwarded here for completeness)
 func (m ResultModel) Update(msg tea.Msg) (ResultModel, tea.Cmd) {
+	if ft, ok := msg.(FrameTickMsg); ok {
+		// Animation frame: store the shared clock so the reveal can advance.
+		m.nowMs = ft.T.UnixMilli()
+		return m, nil
+	}
 	kp, ok := msg.(tea.KeyPressMsg)
 	if !ok {
 		return m, nil
@@ -111,6 +121,11 @@ func (m ResultModel) restartSameCmd() tea.Cmd {
 		return StartTestMsg{Mode: mode, Length: length, QuoteLen: ql, CodeText: ct}
 	}
 }
+
+// HasActiveAnim reports whether the result screen has a live animation at nowMs,
+// so the frame driver knows whether to keep running 33ms frames. Real reveal /
+// celebration timing is wired in later phases; for now it reports idle.
+func (m ResultModel) HasActiveAnim(nowMs int64) bool { return false }
 
 // NavHistoryMsg is emitted when the user navigates to the History screen from
 // the Result screen. The root routes it to ScreenHistory.

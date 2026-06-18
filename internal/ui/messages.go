@@ -4,10 +4,20 @@
 package ui
 
 import (
+	"time"
+
 	"github.com/bavanchun/Typeburn/internal/config"
 	"github.com/bavanchun/Typeburn/internal/metrics"
 	"github.com/bavanchun/Typeburn/internal/words"
 )
+
+// FrameTickMsg drives the self-stopping animation frame loop owned by the root
+// app.Model. It is a distinct type from the 100ms timer's tickMsg so routing is
+// unambiguous: the timer tick advances WPM/completion, the frame tick advances
+// only visual tween state. T is the fire time; the field is exported because the
+// command that produces it lives in the app package. The loop re-arms in Update
+// only while an animation is live, so an idle app schedules zero frame ticks.
+type FrameTickMsg struct{ T time.Time }
 
 // ResultMsg is emitted by TypingModel when a test finishes. The root model
 // receives it and transitions to ScreenResult.

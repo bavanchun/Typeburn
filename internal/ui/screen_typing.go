@@ -87,6 +87,11 @@ func (m TypingModel) Update(msg tea.Msg) (TypingModel, tea.Cmd) {
 		return m, nil
 	case tickMsg:
 		return m.handleTick(msg)
+	case FrameTickMsg:
+		// Animation frame: store the shared clock so View-side caret tweens can
+		// advance. Never touches WPM/completion — that is the timer tick's job.
+		m.nowMs = msg.T.UnixMilli()
+		return m, nil
 	case tea.KeyPressMsg:
 		return m.handleKey(msg.Key())
 	case tea.PasteMsg:
@@ -170,6 +175,11 @@ func (m TypingModel) applyText(text string) (TypingModel, tea.Cmd) {
 	}
 	return m, nil
 }
+
+// HasActiveAnim reports whether the typing screen has a live animation at nowMs,
+// so the frame driver knows whether to keep running 33ms frames. Real caret
+// animation timing is wired in a later phase; for now the screen reports idle.
+func (m TypingModel) HasActiveAnim(nowMs int64) bool { return false }
 
 // Test lifecycle actions (restartSame, newTest, completeCmd) live in
 // screen_typing_actions.go to keep this file focused on Update/key handling.
