@@ -32,6 +32,22 @@ func RenderCodeStream(
 	width, height int,
 	th theme.Theme,
 ) string {
+	return renderCodeStreamAnim(states, target, typed, width, height, th, disabledCaret())
+}
+
+// renderCodeStreamAnim is RenderCodeStream with caret animation applied. The
+// cursor blink and the ≤2 cells behind it get their animated styles; with a
+// disabled caret (cursorIdx < 0) the output equals RenderCodeStream exactly, so
+// existing goldens hold. Code mode has no token cache (its viewport recompute is
+// the pre-existing cost); only the ≤3 animated cells differ per frame.
+func renderCodeStreamAnim(
+	states []typing.CharState,
+	target []rune,
+	typed []rune,
+	width, height int,
+	th theme.Theme,
+	ca caretAnim,
+) string {
 	if width < 1 {
 		width = 40
 	}
@@ -85,6 +101,14 @@ func RenderCodeStream(
 			r = ' '
 		}
 		st := styleFor(states[i])
+		// Caret animation: override the cursor cell and the ≤2 cells behind it.
+		if ca.cursorIdx >= 0 {
+			if d := ca.cursorIdx - i; d >= 0 && d <= 2 {
+				if ast, ok := ca.caretCellStyle(d, states[i], th); ok {
+					st = ast
+				}
+			}
+		}
 		if states[i] == typing.Current {
 			caretRow = len(rows) // caret lives in the row being built now
 		}

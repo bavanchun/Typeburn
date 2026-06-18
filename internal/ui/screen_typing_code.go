@@ -18,13 +18,15 @@ import (
 func NewTypingCode(target string, th theme.Theme, km config.Keymap, blink bool) TypingModel {
 	s := runner.NewCodeSession(target)
 	return TypingModel{
-		eng:    s.Engine,
-		mode:   s.Mode,
-		target: s.Target,
-		th:     th,
-		keys:   km,
-		blink:  blink,
-		seed:   0,
+		eng:       s.Engine,
+		mode:      s.Mode,
+		target:    s.Target,
+		th:        th,
+		keys:      km,
+		blink:     blink,
+		seed:      0,
+		nowFn:     defaultNowFn,
+		wordCache: &streamTokenCache{},
 	}
 }
 

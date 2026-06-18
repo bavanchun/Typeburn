@@ -1,8 +1,6 @@
 package ui
 
 import (
-	"time"
-
 	tea "charm.land/bubbletea/v2"
 
 	"github.com/bavanchun/Typeburn/internal/config"
@@ -28,13 +26,24 @@ type TypingModel struct {
 	headerWPM   float64 // last computed live WPM for header
 	lastPaintMs int64   // throttle: last time header WPM was recomputed
 
-	blink bool // wired from settings (Phase 7); steady block default = false
+	blink bool // wired from settings; false = steady block, true = blinking
 
 	th   theme.Theme
 	keys config.Keymap
 
 	// seed used when ctrl+r generates a new test (0 = time-based random)
 	seed int64
+
+	// Caret animation state. lastKeyMs is the time of the most recent keystroke
+	// (drives the new-cell fade + trail window). frameLoopArmed guards the
+	// idle→active edge so exactly one 33ms frame loop runs regardless of typing
+	// speed. nowFn is the injectable clock seam (defaults to time.Now) so caret
+	// goldens are deterministic. wordCache holds the static prefix of styled
+	// word-stream tokens so only the ≤3 animated cells re-Render per frame.
+	lastKeyMs      int64
+	frameLoopArmed bool
+	nowFn          func() int64
+	wordCache      *streamTokenCache
 }
 
 // AbortMsg is emitted when the user presses esc on the typing screen.
@@ -70,6 +79,7 @@ func newTypingWithSeed(
 	return TypingModel{
 		eng: s.Engine, mode: s.Mode, length: s.Length, ql: s.QuoteLen,
 		target: s.Target, th: th, keys: km, blink: blink, seed: seed,
+		nowFn: defaultNowFn, wordCache: &streamTokenCache{},
 	}
 }
 
@@ -90,7 +100,12 @@ func (m TypingModel) Update(msg tea.Msg) (TypingModel, tea.Cmd) {
 	case FrameTickMsg:
 		// Animation frame: store the shared clock so View-side caret tweens can
 		// advance. Never touches WPM/completion — that is the timer tick's job.
+		// When the fade window has closed, disarm so the root's re-arm check stops
+		// the loop and the next keystroke can bootstrap a fresh one.
 		m.nowMs = msg.T.UnixMilli()
+		if !m.HasActiveAnim(m.nowMs) {
+			m.frameLoopArmed = false
+		}
 		return m, nil
 	case tea.KeyPressMsg:
 		return m.handleKey(msg.Key())
@@ -143,6 +158,7 @@ func (m TypingModel) handleKey(k tea.Key) (TypingModel, tea.Cmd) {
 	if k.Code == tea.KeyBackspace {
 		if m.startMs != 0 {
 			m.eng.Backspace(m.nowMs)
+			m.wordCache.invalidate() // engine state changed; rebuild base tokens
 		}
 		return m, nil
 	}
@@ -154,32 +170,8 @@ func (m TypingModel) handleKey(k tea.Key) (TypingModel, tea.Cmd) {
 	return m, nil
 }
 
-// applyText feeds printable runes into the engine and starts the timer on the
-// first keystroke.
-func (m TypingModel) applyText(text string) (TypingModel, tea.Cmd) {
-	nowMs := time.Now().UnixMilli()
-	firstKey := m.startMs == 0
-	if firstKey {
-		m.startMs = nowMs
-		m.nowMs = nowMs
-	}
-	for _, r := range text {
-		m.eng.Apply(r, nowMs)
-	}
-	// Words/Quote: check completion after each keystroke.
-	if m.mode != config.ModeTime && m.eng.Complete(nowMs) {
-		return m, m.completeCmd(nowMs)
-	}
-	if firstKey {
-		return m, tickCmd()
-	}
-	return m, nil
-}
-
-// HasActiveAnim reports whether the typing screen has a live animation at nowMs,
-// so the frame driver knows whether to keep running 33ms frames. Real caret
-// animation timing is wired in a later phase; for now the screen reports idle.
-func (m TypingModel) HasActiveAnim(nowMs int64) bool { return false }
-
-// Test lifecycle actions (restartSame, newTest, completeCmd) live in
-// screen_typing_actions.go to keep this file focused on Update/key handling.
+// Keystroke application (applyText) and the caret clock seam live in
+// screen_typing_input.go; caret animation hooks (HasActiveAnim, InitCmd,
+// caretAnimState) in screen_typing_caret.go; test lifecycle actions
+// (restartSame, newTest, completeCmd) in screen_typing_actions.go — keeping this
+// file focused on Update/message routing and key dispatch.

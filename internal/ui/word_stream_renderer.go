@@ -9,17 +9,70 @@ import (
 	"github.com/bavanchun/Typeburn/internal/typing"
 )
 
+// runeAtIndex returns the single display rune at index i: a target rune, then an
+// extra typed rune past the target, then a blank for the trailing cursor cell.
+func runeAtIndex(i int, target, typed []rune) rune {
+	if i < len(target) {
+		return target[i]
+	}
+	if i < len(typed) {
+		return typed[i]
+	}
+	return ' '
+}
+
+// buildWordTokens renders one styled string per rune from its CharState. This is
+// the single source of base styling shared by the static and animated renderers,
+// so a settled animated frame is byte-identical to the static stream.
+func buildWordTokens(states []typing.CharState, target, typed []rune, th theme.Theme) []string {
+	stUntyped := th.Style(theme.RoleTextFaint)
+	stCorrect := th.Style(theme.RoleTextMuted)
+	stIncorrect := th.Style(theme.RoleError) // .Underline already in theme
+	stIncorrectSpace := th.Style(theme.RoleErrorBg)
+	stExtra := th.Style(theme.RoleError).Faint(true)
+	stCurrent := th.Style(theme.RoleCursorBg)
+
+	tokens := make([]string, len(states))
+	for i := range states {
+		r := runeAtIndex(i, target, typed)
+		ch := string(r)
+
+		var st lipgloss.Style
+		switch states[i] {
+		case typing.Correct:
+			st = stCorrect
+		case typing.Incorrect:
+			st = stIncorrect
+		case typing.IncorrectSpace:
+			// Wrong char where a space was expected or vice-versa; show as a
+			// background-highlighted block so the missed boundary is visible.
+			if r == ' ' {
+				ch = " "
+			}
+			st = stIncorrectSpace
+		case typing.Extra:
+			st = stExtra
+		case typing.Current:
+			// Block cursor: show a space if current position is at end of target.
+			if r == ' ' {
+				ch = " "
+			}
+			st = stCurrent
+		default: // Untyped
+			st = stUntyped
+		}
+		tokens[i] = st.Render(ch)
+	}
+	return tokens
+}
+
 // RenderWordStream renders the typing word-stream as a multi-line string.
 //
 // Each rune in target is styled according to its CharState. Extra typed runes
 // (past the target length) are appended at the end. Wrapping is a hard
-// character-cell wrap at `width`: when the next rune would overflow the line
-// it starts a new line, so a word longer than `width` IS split between runes
-// (never within a multi-byte rune). A space landing at/after the boundary
-// also flushes so the following word begins on a fresh line. This is not a
-// word-aware (scan-back) wrap.
-//
-// Rendering is rune-safe: all iteration uses []rune, not byte slices.
+// character-cell wrap at `width` (rune-counted, not byte-counted, since styled
+// tokens carry ANSI escapes). This is the static, animation-free render used by
+// non-typing callers and golden tests.
 func RenderWordStream(
 	states []typing.CharState,
 	target []rune,
@@ -30,62 +83,7 @@ func RenderWordStream(
 	if width < 1 {
 		width = 40
 	}
-
-	// Build pre-computed styles once to avoid re-allocating per rune.
-	stUntypedStyle := th.Style(theme.RoleTextFaint)
-	stCorrectStyle := th.Style(theme.RoleTextMuted)
-	stIncorrectStyle := th.Style(theme.RoleError) // .Underline already in theme
-	stIncorrectSpaceStyle := th.Style(theme.RoleErrorBg)
-	stExtraStyle := th.Style(theme.RoleError).Faint(true)
-	stCurrentStyle := th.Style(theme.RoleCursorBg)
-
-	// Build styled tokens: one styled string per rune.
-	total := len(states)
-	tokens := make([]string, total)
-
-	for i := 0; i < total; i++ {
-		var r rune
-		if i < len(target) {
-			r = target[i]
-		} else if i < len(typed) {
-			r = typed[i]
-		} else {
-			r = ' '
-		}
-
-		ch := string(r)
-
-		var st lipgloss.Style
-		switch states[i] {
-		case typing.Correct:
-			st = stCorrectStyle
-		case typing.Incorrect:
-			st = stIncorrectStyle
-		case typing.IncorrectSpace:
-			// Wrong char where a space was expected or vice-versa; show as
-			// a background-highlighted block so the missed boundary is visible.
-			if r == ' ' {
-				ch = " " // keep as space so the bg block is visible
-			}
-			st = stIncorrectSpaceStyle
-		case typing.Extra:
-			st = stExtraStyle
-		case typing.Current:
-			// Block cursor: show a space if current position is at end of target.
-			if r == ' ' {
-				ch = " "
-			}
-			st = stCurrentStyle
-		default: // Untyped
-			st = stUntypedStyle
-		}
-
-		tokens[i] = st.Render(ch)
-	}
-
-	// Hard character-cell wrap at width columns. We wrap on rune counts (not
-	// byte length) because styled tokens carry ANSI escapes that inflate bytes;
-	// the raw rune count of the current line is tracked instead.
+	tokens := buildWordTokens(states, target, typed, th)
 	return wrapTokens(tokens, states, target, typed, width)
 }
 
@@ -110,15 +108,7 @@ func wrapTokens(
 	}
 
 	for i, tok := range tokens {
-		// Determine the raw rune (single cell) for width accounting.
-		var r rune
-		if i < len(target) {
-			r = target[i]
-		} else if i < len(typed) {
-			r = typed[i]
-		} else {
-			r = ' '
-		}
+		r := runeAtIndex(i, target, typed)
 		// One terminal cell per rune (ASCII/Latin). CJK double-width is not
 		// handled — deferred (roadmap m5, "CJK width support if quotes added").
 		cellW := 1
@@ -140,7 +130,6 @@ func wrapTokens(
 		}
 	}
 
-	// Flush any remaining content.
 	if lineBuilder.Len() > 0 {
 		lines = append(lines, lineBuilder.String())
 	}
