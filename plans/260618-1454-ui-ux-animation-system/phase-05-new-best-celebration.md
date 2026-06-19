@@ -1,7 +1,7 @@
 ---
 phase: 5
 title: "New-best celebration"
-status: pending
+status: completed
 priority: P3
 effort: "4h"
 dependencies: [2, 4]
@@ -67,13 +67,13 @@ Cell count and rune width unchanged → layout-identical (glyph content differs 
    non-new-best result emits zero particles.
 
 ## Success Criteria
-- [ ] New best → visible ~1s sparkle in the card’s blank margin rows; ordinary result → nothing.
-- [ ] A non-new-best result immediately following a new-best emits ZERO particles (no residue).
-- [ ] All glyphs are ASCII display-width 1 (asserted); overlay only touches blank margin rows.
-- [ ] Overlay never changes line count or any line’s rune width (asserted).
-- [ ] Under `NO_COLOR`, sparkle is attribute-only; layout-identical (line count + rune width).
-- [ ] Burst is one-shot; `HasActiveAnim` false after `celebrateMs`; loop self-stops.
-- [ ] `make test-race`, `go vet`, `gofmt -l` clean; files < 200 LOC.
+- [x] New best → visible ~1s sparkle in the card’s blank margin rows; ordinary result → nothing.
+- [x] A non-new-best result immediately following a new-best emits ZERO particles (no residue).
+- [x] All glyphs are ASCII display-width 1 (asserted); overlay only touches blank margin rows.
+- [x] Overlay never changes line count or any line’s rune width (asserted).
+- [x] Under `NO_COLOR`, sparkle is attribute-only; layout-identical (line count + rune width).
+- [x] Burst is one-shot; `HasActiveAnim` false after `celebrateMs`; loop self-stops.
+- [x] `make test-race`, `go vet`, `gofmt -l` clean; files < 200 LOC.
 
 ## Risk Assessment
 - **Annoyance / overuse:** restricted to new-best only and one-shot — matches research guidance.

@@ -128,7 +128,7 @@
 #### UI/UX Animation System — ✅ SHIPPED
 - **Description:** A stdlib-only terminal motion layer: animated caret (blink + new-cell fade + trail), result reveal (WPM count-up, sparkline draw-in, staggered stat cards), one-shot new-best celebration, and a Typing→Result transition (crossfade / NO_COLOR wipe).
 - **Design:** Two independent tick loops — the 100ms timer (untouched) and a self-stopping ~33ms frame loop in `internal/app/anim_driver.go`; all motion is a pure function of time built on the UI-free `internal/anim` package. Always-on, auto-adapts under `NO_COLOR` to attribute-only variants; every frame is layout-identical and every settled frame is byte-identical to the prior static render. A prefix-token cache keeps the typing hot path bounded (~70 vs ~3500 allocs/op, benchmarked).
-- **Status:** Shipped across PRs #40–#46 (anim core → frame driver → caret → reveal → celebration → transition → hardening/docs).
+- **Status:** Shipped across PRs #40–#47 (anim core → frame driver → caret → reveal → celebration → transition → hardening/docs).
 
 #### Multiplayer / Online Sync
 - **Description:** Race against other users, leaderboard integration

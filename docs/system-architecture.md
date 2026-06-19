@@ -63,6 +63,7 @@ Model (app)
 ├─ ResultModel (ui)
 ├─ SettingsModel (ui)
 ├─ HistoryModel (ui)
+├─ CodePasteModel (ui)
 └─ quitPromptModel (app) — overlay on Home
 ```
 
@@ -77,11 +78,10 @@ Each sub-model has `SetSize(w, h)` to handle WindowSizeMsg; root calls it on res
 2. **Root receives StartTestMsg:**
    - Creates new `TypingModel` with mode/length/generated target words
    - Switches `screen = ScreenTyping`
-   - TypingModel.Init() returns no cmd (tick is armed on first keystroke)
+   - Returns `TypingModel.InitCmd()` to arm the 100ms timer tick so the caret blinks before the first keystroke
 3. **Typing screen:**
    - User types; each keystroke → `tea.KeyPressMsg`
    - TypingModel.Update() → `typing.Engine.Apply(rune)` logs keystroke
-   - On first key, TypingModel returns `tickCmd()` to arm 100ms timer loop
    - Every ~100ms, tickMsg → recalculate live WPM/accuracy/consistency from keystroke log
    - Test completes on: (Time mode: timer expires) OR (Words mode: word count reached) OR (Quote mode: all runes typed)
    - Emits `ResultMsg` with final `metrics.Result`

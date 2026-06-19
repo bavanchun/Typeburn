@@ -1,7 +1,7 @@
 ---
 phase: 4
 title: "Result reveal"
-status: pending
+status: completed
 priority: P2
 effort: "5h"
 dependencies: [2]
@@ -68,13 +68,13 @@ appearance time is exposed so P5 can hang the celebration off it.
 6. Tests pin `nowMs`; assert final frame equals the pre-animation static render exactly.
 
 ## Success Criteria
-- [ ] WPM counts 0→final over ~600ms with easeOut; lands exactly on final (no off-by-one blur).
-- [ ] Sparkline fills left→right; stat cards appear staggered; no horizontal jitter at any frame.
-- [ ] Final settled frame is **byte-identical** to the current static Result render (golden test).
-- [ ] Under `NO_COLOR`, reveal uses faint→normal only; layout-identical (line count + rune width).
-- [ ] `HasActiveAnim` false after `totalRevealMs`; loop self-stops.
-- [ ] A second consecutive result animates fresh (no inherited elapsed window from the prior result).
-- [ ] `make test-race`, `go vet`, `gofmt -l` clean; files < 200 LOC.
+- [x] WPM counts 0→final over ~600ms with easeOut; lands exactly on final (no off-by-one blur).
+- [x] Sparkline fills left→right; stat cards appear staggered; no horizontal jitter at any frame.
+- [x] Final settled frame is **byte-identical** to the current static Result render (golden test).
+- [x] Under `NO_COLOR`, reveal uses faint→normal only; layout-identical (line count + rune width).
+- [x] `HasActiveAnim` false after `totalRevealMs`; loop self-stops.
+- [x] A second consecutive result animates fresh (no inherited elapsed window from the prior result).
+- [x] `make test-race`, `go vet`, `gofmt -l` clean; files < 200 LOC.
 
 ## Risk Assessment
 - **Width jitter on digit growth (UX flag):** mitigated by reserved fixed-width digit slot; test asserts

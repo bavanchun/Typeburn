@@ -1,8 +1,9 @@
 # Handover — UI/UX Animation System, phases 4–7
 
-Continuation brief for whoever cooks the rest. Phases **1–3 are merged to `main`**;
-**4–7 remain**. Read this before touching the phase files — it records deviations
-from the original plan that the remaining phases depend on.
+Historical continuation brief. This was written after PR #43, when phases 1–3
+were merged and phases 4–7 were still pending. It is now **superseded**:
+phases 4–7 shipped on `main` through PRs #44–#47. Keep this file as build
+history and implementation context, not current work guidance.
 
 ## Status
 
@@ -11,12 +12,12 @@ from the original plan that the remaining phases depend on.
 | 1 Anim core (`internal/anim`) | merged | #40 |
 | 2 Frame driver | merged | #41 |
 | 3 Caret animation | merged | #42 |
-| 4 Result reveal | TODO | — |
-| 5 New-best celebration | TODO | — |
-| 6 Screen transitions | TODO | — |
-| 7 Hardening + docs | TODO | — |
+| 4 Result reveal | merged | #44 |
+| 5 New-best celebration | merged | #45 |
+| 6 Screen transitions | merged | #46 |
+| 7 Hardening + docs | merged | #47 |
 
-Branch base for the next phase: latest `main` (already contains 1–3).
+Final branch base was latest `main` after each squash merge.
 
 ## Required workflow (per user instruction)
 
@@ -38,33 +39,30 @@ Branch base for the next phase: latest `main` (already contains 1–3).
 
 Note: `prc`'s `git add -A` stages **everything** in the tree — keep the working tree limited to the current phase's files (the pre-existing plan/`docs/mdocs` artifacts already merged in #40, so the tree is clean now).
 
-## Deviations from the original plan (IMPORTANT — build on these)
+## Deviations from the original plan (applied)
 
 1. **Frame-tick command lives in `ui`, not `app`.** Phase 2's plan text put
    `frameTickCmd`/`frameInterval` in `app/anim_driver.go`, but Phase 3 needs a
    screen sub-model (package `ui`) to bootstrap the loop — impossible across
    packages. So it's **`ui.FrameTickCmd()` + `ui.FrameInterval` (33ms)** in
-   `internal/ui/frame_tick.go`. **Phases 4/5/6 must call `ui.FrameTickCmd()`** to
+   `internal/ui/frame_tick.go`. Phases 4/5/6 call `ui.FrameTickCmd()` to
    bootstrap the loop (not an app-local helper). The app re-arms via
    `Model.maybeFrameCmd()` (in `app/anim_driver.go`).
 
-2. **`transitionActive` is a stub.** `app/anim_driver.go` has
-   `func (m Model) transitionActive(nowMs int64) bool { return false }` and
-   `animActive` already ORs it in. **Phase 6 must**: add a `transition *transitionState`
-   field to `app.Model` (in `model.go`) and replace the stub body with
-   `m.transition != nil && nowMs < m.transition.startMs+m.transition.durMs`.
+2. **`transitionActive` was filled in during Phase 6.** `app.Model` now owns
+   `transition *transitionState`, and `transitionActive` returns true while the
+   root-owned Typing→Result transition is inside its duration window.
 
 3. **`ResultModel` already has the frame plumbing.** From Phase 2 it has a
    `nowMs int64` field, a `FrameTickMsg` case storing `nowMs`, and
-   `HasActiveAnim(nowMs) bool` returning `false`. **Phase 4 fills in** the real
-   reveal state (`revealStartMs`, etc.) and the real `HasActiveAnim` window; do
-   not re-add the field/case.
+   `HasActiveAnim(nowMs) bool`. Phase 4 filled in the reveal state
+   (`revealStartMs`, etc.) and the real active window.
 
 4. **`app.Model.animNowMs`** is the shared clock, stamped in `handleFrameTick`
    (`app/anim_driver.go`). The Result reveal/celebration and transitions read it.
    The root forwards `FrameTickMsg` to the active screen's `Update` (typing/result)
-   already; `handleResultMsg` (in `app/model_history.go`) is where Phase 4 sets
-   `revealStartMs = m.animNowMs` and returns `ui.FrameTickCmd()` to start the loop.
+   already; `handleResultMsg` (in `app/model_history.go`) sets
+   `revealStartMs` and returns `ui.FrameTickCmd()` to start the loop.
 
 5. **Pre-start typing tick.** Root `StartTestMsg` now returns `m.typing.InitCmd()`
    (bootstraps the 100ms tick so the caret blinks pre-keystroke). Unrelated to 4–7
@@ -114,11 +112,11 @@ Note: `prc`'s `git add -A` stages **everything** in the tree — keep the workin
   moments. Update docs (`codebase-summary.md`, `system-architecture.md`,
   `project-roadmap.md`, `README.md`). No plan-artifact refs in code comments.
 
-## Open decision still needing the user (raise in P5/P7)
+## Resolved decision
 
 The brainstorm said "byte-identical layout". Resolved in the plan as
 **layout-identical** (line count + rune width preserved), NOT literal byte
 identity — the celebration overlays glyphs onto blank margin cells, changing
-those cells' rune *content* while preserving width. **Confirm this reading is
-acceptable before shipping P5.** (Phases 1–3 are strictly layout-identical AND
-settle byte-identical, so this only bites at P5.)
+those cells' rune *content* while preserving width. This is the shipped behavior
+documented in `docs/system-architecture.md`: mid-animation frames are
+layout-identical; settled frames are byte-identical to the static render.
