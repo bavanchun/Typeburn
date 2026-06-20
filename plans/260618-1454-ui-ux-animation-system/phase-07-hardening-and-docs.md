@@ -1,7 +1,7 @@
 ---
 phase: 7
 title: "Hardening and docs"
-status: pending
+status: completed
 priority: P1
 effort: "4h"
 dependencies: [3, 4, 5, 6]
@@ -63,14 +63,14 @@ The plan/docs use "layout-identical" wording accordingly.
    `celebrateMs`, transition `durMs`) are consistent across phases and docs.
 
 ## Success Criteria
-- [ ] `go test ./... -race -count=1` green; `go vet` clean; `gofmt -l .` empty; `make size-check` passes.
-- [ ] Settled frame of every animated screen is byte-identical to its pre-animation static render
+- [x] `go test ./... -race -count=1` green; `go vet` clean; `gofmt -l .` empty; `make size-check` passes.
+- [x] Settled frame of every animated screen is byte-identical to its pre-animation static render
       (the *settled* end state IS byte-identical; only mid-animation differs, and celebration only by content).
-- [ ] NO_COLOR layout-invariant test (rune width + line count) passes for typing, result, celebration, transition.
-- [ ] Edge-case tests pass: resize/abort/ctrl+r/double-result/min-terminal.
-- [ ] Typing hot-path benchmark confirms the P3 prefix-cache engages (animated allocs/op ≈ static).
-- [ ] Chosen `frameInterval` recorded with rationale; idle app schedules zero frame ticks.
-- [ ] Docs (`codebase-summary`, `system-architecture`, `roadmap`, `README`) updated; no plan refs in code.
+- [x] NO_COLOR layout-invariant test (rune width + line count) passes for typing, result, celebration, transition.
+- [x] Edge-case tests pass: resize/abort/ctrl+r/double-result/min-terminal.
+- [x] Typing hot-path benchmark confirms the P3 prefix-cache engages (animated allocs/op ≈ static).
+- [x] Chosen `frameInterval` recorded with rationale; idle app schedules zero frame ticks.
+- [x] Docs (`codebase-summary`, `system-architecture`, `roadmap`, `README`) updated; no plan refs in code.
 
 ## Risk Assessment
 - **Golden flakiness:** any non-pinned timestamp reintroduces flakiness — assert all animated goldens

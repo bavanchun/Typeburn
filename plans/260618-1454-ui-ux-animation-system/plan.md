@@ -1,7 +1,7 @@
 ---
 title: "UI/UX Animation System"
 description: "Stdlib-only terminal motion system for Typeburn: pure anim package, self-stopping frame driver, animated caret, result reveal, new-best celebration, and screen transitions — always-on, NO_COLOR auto-adapting."
-status: pending
+status: completed
 priority: P2
 branch: "main"
 tags: [ui, animation, motion, tui]
@@ -29,7 +29,7 @@ draw-in + stat stagger), a new-best celebration burst, and screen transitions
   (line count + rune width preserved)**. NOTE: this is *layout*-identical, not
   literally *byte*-identical — the celebration (P5) overlays glyphs onto blank
   padding cells, changing rune *content* of those cells while preserving width.
-  Flagged for user confirmation (see Open decisions).
+  This wording is now the shipped invariant documented in `docs/system-architecture.md`.
 - **Pure-logic layering preserved** — new `internal/anim` package is UI-free
   (joins `typing`/`metrics`/`words`); UI deps stay in `ui`/`app`/`theme`.
 - **<200 LOC per file**, allowed deps unchanged (stdlib + charm.land/* + cobra + x/*).
@@ -90,13 +90,14 @@ P1 (anim pkg) ──► P2 (frame driver) ──┬─► P3 (caret)
 4. **No layout mutation, ever.** Count-up reserves max digit width; confetti
    overlays existing blank cells; transitions never reflow. Guarded by golden tests.
 
-## Open decisions deferred to validation/red-team
+## Decisions resolved during implementation
 
-- Frame cadence: 33ms (30fps) default vs 50ms (20Hz) SSH-safer. Benchmark gate in P7.
-- Caret trail jitter risk (UX researcher flagged) — verify legibility at speed in P3.
+- Frame cadence stayed at 33ms (30fps). P7 benchmark confirmed the prefix cache
+  keeps animated word-stream work bounded.
+- Caret trail shipped as a subtle 150ms effect with deterministic tests.
 - **"byte-identical" wording**: the brainstorm constraint said "byte-identical layout".
-  Resolved as **layout-identical** (line count + rune width). Celebration glyphs change
-  rune content of blank cells but not layout — confirm this reading is acceptable to user.
+  Shipped as **layout-identical** for mid-animation frames (line count + rune
+  width); settled frames stay byte-identical to the static render.
 
 ## Red-team resolutions (applied to phases)
 

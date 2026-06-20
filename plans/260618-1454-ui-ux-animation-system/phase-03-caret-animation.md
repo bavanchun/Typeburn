@@ -1,7 +1,7 @@
 ---
 phase: 3
 title: "Caret animation"
-status: pending
+status: completed
 priority: P2
 effort: "6h"
 dependencies: [2]
@@ -99,15 +99,15 @@ independent of the blink toggle). Document this so the toggle's contract is clea
    endpoints; blink phase; prefix cache reused across frames (alloc count bounded).
 
 ## Success Criteria
-- [ ] Caret blinks at 530ms; fresh cell visibly fades; vacated cell trails — in a color theme.
-- [ ] Under `NO_COLOR=1`, caret uses reverse/faint/bold only; **layout-identical** (same runes, line count, rune width) to static.
-- [ ] Typing a 100-word test: WPM/accuracy/consistency identical to pre-change (no hot-path semantic drift).
-- [ ] Frame loop self-stops within ~150ms of the last keystroke (paused typing → no 33ms ticks).
-- [ ] Sustained fast typing keeps exactly ONE frame loop live (no multiplying `tea.Tick` timers).
-- [ ] Caret blinks on the typing screen BEFORE the first keystroke.
-- [ ] `restartSame`/`newTest` clear caret state — no stale fade on the fresh test's first frame.
-- [ ] Caret goldens are deterministic via injected `nowFn` (no wall-clock read in the tested path).
-- [ ] `make test-race`, `go vet`, `gofmt -l` clean; new files < 200 LOC.
+- [x] Caret blinks at 530ms; fresh cell visibly fades; vacated cell trails — in a color theme.
+- [x] Under `NO_COLOR=1`, caret uses reverse/faint/bold only; **layout-identical** (same runes, line count, rune width) to static.
+- [x] Typing a 100-word test: WPM/accuracy/consistency identical to pre-change (no hot-path semantic drift).
+- [x] Frame loop self-stops within ~150ms of the last keystroke (paused typing → no 33ms ticks).
+- [x] Sustained fast typing keeps exactly ONE frame loop live (no multiplying `tea.Tick` timers).
+- [x] Caret blinks on the typing screen BEFORE the first keystroke.
+- [x] `restartSame`/`newTest` clear caret state — no stale fade on the fresh test's first frame.
+- [x] Caret goldens are deterministic via injected `nowFn` (no wall-clock read in the tested path).
+- [x] `make test-race`, `go vet`, `gofmt -l` clean; new files < 200 LOC.
 
 ## Risk Assessment
 - **Trail legibility (UX researcher flag):** dim trail may read as noise at high speed. Mitigation:

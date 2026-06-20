@@ -1,7 +1,7 @@
 ---
 phase: 1
 title: "Anim core package"
-status: pending
+status: completed
 priority: P1
 effort: "4h"
 dependencies: []
@@ -58,10 +58,10 @@ UI boundary. `LerpColor(from, to, t)` returns `color.RGBA`; if either input is
    math + `nil` passthrough, `LerpInt` endpoints, `Done`/`Active` transitions.
 
 ## Success Criteria
-- [ ] `go test ./internal/anim/ -race -count=1` green; table-driven, no mocks.
-- [ ] `go list -deps ./internal/anim` shows **no** `charm.land`/`charmbracelet` imports.
-- [ ] Every file < 200 LOC; `gofmt -l` empty; `go vet ./internal/anim/` clean.
-- [ ] `LerpColor(nil, x, t)` and `LerpColor(x, nil, t)` both return `nil`.
+- [x] `go test ./internal/anim/ -race -count=1` green; table-driven, no mocks.
+- [x] `go list -deps ./internal/anim` shows **no** `charm.land`/`charmbracelet` imports.
+- [x] Every file < 200 LOC; `gofmt -l` empty; `go vet ./internal/anim/` clean.
+- [x] `LerpColor(nil, x, t)` and `LerpColor(x, nil, t)` both return `nil`.
 
 ## Risk Assessment
 - RGBA `/257` rounding: acceptable (research-confirmed); assert exact endpoints in tests.

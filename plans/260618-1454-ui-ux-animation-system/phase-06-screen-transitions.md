@@ -1,7 +1,7 @@
 ---
 phase: 6
 title: "Screen transitions"
-status: pending
+status: completed
 priority: P2
 effort: "5h"
 dependencies: [2]
@@ -82,12 +82,12 @@ pressed enter; immediacy is correct). Other navs stay instant unless the user la
    ignored by View even if not yet nil-ed; resize/abort cancel cleanly.
 
 ## Success Criteria
-- [ ] Typing→Result shows a ~250ms crossfade (color) / wipe (NO_COLOR), then the live Result reveal.
-- [ ] Transition never changes total line count or any line’s rune width (asserted both modes).
-- [ ] `model_view.go` remains the single return chokepoint (all paths via `altView`).
-- [ ] Transition expiry is derived in View (no value-receiver mutation); no stale-frame stall.
-- [ ] Resize during a transition snaps to `toScreen` (no old-width bleed); abort clears it.
-- [ ] `make test-race`, `go vet`, `gofmt -l` clean; files < 200 LOC.
+- [x] Typing→Result shows a ~250ms crossfade (color) / wipe (NO_COLOR), then the live Result reveal.
+- [x] Transition never changes total line count or any line’s rune width (asserted both modes).
+- [x] `model_view.go` remains the single return chokepoint (all paths via `altView`).
+- [x] Transition expiry is derived in View (no value-receiver mutation); no stale-frame stall.
+- [x] Resize during a transition snaps to `toScreen` (no old-width bleed); abort clears it.
+- [x] `make test-race`, `go vet`, `gofmt -l` clean; files < 200 LOC.
 
 ## Risk Assessment
 - **Faint-nesting reliability:** wrapping an already-styled frame in `Faint(true)` may not override

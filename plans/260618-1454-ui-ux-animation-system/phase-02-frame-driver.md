@@ -1,7 +1,7 @@
 ---
 phase: 2
 title: "Frame driver"
-status: pending
+status: completed
 priority: P1
 effort: "5h"
 dependencies: [1]
@@ -78,13 +78,13 @@ type Animatable interface{ HasActiveAnim(nowMs int64) bool }
    reporting idle returns no frame cmd. Assert `FrameTickMsg` never advances WPM/completion.
 
 ## Success Criteria
-- [ ] With all screens reporting idle, `FrameTickMsg` handling returns no frame re-arm (loop stops).
-- [ ] When a screen reports active, handling returns `tea.Batch(subCmd, frameTickCmd())` (non-nil frame cmd).
-- [ ] `FrameTickMsg` is handled by an explicit root case, not the generic delegation block.
-- [ ] `TypingModel`/`ResultModel.Update` each have a `FrameTickMsg` case that stores `nowMs`.
-- [ ] `Init()` still returns `nil`; launching the app schedules no frame tick until an animation starts.
-- [ ] Existing `timer.go` tick + WPM/completion tests unchanged and green.
-- [ ] `go test ./... -race`, `go vet`, `gofmt -l` all clean; files < 200 LOC.
+- [x] With all screens reporting idle, `FrameTickMsg` handling returns no frame re-arm (loop stops).
+- [x] When a screen reports active, handling returns `tea.Batch(subCmd, frameTickCmd())` (non-nil frame cmd).
+- [x] `FrameTickMsg` is handled by an explicit root case, not the generic delegation block.
+- [x] `TypingModel`/`ResultModel.Update` each have a `FrameTickMsg` case that stores `nowMs`.
+- [x] `Init()` still returns `nil`; launching the app schedules no frame tick until an animation starts.
+- [x] Existing `timer.go` tick + WPM/completion tests unchanged and green.
+- [x] `go test ./... -race`, `go vet`, `gofmt -l` all clean; files < 200 LOC.
 
 ## Risk Assessment
 - **Double-tick coupling:** during typing both the 100ms timer tick and 33ms frame tick run.

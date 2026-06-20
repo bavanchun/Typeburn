@@ -197,14 +197,16 @@ Selection moves with `↑/↓` or `j/k`. The `▎` bar in `accent` is the focus 
 | Mode tab (Time/Words/Quote) | `text-muted` | `accent` + `Bold` + `▎` | selected mode persists `accent` |
 | Mode option (15/30/…) | `text-faint` | `accent` `Bold` | chosen option `accent`, others `text-muted` |
 | Settings row | `text-muted` | `surface-alt` bg + `▎` accent | value cycles inline on `←/→`/`enter` |
-| Cursor | block, steady | — | advances per keystroke (no easing) |
+| Cursor | block caret | — | animates per motion policy below |
 
-**Motion policy:** the TUI is intentionally near-static for perceived speed.
-- **Restart:** instant clear + repaint. **No flash by default.** Optional `restart flash` setting → single 1-frame `accent`-tinted blank then new text (off by default — flashes feel slow).
-- **Counter (WPM in header):** updates on a ~250ms tick, no tween (tweening numbers reads as laggy).
-- **Screen transitions:** hard cut. No slide/fade — terminals can't do it cleanly and it harms the "fast" feel.
+**Motion policy:** the TUI uses subtle, non-blocking motion for polish without changing layout.
+- **Restart:** instant clear + repaint. No flash by default.
+- **Counter (WPM in header):** updates on the existing timer path, no tween (tweening live numbers reads as laggy).
+- **Caret:** always-on blink plus brief new-cell fade/trail; under `NO_COLOR` this is attribute-only.
+- **Result reveal:** WPM count-up, sparkline draw-in, and staggered stat cards; settled frame equals the static render.
+- **Screen transitions:** Typing→Result gets a short transition. Color themes use a dim-curtain crossfade; `NO_COLOR`/mono uses a row wipe. Other navigation stays instant.
 - **Code paste screen (`ScreenCodePaste`):** instruction + single status line (waiting, or the validation reason on a failed paste). Role-only styling; the line structure is identical in every state and under `NO_COLOR`. Pasted text is validated by the same `codetext.Normalize` core as `--text` (no rule divergence), so the rejection reasons match the CLI path.
-- Respect a future `reduce-motion` notion by simply having no motion to reduce (design is already static).
+- **Reduced motion:** no user-facing setting yet; motion always auto-adapts to `NO_COLOR`/mono by preserving line count and rune width.
 
 ---
 

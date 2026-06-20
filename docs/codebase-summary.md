@@ -129,11 +129,11 @@ policy. Pure package used by `typing`, `metrics`, `words`, `runner`, and
 
 ### `internal/app` — Root Elm Model & Routing
 
-**Purpose:** Bubble Tea root model. Routes global messages (StartTestMsg, ResultMsg, AbortMsg, NavHistoryMsg) to sub-models. Manages screen enum + shared state (theme, keymap, terminal size, quit prompt overlay).
+**Purpose:** Bubble Tea root model. Routes global messages (StartTestMsg, ResultMsg, AbortMsg, NavHistoryMsg, NavCodePasteMsg, CodePastedMsg) to sub-models. Manages screen enum + shared state (theme, keymap, terminal size, quit prompt overlay).
 
 **Key types:**
-- `Model`: root app state (screen enum, five sub-models, theme, keys, settings)
-- `Screen`: enum (Home, Typing, Result, Settings, History)
+- `Model`: root app state (screen enum, six sub-models, theme, keys, settings)
+- `Screen`: enum (Home, Typing, Result, Settings, History, CodePaste)
 - `quitPromptModel`: overlay shown when esc pressed on Home screen
 
 **Entry points:**
@@ -143,13 +143,13 @@ policy. Pure package used by `typing`, `metrics`, `words`, `runner`, and
 
 **Animation driver:** `anim_driver.go` owns the self-stopping 33ms frame loop (`ui.FrameTickCmd`/`FrameInterval`, distinct from the 100ms timer tick). `handleFrameTick` stamps the shared clock `animNowMs`, forwards to the active screen, and re-arms only while `animActive` (active screen's `HasActiveAnim` OR a live transition) — an idle app schedules zero frame ticks. `transition.go` holds the root-owned Typing→Result transition (crossfade/wipe); expiry is derived in View and nil-ed out lazily in Update.
 
-**Files:** model.go (root + Update/routing), model_constructor.go (New/Init), anim_driver.go (frame loop), transition.go (screen transition), model_history.go (result persistence + transition start), model_settings.go, model_view.go (compose + degraded guard + transition blend), routing.go, quit_prompt.go, model_key_handler.go, model_time_helpers.go, smoke_test.go, model_test.go.
+**Files:** model.go (root + Update/routing), model_constructor.go (New/Init), anim_driver.go (frame loop), transition.go (screen transition), model_code_paste.go, model_history.go (result persistence + transition start), model_settings.go, model_view.go (compose + degraded guard + transition blend), routing.go, quit_prompt.go, model_key_handler.go, model_time_helpers.go, smoke_test.go, model_test.go.
 
 ---
 
 ### `internal/ui` — Screen Sub-Models & Components
 
-**Purpose:** Bubble Tea sub-models for Home, Typing, Result, Settings, History screens. Emits domain messages (StartTestMsg, ResultMsg, AbortMsg, NavHistoryMsg). Implements rendering via Lip Gloss.
+**Purpose:** Bubble Tea sub-models for Home, Typing, Result, Settings, History, and CodePaste screens. Emits domain messages (StartTestMsg, ResultMsg, AbortMsg, NavHistoryMsg, NavCodePasteMsg, CodePastedMsg). Implements rendering via Lip Gloss.
 
 **Key types per screen:**
 - `HomeModel`: mode/length picker, defaults display, best-result badge. Emits StartTestMsg.
@@ -157,6 +157,7 @@ policy. Pure package used by `typing`, `metrics`, `words`, `runner`, and
 - `ResultModel`: big-digit WPM display, sparkline chart, stat cards, footer navigation.
 - `SettingsModel`: four setting rows (Theme/DefaultMode/DefaultLength/BlinkCursor), arrow navigation, auto-persist.
 - `HistoryModel`: scrollable table of all records, per-mode ★ badge, vim-style navigation.
+- `CodePasteModel`: paste-only Code-mode entry screen; normalizes bracketed paste via `codetext.Normalize`.
 
 **Components (reusable):**
 - `statCard`: displays WPM/Accuracy/Consistency with labels and big-digit rendering
@@ -166,7 +167,7 @@ policy. Pure package used by `typing`, `metrics`, `words`, `runner`, and
 - `timer`: displays elapsed time formatted as MM:SS
 - `footer`: renders keybinds with terminal-width-aware collapse (full → short forms)
 
-**Messages:** StartTestMsg, ResultMsg, AbortMsg, NavHistoryMsg, FrameTickMsg (in messages.go); FrameTickCmd/FrameInterval in frame_tick.go.
+**Messages:** StartTestMsg, ResultMsg, AbortMsg, NavHistoryMsg, NavCodePasteMsg, CodePastedMsg, FrameTickMsg (in messages.go); FrameTickCmd/FrameInterval in frame_tick.go.
 
 **Animation (always-on, NO_COLOR auto-adapting):**
 - **Caret** (caret_anim.go, word_stream_anim.go, screen_typing_caret.go, screen_typing_input.go): blink (530ms, rides the 100ms tick), new-cell fade + just-vacated trail (150ms, ride the 33ms loop). A prefix-token cache re-Renders only the ≤3 animated cells per frame (≈70 allocs/op vs ≈3500 static — benchmarked).
@@ -174,7 +175,7 @@ policy. Pure package used by `typing`, `metrics`, `words`, `runner`, and
 - **New-best celebration** (celebration.go): deterministic one-shot sparkle burst on blank margin rows; new-best only; ASCII width-1 glyphs.
 - All settle byte-identical to the static frame; under NO_COLOR each is layout-identical (line count + rune width preserved) via attribute-only variants.
 
-**Files (by screen):** screen_home.go, screen_home_view.go, screen_home_test.go; screen_typing.go, screen_typing_view.go, screen_typing_actions.go, screen_typing_test.go; screen_result.go, screen_result_view.go, screen_result_test.go; screen_settings.go, screen_settings_view.go, screen_settings_test.go; screen_history.go, screen_history_view.go, screen_history_test.go. Plus: footer.go, timer.go, stat_card.go, sparkline.go, word_stream_renderer.go, ascii_big_digits.go, ascii_logo.go, degraded_notice.go, selectable_list.go, settings_rows.go, width_tier.go, history_table.go, result_render_helpers.go, typing_log_helpers.go, test_helpers_test.go, phase09_polish_test.go, ui.go.
+**Files (by screen):** screen_home.go, screen_home_view.go, screen_home_test.go; screen_typing.go, screen_typing_view.go, screen_typing_actions.go, screen_typing_test.go; screen_result.go, screen_result_view.go, screen_result_test.go; screen_settings.go, screen_settings_view.go, screen_settings_test.go; screen_history.go, screen_history_view.go, screen_history_test.go; screen_code_paste.go, screen_code_paste_view.go, screen_code_paste_test.go. Plus: footer.go, timer.go, stat_card.go, sparkline.go, word_stream_renderer.go, ascii_big_digits.go, ascii_logo.go, degraded_notice.go, selectable_list.go, settings_rows.go, width_tier.go, history_table.go, result_render_helpers.go, typing_log_helpers.go, test_helpers_test.go, phase09_polish_test.go, ui.go.
 
 ---
 

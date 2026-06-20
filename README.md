@@ -14,10 +14,10 @@ Distraction-free, keyboard-driven, and works on any ANSI terminal.
 - **Four test modes**: Time (15/30/60/120 s), Words (10/25/50/100 words), Quote (short/medium/long/epic), Code (your own text via `--text` or in-app paste)
 - **Live stats**: WPM, raw WPM, accuracy, and consistency updated every keystroke
 - **Result screen**: big-digit WPM, sparkline chart, full char breakdown
-- **Subtle motion**: animated caret (blink + fade), result reveal (WPM count-up, sparkline draw-in), and a new-best celebration — always on, auto-adapts to `NO_COLOR` (layout never shifts)
+- **Subtle motion**: animated caret (blink + fade), result reveal (WPM count-up, sparkline draw-in), new-best celebration, and Typing→Result transition — always on, auto-adapts to `NO_COLOR` (layout never shifts)
 - **History**: scrollable table of all past tests with per-mode best marker (★)
 - **Themes**: `default` (dark, green accent) and `mono` (attribute-only, no color codes)
-- **NO_COLOR support**: set `NO_COLOR=1` for a fully attribute-only render (bold/underline/faint only)
+- **NO_COLOR support**: set `NO_COLOR=1` for a fully attribute-only render (reverse, bold, underline, faint; no color codes)
 - **Minimum terminal**: 60 columns × 20 rows; graceful degraded notice below that
 - **XDG-compliant paths**: settings and history go to `$XDG_CONFIG_HOME` / `$XDG_DATA_HOME`
 
