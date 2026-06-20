@@ -11,6 +11,8 @@ release section is extracted verbatim and passed to GoReleaser via
 
 ## [Unreleased]
 
+## [2.4.1] - 2026-06-20
+
 ### Added
 
 - **UI/UX animation system** — a stdlib-only terminal motion layer, always on
@@ -307,7 +309,8 @@ terminal typing test built with Go and Bubble Tea v2.
   HTTPS transport and the pipeline-generated `checksums.txt`. See
   [SECURITY.md](./SECURITY.md).
 
-[Unreleased]: https://github.com/bavanchun/Typeburn/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/bavanchun/Typeburn/compare/v2.4.1...HEAD
+[2.4.1]: https://github.com/bavanchun/Typeburn/releases/tag/v2.4.1
 [2.0.0]: https://github.com/bavanchun/Typeburn/releases/tag/v2.0.0
 [1.5.0]: https://github.com/bavanchun/Typeburn/releases/tag/v1.5.0
 [1.4.0]: https://github.com/bavanchun/Typeburn/releases/tag/v1.4.0
