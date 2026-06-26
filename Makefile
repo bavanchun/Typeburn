@@ -18,7 +18,7 @@ SIZE_LIMIT ?= 10485760
 .PHONY: build run test test-race lint fmt clean version snapshot release size-check notui-noexit-check
 
 build:
-	go build -trimpath -ldflags '$(LDFLAGS)' -o $(BIN_DIR)/$(BINARY) .
+	@go build -trimpath -ldflags '$(LDFLAGS)' -o $(BIN_DIR)/$(BINARY) .
 
 run:
 	go run .
