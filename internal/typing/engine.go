@@ -26,6 +26,7 @@ type Engine struct {
 	startMs    int64 // 0 until first Apply call
 	mode       mode.Mode
 	wordTarget int // Words: N words to complete; Time: limit in ms; Quote: unused (0)
+	strict     bool
 }
 
 // New creates an Engine for the given target text, mode, and wordTarget.
@@ -33,10 +34,16 @@ type Engine struct {
 // For ModeTime, wordTarget is the time limit in milliseconds.
 // For ModeQuote, wordTarget is ignored (0).
 func New(target string, mode mode.Mode, wordTarget int) *Engine {
+	return NewStrict(target, mode, wordTarget, false)
+}
+
+// NewStrict creates an Engine with optional strict (stop-on-error letter) mode.
+func NewStrict(target string, mode mode.Mode, wordTarget int, strict bool) *Engine {
 	return &Engine{
 		target:     []rune(target),
 		mode:       mode,
 		wordTarget: wordTarget,
+		strict:     strict,
 	}
 }
 
@@ -61,6 +68,17 @@ func (e *Engine) Apply(r rune, nowMs int64) {
 		correct = (r == target)
 	}
 	// pos >= len(e.target): extra rune — target stays 0, correct stays false
+
+	if e.strict && pos < len(e.target) && !correct {
+		// blocked: log the error, do NOT advance the typed buffer
+		e.log = append(e.log, Keystroke{
+			TimeMs:  nowMs,
+			Typed:   r,
+			Target:  target,
+			Correct: false,
+		})
+		return
+	}
 
 	e.typed = append(e.typed, r)
 	e.log = append(e.log, Keystroke{
