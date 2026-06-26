@@ -1,7 +1,7 @@
 ---
 title: "Strict (stop-on-error letter) typing mode"
 description: "Optional letter-strict mode: wrong key is blocked (cursor does not advance) but still counted; toggle via Settings + CLI config"
-status: pending
+status: completed
 priority: P2
 branch: "main"
 tags: [typing-engine, feature, tdd, handoff]
@@ -72,7 +72,7 @@ computes the field; the UI/storage decide which to show for strict runs.
 | 1 | [Engine strict-letter policy + keystroke-accuracy (TDD)](./phase-01-engine-strict-letter-policy-tdd.md) | Completed |
 | 2 | [Settings + CLI config surface (TDD)](./phase-02-settings-cli-config-surface-tdd.md) | Completed |
 | 3 | [Wire setting + Settings toggle + goldens (TDD)](./phase-03-wire-setting-settings-toggle-goldens-tdd.md) | Completed |
-| 4 | [Docs sync + full verification](./phase-04-docs-sync-full-verification.md) | Pending |
+| 4 | [Docs sync + full verification](./phase-04-docs-sync-full-verification.md) | Completed |
 
 ## Dependencies
 

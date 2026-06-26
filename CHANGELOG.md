@@ -11,6 +11,17 @@ release section is extracted verbatim and passed to GoReleaser via
 
 ## [Unreleased]
 
+## [2.5.0] - 2026-06-26
+
+### Added
+
+- **Strict typing mode** — an optional letter-strict typing mode:
+  - Block wrong keypresses: the cursor freezes and does not advance past an incorrect character; the user must type the correct character to proceed.
+  - Log blocked error keystrokes: they are recorded in the keystroke log and correctly reduce the typing accuracy.
+  - Keystroke-level accuracy metric: strict runs compute and save `KeystrokeAccuracy` (based on total non-backspace forward keystrokes) rather than final-state accuracy.
+  - Excluded from bests: strict runs are saved in history but excluded from personal best (★) records.
+  - Settings TUI toggle and CLI config key (`typeburn config set strict_mode on|off`) persisted in `settings.json` (backward-compatible).
+
 ## [2.4.1] - 2026-06-20
 
 ### Added
@@ -309,7 +320,8 @@ terminal typing test built with Go and Bubble Tea v2.
   HTTPS transport and the pipeline-generated `checksums.txt`. See
   [SECURITY.md](./SECURITY.md).
 
-[Unreleased]: https://github.com/bavanchun/Typeburn/compare/v2.4.1...HEAD
+[Unreleased]: https://github.com/bavanchun/Typeburn/compare/v2.5.0...HEAD
+[2.5.0]: https://github.com/bavanchun/Typeburn/releases/tag/v2.5.0
 [2.4.1]: https://github.com/bavanchun/Typeburn/releases/tag/v2.4.1
 [2.0.0]: https://github.com/bavanchun/Typeburn/releases/tag/v2.0.0
 [1.5.0]: https://github.com/bavanchun/Typeburn/releases/tag/v1.5.0

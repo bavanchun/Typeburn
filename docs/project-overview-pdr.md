@@ -48,7 +48,7 @@ and a scriptable v2 CLI.
 - `NO_COLOR` env: Switches to attribute-only rendering (no color codes, same layout)
 
 ### Input & UX
-- **Typing mode:** Printable chars + backspace only; no stop-on-error, allow-continue default
+- **Typing mode:** Printable chars + backspace; allow-continue default, with optional letter-strict (stop-on-error) mode
 - **Keybindings:** Centralized, per design spec (Home/Typing/Result/Settings/History each have distinct binds)
 - **Resize handling:** Graceful degradation notice if <60 cols or <20 rows; auto-resume when resized
 - **Paste support:** Ctrl+V pastes entire clipboard into typing; each char logged

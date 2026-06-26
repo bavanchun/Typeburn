@@ -242,6 +242,13 @@
   Ship date: 2026-05-22.
 - ✅ **v2.1.2 (Maintenance):** CHANGELOG back-fill (v2.1.0/v2.1.1 entries), internal
   tooling housekeeping. No user-visible changes. Ship date: 2026-05-25.
+- ✅ **v2.1.3 (Defect Fixes):** Time mode raw runner auto-ends at limit; check-update URL validation. Ship date: 2026-05-29.
+- ✅ **v2.2.0 (Heatmap):** Top 8 most missed keys fumbled during the test, surfaced on Result screen and via CLI `--json` outputs/tables. Ship date: 2026-05-29.
+- ✅ **v2.3.0 (Self-Update):** stdlib-only atomic self-updater via `typeburn update`, preflight managed-install check, redirect allowlist, O_EXCL locks, archive path-traversal safety, Windows move-aside rollback. Ship date: 2026-05-30.
+- ✅ **v2.4.0 (Update UX):** In-app hint directs to self-updater; download progress reporting. Ship date: 2026-05-30.
+- ✅ **v2.4.1 (UI Animations):** stdlib-only terminal motion layer (blink/fade caret, stats reveal count-up, sparkle personal best celebration, Typing→Result transition) with NO_COLOR adaptation and hot-path token cache. Ship date: 2026-06-20.
+- ✅ **v2.5.0 (Strict Mode):** Letter-strict typing mode blocking wrong keypresses at cursor, logging error keystrokes for keystroke-level accuracy, and settings TUI toggle + CLI config, with runs excluded from personal bests. Ship date: 2026-06-26.
+
 
 ### Next (Optional)
 1. **Gather user feedback** on missing features (Vim motions? more themes?)
@@ -276,6 +283,6 @@
 
 ## Conclusion
 
-**Typeburn v2.4.0 is the current stable release.** The codebase is clean, tested, and well-documented. Post-1.0 work has been additive or corrective: v2.0.0 added a professional scriptable CLI, v2.1.x added opt-in update checks plus audited defect cleanup, v2.2.0 added per-key error heatmaps, v2.3.0 added the self-update command, and v2.4.0 polished the update discovery and progress UX.
+**Typeburn v2.5.0 is the current stable release.** The codebase is clean, tested, and well-documented. Post-1.0 work has been additive or corrective: v2.0.0 added a professional scriptable CLI, v2.1.x added opt-in update checks plus audited defect cleanup, v2.2.0 added per-key error heatmaps, v2.3.0 added the self-update command, v2.4.0/v2.4.1 added animations and update UX, and v2.5.0 added strict stop-on-error typing mode.
 
 M1 (timer re-arm) and M2 (new-best precision) — the identified correctness bugs — were fixed in v1.0 (d6369de) and v1.0.1 respectively. v1.4.0 fixed a Settings live-apply bug (changes were persisted but not applied in-session) and improved the wide-terminal typing layout. Remaining backlog is additive or cosmetic.

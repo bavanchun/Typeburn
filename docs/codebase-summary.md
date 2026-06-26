@@ -105,9 +105,9 @@ executes it, and maps returned errors to process exit codes.
 and `wordTarget` math shared by TUI and CLI.
 
 **Entry points:**
-- `NewSession(mode, length, quoteLen, seed) Session`
-- `NewCodeSession(snippet) Session`
-- `RebuildEngine(target, mode, length) *typing.Engine`
+- `NewSession(mode, length, quoteLen, seed, strict bool) Session`
+- `NewCodeSession(snippet string, strict bool) Session`
+- `RebuildEngine(target string, mode config.Mode, length int, strict bool) *typing.Engine`
 
 ---
 
@@ -199,11 +199,12 @@ policy. Pure package used by `typing`, `metrics`, `words`, `runner`, and
 
 **Key types:**
 - `Keystroke`: {TimeMs, Typed, Target, Correct} — one keystroke event (or backspace marker with Typed=0)
-- `Engine`: {target []rune, typed []rune, log []Keystroke, startMs, mode, wordTarget} — mutable state machine
+- `Engine`: {target []rune, typed []rune, log []Keystroke, startMs, mode, wordTarget, strict} — mutable state machine
 
 **Entry points:**
-- `New(target string, mode mode.Mode, wordTarget int)`: create engine for a test
-- `Apply(rune, nowMs)`: record keystroke; auto-sets startMs on first call
+- `New(target string, mode mode.Mode, wordTarget int)`: create engine for a test (default non-strict)
+- `NewStrict(target string, mode mode.Mode, wordTarget int, strict bool)`: create engine with optional strict (stop-on-error letter) mode
+- `Apply(rune, nowMs)`: record keystroke; auto-sets startMs on first call. When strict, blocks wrong forward keystrokes and doesn't advance cursor.
 - `Backspace(nowMs)`: record deletion marker (Typed=0)
 - `Typed()`: copy current typed buffer without replaying the log
 - `ForwardKeystrokes()`: count forward entries for live metrics without copying the log
@@ -219,7 +220,7 @@ policy. Pure package used by `typing`, `metrics`, `words`, `runner`, and
 **Purpose:** Pure computation of typing test metrics from keystroke log. Zero UI dependencies. Formulas verified against researcher-02-typing-metrics.md.
 
 **Key types:**
-- `Result`: {NetWPM, RawWPM, Accuracy, Consistency, CPS, TimeMs, CharCount, ErrorCount, ErrorHistory, WPMHistory, KeyMisses, ...} — final test metrics
+- `Result`: {NetWPM, RawWPM, Accuracy, KeystrokeAccuracy, Consistency, CPS, TimeMs, CharCount, ErrorCount, ErrorHistory, WPMHistory, KeyMisses, ...} — final test metrics
 - `KeyMiss`: {Key (folded rune), Label (display, e.g. "␣"), Misses, Attempts} — per-key fumble tally entry
 
 **Entry points:**
@@ -254,18 +255,18 @@ policy. Pure package used by `typing`, `metrics`, `words`, `runner`, and
 
 ### `internal/config` — Settings, Keymap, XDG Paths
 
-**Purpose:** User-facing configuration (theme, mode, length, cursor blink) +
+**Purpose:** User-facing configuration (theme, mode, length, cursor blink, strict mode) +
 centralized keybindings + XDG directory resolution. Settings and XDG helpers
 stay storage-agnostic; keymap intentionally centralizes Bubble Tea key bindings.
 
 **Key types:**
 - `Mode`: alias of `mode.Mode` for persisted settings compatibility
-- `Settings`: {Theme, DefaultMode, DefaultLength, BlinkCursor} — loaded from disk or defaults
+- `Settings`: {Theme, DefaultMode, DefaultLength, BlinkCursor, StrictMode} — loaded from disk or defaults
 - `Keymap`: keybinds per screen (Home/Typing/Result/Settings/History) — maps Bubble Tea key codes to actions
 - `QuoteLen`: enum for quote bucket selection
 
 **Entry points:**
-- `Defaults()`: baseline settings (theme="default", mode="time", length=30, blink=false)
+- `Defaults()`: baseline settings (theme="default", mode="time", length=30, blink=false, strict=false)
 - `(s *Settings) Normalize()`: repair out-of-range values in place
 - `DefaultKeymap()`: centralized keybindings
 - `ConfigDir(), DataDir()`: resolve XDG paths (fallback to ~/.config, ~/.local/share)
@@ -280,7 +281,7 @@ stay storage-agnostic; keymap intentionally centralizes Bubble Tea key bindings.
 **Purpose:** Load/save settings + history JSON. Atomic writes (temp+rename). XDG-compliant paths. Corrupt/missing files → safe defaults (never panic). Detect new personal bests.
 
 **Key types:**
-- `Record`: {WPM int, RawWPM, Accuracy, Consistency, Mode, Length, Time, ...} — one test result
+- `Record`: {WPM int, RawWPM, Accuracy, Consistency, Mode, Length, Time, Strict, ...} — one test result
 - `HistoryStore`: interface-like functions (LoadHistory, AppendHistory, SaveSettings, LoadSettings)
 
 **Entry points:**
@@ -291,7 +292,7 @@ stay storage-agnostic; keymap intentionally centralizes Bubble Tea key bindings.
 - `EffectiveWPM(r Record)`: precise NetWPM comparison with legacy WPM fallback
 - `BestBucketKey(mode, length)`: shared leaderboard bucket key
 - `BestWPMPerBucket(records)`: shared per-bucket bests for UI badges
-- `IsNewBest(history, r)`: check if WPM is highest for that (mode, length) pair
+- `IsNewBest(history, r)`: check if WPM is highest for that (mode, length) pair (excludes strict runs)
 
 **Data flow:**
 - Settings loaded at startup in `app.NewFromDisk()`
