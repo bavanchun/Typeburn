@@ -30,6 +30,7 @@ type Settings struct {
 	// UpdateCheck enables an opt-in opportunistic update check on TUI launch.
 	// Default is false to preserve offline-first posture.
 	UpdateCheck bool `json:"update_check"`
+	StrictMode  bool `json:"strict_mode"`
 }
 
 // Defaults returns the baseline configuration used on first run or whenever
@@ -41,6 +42,7 @@ func Defaults() Settings {
 		DefaultLength: 30,
 		BlinkCursor:   false,
 		UpdateCheck:   false,
+		StrictMode:    false,
 	}
 }
 
