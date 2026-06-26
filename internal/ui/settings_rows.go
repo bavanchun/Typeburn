@@ -22,9 +22,10 @@ const (
 	rowDefaultMode   = 1
 	rowDefaultLength = 2
 	rowBlinkCursor   = 3
+	rowStrictMode    = 4
 )
 
-// buildRows constructs the 4 fixed settings rows from the current settings pointer.
+// buildRows constructs the 5 fixed settings rows from the current settings pointer.
 func buildRows(s *config.Settings) []settingRow {
 	// Theme row: cycles theme.Available() = ["default", "mono"].
 	themeVals := theme.Available()
@@ -56,6 +57,13 @@ func buildRows(s *config.Settings) []settingRow {
 		blinkIdx = 1
 	}
 
+	// Strict mode row.
+	strictVals := []string{"off", "on"}
+	strictIdx := 0
+	if s.StrictMode {
+		strictIdx = 1
+	}
+
 	return []settingRow{
 		{
 			label:  "Theme",
@@ -80,6 +88,12 @@ func buildRows(s *config.Settings) []settingRow {
 			values: blinkVals,
 			idx:    blinkIdx,
 			help:   "Toggle cursor blink (530 ms) during the typing test.",
+		},
+		{
+			label:  "Strict mode",
+			values: strictVals,
+			idx:    strictIdx,
+			help:   "Block wrong keys: cursor will not advance past an error.",
 		},
 	}
 }

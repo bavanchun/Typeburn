@@ -8,7 +8,7 @@ import (
 )
 
 func TestRestartSame_ResetsTimers(t *testing.T) {
-	m := NewTyping(config.ModeWords, 10, 0, theme.Default(), config.DefaultKeymap(), false)
+	m := NewTyping(config.ModeWords, 10, 0, theme.Default(), config.DefaultKeymap(), false, false)
 	m.w, m.h = 80, 24
 	m2 := m.restartSame()
 	if m2.startMs != 0 || m2.nowMs != 0 || m2.headerWPM != 0 {
@@ -17,7 +17,7 @@ func TestRestartSame_ResetsTimers(t *testing.T) {
 }
 
 func TestRestartSame_PreservesTarget(t *testing.T) {
-	m := NewTyping(config.ModeWords, 10, 0, theme.Default(), config.DefaultKeymap(), false)
+	m := NewTyping(config.ModeWords, 10, 0, theme.Default(), config.DefaultKeymap(), false, false)
 	orig := m.TargetText()
 	m2 := m.restartSame()
 	if m2.TargetText() != orig {
@@ -26,7 +26,7 @@ func TestRestartSame_PreservesTarget(t *testing.T) {
 }
 
 func TestNewTest_PreservesSize(t *testing.T) {
-	m := NewTyping(config.ModeWords, 10, 0, theme.Default(), config.DefaultKeymap(), false)
+	m := NewTyping(config.ModeWords, 10, 0, theme.Default(), config.DefaultKeymap(), false, false)
 	m.w, m.h = 80, 24
 	m2 := m.newTest()
 	if m2.w != 80 || m2.h != 24 {
@@ -36,7 +36,7 @@ func TestNewTest_PreservesSize(t *testing.T) {
 
 func TestNewTest_CodePreservesTarget(t *testing.T) {
 	snippet := "func main() {}"
-	m := NewTypingCode(snippet, theme.Default(), config.DefaultKeymap(), false)
+	m := NewTypingCode(snippet, theme.Default(), config.DefaultKeymap(), false, false)
 	m2 := m.newTest()
 	if m2.TargetText() != snippet {
 		t.Errorf("code newTest target = %q, want %q", m2.TargetText(), snippet)
@@ -44,7 +44,7 @@ func TestNewTest_CodePreservesTarget(t *testing.T) {
 }
 
 func TestApplySettings_UpdatesBlink(t *testing.T) {
-	m := NewTyping(config.ModeWords, 10, 0, theme.Default(), config.DefaultKeymap(), false)
+	m := NewTyping(config.ModeWords, 10, 0, theme.Default(), config.DefaultKeymap(), false, false)
 	s := config.Defaults()
 	s.BlinkCursor = true
 	m2 := m.ApplySettings(s, theme.Default())

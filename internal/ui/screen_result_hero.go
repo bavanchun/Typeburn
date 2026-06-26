@@ -25,8 +25,12 @@ func (m ResultModel) renderHero(innerW int) string {
 		wpmLabel += m.th.Style(theme.RoleSuccess).Render(" ★ new best")
 	}
 
+	accVal := m.res.Accuracy
+	if m.strict {
+		accVal = m.res.KeystrokeAccuracy
+	}
 	accLine := revealLine(
-		StatCard("acc", fmt.Sprintf("%.0f%%", m.res.Accuracy), accColorRole(m.res.Accuracy), m.th),
+		StatCard("acc", fmt.Sprintf("%.0f%%", accVal), accColorRole(accVal), m.th),
 		cardProgress(0, m.revealStartMs, m.nowMs), m.th,
 	)
 	rawLine := revealLine(

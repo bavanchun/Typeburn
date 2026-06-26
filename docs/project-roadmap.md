@@ -98,11 +98,17 @@
 - **Dependencies:** new screen (Home → CodeInput) + input validation + word count estimation
 - **Scope:** Would add one new mode type or variant
 
-#### Vim Motion Keybindings
-- **Description:** Alternative keybindings (hjkl, g/G for jump, etc.) alongside defaults
-- **Effort:** ~1 day
-- **Dependencies:** Settings addition (keybinding style selector)
-- **Scope:** Centralized keymap already supports easy extension
+#### Vim Motion Keybindings — ✅ ALREADY SHIPPED (since v1, design §8)
+- **Description:** hjkl + g/G navigation alongside arrows, always-on (no toggle).
+- **Status:** Shipped from v1 as a deliberate keymap design choice, not a backlog
+  item. `internal/config/keymap.go` `DefaultKeymap` binds `h/l` (OptLeft/OptRight),
+  `j/k` (Up/Down), `g`/`G` (Top/Bottom) in parallel with arrows. Wired into the
+  three navigation screens: Home (`screen_home.go`), Settings
+  (`screen_settings.go`), History (`screen_history.go`). Typing/Result/CodePaste
+  intentionally excluded (printable keys are typing input). Verified 2026-06-26.
+- **Not done (and intentionally not pursued):** a `keybinding_style` toggle —
+  rejected as YAGNI/regression-risk: the keys are non-conflicting and always-on,
+  so a `default`-valued toggle would only remove existing functionality.
 
 #### Theme Packs — ✅ SHIPPED (v1.1.0)
 - **Description:** Six community palettes mapped onto the 16 roles —

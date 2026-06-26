@@ -15,8 +15,8 @@ import (
 // NewTypingCode constructs a TypingModel for ModeCode using the supplied text
 // verbatim as the target — words.ForMode is NOT called. This keeps the pure
 // words/typing packages free of code-mode knowledge (I/O boundary is in main).
-func NewTypingCode(target string, th theme.Theme, km config.Keymap, blink bool) TypingModel {
-	s := runner.NewCodeSession(target)
+func NewTypingCode(target string, th theme.Theme, km config.Keymap, blink bool, strict bool) TypingModel {
+	s := runner.NewCodeSession(target, strict)
 	return TypingModel{
 		eng:       s.Engine,
 		mode:      s.Mode,
@@ -24,6 +24,7 @@ func NewTypingCode(target string, th theme.Theme, km config.Keymap, blink bool) 
 		th:        th,
 		keys:      km,
 		blink:     blink,
+		strict:    strict,
 		seed:      0,
 		nowFn:     defaultNowFn,
 		wordCache: &streamTokenCache{},

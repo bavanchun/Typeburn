@@ -59,8 +59,8 @@ func BestWPMPerBucket(records []Record) map[string]float64 {
 // hist must NOT already contain r; call IsNewBest before AppendHistory.
 // This function is pure and does not mutate hist.
 func IsNewBest(hist []Record, r Record) bool {
-	// Code-mode runs are never personal bests (display-only, no leaderboard).
-	if r.Mode == "code" {
+	// Code-mode runs and strict runs are never personal bests (display-only, no leaderboard).
+	if r.Mode == "code" || r.Strict {
 		return false
 	}
 	key := BestBucketKey(r.Mode, r.Length)

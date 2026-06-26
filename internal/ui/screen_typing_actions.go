@@ -13,7 +13,7 @@ import (
 // clears caret state and the token cache so a stale fade never renders on the
 // fresh test's first frame.
 func (m TypingModel) restartSame() TypingModel {
-	m.eng = runner.RebuildEngine(m.target, m.mode, m.length)
+	m.eng = runner.RebuildEngine(m.target, m.mode, m.length, m.strict)
 	m.startMs, m.nowMs, m.lastPaintMs, m.headerWPM = 0, 0, 0, 0
 	m.lastKeyMs, m.frameLoopArmed = 0, false
 	m.wordCache.invalidate()
@@ -25,9 +25,9 @@ func (m TypingModel) restartSame() TypingModel {
 func (m TypingModel) newTest() TypingModel {
 	var fresh TypingModel
 	if m.mode == config.ModeCode {
-		fresh = NewTypingCode(m.target, m.th, m.keys, m.blink)
+		fresh = NewTypingCode(m.target, m.th, m.keys, m.blink, m.strict)
 	} else {
-		fresh = newTypingWithSeed(m.mode, m.length, m.ql, m.th, m.keys, m.blink, 0)
+		fresh = newTypingWithSeed(m.mode, m.length, m.ql, m.th, m.keys, m.blink, m.strict, 0)
 	}
 	fresh.w, fresh.h = m.w, m.h
 	return fresh
@@ -39,9 +39,9 @@ func (m TypingModel) newTest() TypingModel {
 func (m TypingModel) completeCmd(endMs int64) tea.Cmd {
 	log := m.eng.Log()
 	result := metrics.Compute(log, m.mode, endMs)
-	mode, length, ql, ct := m.mode, m.length, m.ql, m.target
+	mode, length, ql, ct, strict := m.mode, m.length, m.ql, m.target, m.strict
 	return func() tea.Msg {
-		return ResultMsg{Result: result, Mode: mode, Length: length, QuoteLen: ql, CodeText: ct}
+		return ResultMsg{Result: result, Mode: mode, Length: length, QuoteLen: ql, CodeText: ct, Strict: strict}
 	}
 }
 

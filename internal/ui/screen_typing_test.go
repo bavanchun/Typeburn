@@ -17,7 +17,7 @@ import (
 func newTestTyping(mode config.Mode, length int) TypingModel {
 	return newTypingWithSeed(
 		mode, length, words.QuoteShort,
-		theme.Default(), config.DefaultKeymap(), false,
+		theme.Default(), config.DefaultKeymap(), false, false,
 		42,
 	).SetSize(80, 24)
 }
@@ -41,7 +41,7 @@ func pressText(ch string) tea.KeyPressMsg {
 func TestTypingView_CompactNotFullHeight(t *testing.T) {
 	m := newTypingWithSeed(
 		config.ModeWords, 10, words.QuoteShort,
-		theme.Default(), config.DefaultKeymap(), false, 42,
+		theme.Default(), config.DefaultKeymap(), false, false, 42,
 	).SetSize(160, 50)
 	v := m.View()
 	lines := strings.Count(v, "\n") + 1
@@ -165,7 +165,7 @@ func TestTyping_EscEmitsAbortMsg(t *testing.T) {
 func TestTyping_WordsMode_CompletionEmitsResultMsg(t *testing.T) {
 	m := newTypingWithSeed(
 		config.ModeWords, 3, words.QuoteShort,
-		theme.Default(), config.DefaultKeymap(), false,
+		theme.Default(), config.DefaultKeymap(), false, false,
 		42,
 	).SetSize(80, 24)
 

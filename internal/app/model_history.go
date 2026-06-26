@@ -21,6 +21,10 @@ func buildRecord(msg ui.ResultMsg) storage.Record {
 	if msg.Mode == config.ModeCode {
 		length = len([]rune(msg.CodeText))
 	}
+	accuracy := msg.Result.Accuracy
+	if msg.Strict {
+		accuracy = msg.Result.KeystrokeAccuracy
+	}
 	return storage.Record{
 		Time:        nowUTC(),
 		Mode:        mode,
@@ -28,8 +32,9 @@ func buildRecord(msg ui.ResultMsg) storage.Record {
 		WPM:         int(math.Round(msg.Result.NetWPM)),
 		NetWPM:      msg.Result.NetWPM,
 		RawWPM:      msg.Result.RawWPM,
-		Accuracy:    msg.Result.Accuracy,
+		Accuracy:    accuracy,
 		Consistency: msg.Result.Consistency,
+		Strict:      msg.Strict,
 	}
 }
 

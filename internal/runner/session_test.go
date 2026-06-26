@@ -42,7 +42,7 @@ func TestNewSession_DeterministicTargets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewSession(tt.mode, tt.length, tt.ql, tt.seed)
+			got := NewSession(tt.mode, tt.length, tt.ql, tt.seed, false)
 			if got.Target != tt.want {
 				t.Fatalf("target drift:\nwant %q\ngot  %q", tt.want, got.Target)
 			}
@@ -54,7 +54,7 @@ func TestNewSession_DeterministicTargets(t *testing.T) {
 }
 
 func TestNewCodeSession(t *testing.T) {
-	s := NewCodeSession("fmt.Println(\"hi\")")
+	s := NewCodeSession("fmt.Println(\"hi\")", false)
 	if s.Mode != config.ModeCode {
 		t.Fatalf("want code mode, got %q", s.Mode)
 	}
@@ -70,7 +70,7 @@ func TestNewCodeSession(t *testing.T) {
 }
 
 func TestRebuildEngine_TimeUsesMilliseconds(t *testing.T) {
-	eng := RebuildEngine(strings.Repeat("word ", 20), config.ModeTime, 30)
+	eng := RebuildEngine(strings.Repeat("word ", 20), config.ModeTime, 30, false)
 	if eng.Complete(29999) {
 		t.Fatal("time engine completed before millisecond limit")
 	}
@@ -80,11 +80,51 @@ func TestRebuildEngine_TimeUsesMilliseconds(t *testing.T) {
 }
 
 func TestRebuildEngine_WordsUsesWordCount(t *testing.T) {
-	eng := RebuildEngine("one two", config.ModeWords, 2)
+	eng := RebuildEngine("one two", config.ModeWords, 2, false)
 	for i, r := range "one two" {
 		eng.Apply(r, int64(i+1))
 	}
 	if !eng.Complete(8) {
 		t.Fatal("words engine did not complete after configured word count")
+	}
+}
+
+func TestNewSession_StrictBlocksWrongKeys(t *testing.T) {
+	s := NewSession(config.ModeWords, 5, words.QuoteShort, 42, true)
+	if s.Engine == nil {
+		t.Fatal("expected non-nil engine")
+	}
+
+	targetRunes := []rune(s.Target)
+	if len(targetRunes) == 0 {
+		t.Fatal("expected non-empty target")
+	}
+	firstRune := targetRunes[0]
+
+	wrongRune := 'X'
+	if wrongRune == firstRune {
+		wrongRune = 'Z'
+	}
+
+	s.Engine.Apply(wrongRune, 100)
+
+	log := s.Engine.Log()
+	if len(log) != 1 {
+		t.Fatalf("expected 1 log entry, got %d", len(log))
+	}
+	if log[0].Correct {
+		t.Error("expected first log entry to be incorrect")
+	}
+
+	statesBefore := s.Engine.States()
+	if statesBefore[0] != 5 { // Current == 5
+		t.Errorf("expected cursor at position 0 (Current=5), got %v", statesBefore[0])
+	}
+
+	s.Engine.Apply(firstRune, 200)
+
+	statesAfter := s.Engine.States()
+	if statesAfter[0] != 1 { // Correct == 1
+		t.Errorf("expected position 0 state to be Correct (1) after typing correct key, got %v", statesAfter[0])
 	}
 }
