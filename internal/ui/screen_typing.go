@@ -26,7 +26,8 @@ type TypingModel struct {
 	headerWPM   float64 // last computed live WPM for header
 	lastPaintMs int64   // throttle: last time header WPM was recomputed
 
-	blink bool // wired from settings; false = steady block, true = blinking
+	blink  bool // wired from settings; false = steady block, true = blinking
+	strict bool
 
 	th   theme.Theme
 	keys config.Keymap
@@ -59,8 +60,9 @@ func NewTyping(
 	th theme.Theme,
 	km config.Keymap,
 	blink bool,
+	strict bool,
 ) TypingModel {
-	return newTypingWithSeed(mode, length, ql, th, km, blink, 0)
+	return newTypingWithSeed(mode, length, ql, th, km, blink, strict, 0)
 }
 
 // newTypingWithSeed is the internal constructor used by NewTyping and ctrl+r.
@@ -73,12 +75,13 @@ func newTypingWithSeed(
 	th theme.Theme,
 	km config.Keymap,
 	blink bool,
+	strict bool,
 	seed int64,
 ) TypingModel {
-	s := runner.NewSession(mode, length, ql, seed)
+	s := runner.NewSession(mode, length, ql, seed, strict)
 	return TypingModel{
 		eng: s.Engine, mode: s.Mode, length: s.Length, ql: s.QuoteLen,
-		target: s.Target, th: th, keys: km, blink: blink, seed: seed,
+		target: s.Target, th: th, keys: km, blink: blink, strict: strict, seed: seed,
 		nowFn: defaultNowFn, wordCache: &streamTokenCache{},
 	}
 }

@@ -20,6 +20,7 @@ type ResultModel struct {
 	quoteLen words.QuoteLen
 	codeText string // ModeCode snippet, so restart-same re-runs it (not "")
 	isBest   bool   // set by the root after new-best detection; false = hidden
+	strict   bool
 
 	// updateHint is set when an opportunistic check found a newer release.
 	// Nil means no footer hint. Set via WithUpdateHint after NewResult.
@@ -44,6 +45,7 @@ func NewResult(msg ResultMsg, th theme.Theme, km config.Keymap) ResultModel {
 		length:   msg.Length,
 		quoteLen: msg.QuoteLen,
 		codeText: msg.CodeText,
+		strict:   msg.Strict,
 		th:       th,
 		km:       km,
 	}

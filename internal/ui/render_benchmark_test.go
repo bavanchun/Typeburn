@@ -65,7 +65,7 @@ func BenchmarkTypingViewCode10k(b *testing.B) {
 	km := config.DefaultKeymap()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		m := NewTypingCode(target, th, km, false).SetSize(120, 40)
+		m := NewTypingCode(target, th, km, false, false).SetSize(120, 40)
 		m.eng = benchFilledEngine(target, config.ModeCode, 0)
 		m.startMs = 1
 		m.nowMs = 100000

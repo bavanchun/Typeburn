@@ -83,10 +83,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		var t ui.TypingModel
 		if sm.Mode == config.ModeCode {
 			// Code mode: use the supplied snippet verbatim — do not call words.ForMode.
-			t = ui.NewTypingCode(sm.CodeText, m.theme, m.keys, m.settings.BlinkCursor)
+			t = ui.NewTypingCode(sm.CodeText, m.theme, m.keys, m.settings.BlinkCursor, m.settings.StrictMode)
 		} else {
 			t = ui.NewTyping(sm.Mode, sm.Length, sm.QuoteLen,
-				m.theme, m.keys, m.settings.BlinkCursor)
+				m.theme, m.keys, m.settings.BlinkCursor, m.settings.StrictMode)
 		}
 		m.typing = t.SetSize(m.w, m.h)
 		m.screen = ScreenTyping

@@ -43,12 +43,13 @@ func runNoTUI(ctx context.Context, e env, req runRequest) error {
 }
 
 func runSession(e env, req runRequest) (runner.Session, error) {
+	settings := e.loadSettings()
 	if req.mode == config.ModeCode {
 		text, err := e.loadCode(req.textPath)
 		if err != nil {
 			return runner.Session{}, ioError("%s", codeHintFor(err))
 		}
-		return runner.NewCodeSession(text), nil
+		return runner.NewCodeSession(text, settings.StrictMode), nil
 	}
-	return runner.NewSession(req.mode, req.length, req.quoteLen, 0), nil
+	return runner.NewSession(req.mode, req.length, req.quoteLen, 0, settings.StrictMode), nil
 }

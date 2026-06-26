@@ -31,6 +31,7 @@ type ResultMsg struct {
 	Length   int
 	QuoteLen words.QuoteLen
 	CodeText string
+	Strict   bool
 }
 
 // NavCodePasteMsg is emitted by HomeModel when the user presses enter/space

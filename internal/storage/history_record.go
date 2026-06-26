@@ -38,4 +38,7 @@ type Record struct {
 
 	// Consistency is the consistency percentage (0-100).
 	Consistency float64 `json:"consistency"`
+
+	// Strict is true if the run was performed in strict (stop-on-error letter) mode.
+	Strict bool `json:"strict"`
 }

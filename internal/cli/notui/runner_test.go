@@ -44,12 +44,12 @@ func (f *timerFactory) fire()                                  { f.ch <- time.Ti
 // never exhaust the target within the test window.
 func makeTimeSession(lengthSec int) runner.Session {
 	tgt := strings.Repeat("hello world ", 500)
-	eng := runner.RebuildEngine(tgt, config.ModeTime, lengthSec)
+	eng := runner.RebuildEngine(tgt, config.ModeTime, lengthSec, false)
 	return runner.Session{Engine: eng, Target: tgt, Mode: config.ModeTime, Length: lengthSec}
 }
 
 func makeWordsSession(tgt string, wordCount int) runner.Session {
-	eng := runner.RebuildEngine(tgt, config.ModeWords, wordCount)
+	eng := runner.RebuildEngine(tgt, config.ModeWords, wordCount, false)
 	return runner.Session{Engine: eng, Target: tgt, Mode: config.ModeWords, Length: wordCount}
 }
 

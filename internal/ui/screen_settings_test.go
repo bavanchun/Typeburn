@@ -36,11 +36,11 @@ func settChangedFrom(t *testing.T, cmd tea.Cmd) SettingsChangedMsg {
 	return sc
 }
 
-// TestNewSettingsExactly4Rows verifies the constructor yields exactly 4 rows.
-func TestNewSettingsExactly4Rows(t *testing.T) {
+// TestNewSettingsExactly5Rows verifies the constructor yields exactly 5 rows.
+func TestNewSettingsExactly5Rows(t *testing.T) {
 	m := newTestSettings()
-	if len(m.rows) != 4 {
-		t.Fatalf("want 4 rows, got %d", len(m.rows))
+	if len(m.rows) != 5 {
+		t.Fatalf("want 5 rows, got %d", len(m.rows))
 	}
 }
 
@@ -68,8 +68,8 @@ func TestDownClampsAtLastRow(t *testing.T) {
 	for range 10 {
 		m, _ = m.Update(pressSettKey(tea.KeyDown))
 	}
-	if m.sel != 3 {
-		t.Fatalf("want sel=3 (clamped), got %d", m.sel)
+	if m.sel != 4 {
+		t.Fatalf("want sel=4 (clamped), got %d", m.sel)
 	}
 }
 
@@ -161,6 +161,27 @@ func TestTogglingBlinkFlipsBool(t *testing.T) {
 	}
 }
 
+// TestTogglingStrictFlipsBool verifies cycling the Strict mode row toggles StrictMode.
+func TestTogglingStrictFlipsBool(t *testing.T) {
+	m := newTestSettings()
+	// Navigate to Strict mode row (sel=4).
+	for range 4 {
+		m, _ = m.Update(pressSettKey(tea.KeyDown))
+	}
+	if m.sel != rowStrictMode {
+		t.Fatalf("expected sel=4 (strict row), got %d", m.sel)
+	}
+
+	initial := m.s.StrictMode
+	m, cmd := m.Update(pressSettKey(tea.KeyRight))
+	if m.s.StrictMode == initial {
+		t.Fatalf("StrictMode should have toggled from %v", initial)
+	}
+	if sc := settChangedFrom(t, cmd); sc.Settings.StrictMode == initial {
+		t.Fatalf("emitted msg StrictMode should be toggled from %v", initial)
+	}
+}
+
 // TestValueChangeEmitsSettingsChangedMsg verifies a value change emits a
 // SettingsChangedMsg cmd while a pure selection move emits none.
 func TestValueChangeEmitsSettingsChangedMsg(t *testing.T) {
@@ -230,12 +251,12 @@ func TestExcludedOptionsNeverRendered(t *testing.T) {
 	}
 }
 
-// TestViewContains4RowLabels verifies all 4 row labels appear in View().
-func TestViewContains4RowLabels(t *testing.T) {
+// TestViewContains5RowLabels verifies all 5 row labels appear in View().
+func TestViewContains5RowLabels(t *testing.T) {
 	m := newTestSettings()
 	view := m.View()
 
-	labels := []string{"Theme", "Default mode", "Default length", "Blink cursor"}
+	labels := []string{"Theme", "Default mode", "Default length", "Blink cursor", "Strict mode"}
 	for _, label := range labels {
 		if !strings.Contains(view, label) {
 			t.Errorf("view missing row label %q", label)

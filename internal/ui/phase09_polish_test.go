@@ -336,7 +336,7 @@ func TestAFK_TimeMode_LongIdleTrimmedInTypingEngine(t *testing.T) {
 	// via the typing log, verifying the duration reflects AFK trim.
 	m := newTypingWithSeed(
 		config.ModeTime, 30, 0,
-		theme.Default(), config.DefaultKeymap(), false, 42,
+		theme.Default(), config.DefaultKeymap(), false, false, 42,
 	).SetSize(80, 24)
 
 	// Type a character at t=1000ms.
@@ -360,7 +360,7 @@ func TestAFK_WordsMode_NotTrimmed(t *testing.T) {
 	// side-effects that would accidentally trigger trimming.
 	m := newTypingWithSeed(
 		config.ModeWords, 5, 0,
-		theme.Default(), config.DefaultKeymap(), false, 42,
+		theme.Default(), config.DefaultKeymap(), false, false, 42,
 	).SetSize(80, 24)
 
 	m, _ = m.Update(pressText(string([]rune(m.target)[0])))
