@@ -8,11 +8,12 @@ import (
 // Result holds all derived metrics after a completed test.
 // All values are computed post-hoc from the keystroke log.
 type Result struct {
-	NetWPM      float64 // correct chars / 5 / minutes
-	RawWPM      float64 // all typed chars / 5 / minutes
-	Accuracy    float64 // 100 * correctFinal / (correctFinal + incorrectFinal)
-	Consistency float64 // 100 * tanh(1 - CV) of per-second raw WPM samples
-	CPS         float64 // total typed chars / (durationMs / 1000)
+	NetWPM            float64 // correct chars / 5 / minutes
+	RawWPM            float64 // all typed chars / 5 / minutes
+	Accuracy          float64 // 100 * correctFinal / (correctFinal + incorrectFinal)
+	KeystrokeAccuracy float64 // 100 * correctForward / totalForward (non-backspace keystrokes)
+	Consistency       float64 // 100 * tanh(1 - CV) of per-second raw WPM samples
+	CPS               float64 // total typed chars / (durationMs / 1000)
 
 	CorrectChars   int // chars in Correct final state
 	IncorrectChars int // chars in Incorrect/IncorrectSpace final state (uncorrected)
@@ -41,7 +42,7 @@ type Result struct {
 //   - Zero chars typed → Accuracy = 100, all others = 0.
 func Compute(log []typing.Keystroke, mode mode.Mode, endMs int64) Result {
 	if len(log) == 0 {
-		return Result{Accuracy: 100}
+		return Result{Accuracy: 100, KeystrokeAccuracy: 100}
 	}
 
 	// Apply AFK trim (no-op for non-Time modes).
@@ -52,7 +53,7 @@ func Compute(log []typing.Keystroke, mode mode.Mode, endMs int64) Result {
 
 	durationMs := endMs - startMs
 	if durationMs <= 0 {
-		return Result{Accuracy: 100}
+		return Result{Accuracy: 100, KeystrokeAccuracy: 100}
 	}
 
 	// Compute final char state by replaying the log.
@@ -72,9 +73,13 @@ func Compute(log []typing.Keystroke, mode mode.Mode, endMs int64) Result {
 
 	// Total forward keystrokes (non-backspace) for RawWPM and CPS.
 	var totalTyped int
+	var correctForward int
 	for _, k := range log {
 		if k.Typed != 0 {
 			totalTyped++
+			if k.Correct {
+				correctForward++
+			}
 		}
 	}
 
@@ -93,6 +98,13 @@ func Compute(log []typing.Keystroke, mode mode.Mode, endMs int64) Result {
 		accuracy = 100.0 * float64(correct) / float64(correct+incorrect)
 	}
 
+	var keystrokeAccuracy float64
+	if totalTyped == 0 {
+		keystrokeAccuracy = 100
+	} else {
+		keystrokeAccuracy = 100.0 * float64(correctForward) / float64(totalTyped)
+	}
+
 	// Per-second buckets and consistency.
 	perSec := bucketPerSecond(log, startMs)
 	rawSamples := make([]float64, len(perSec))
@@ -102,18 +114,19 @@ func Compute(log []typing.Keystroke, mode mode.Mode, endMs int64) Result {
 	cons := Consistency(rawSamples)
 
 	return Result{
-		NetWPM:         netWPM,
-		RawWPM:         rawWPM,
-		Accuracy:       accuracy,
-		Consistency:    cons,
-		CPS:            cps,
-		CorrectChars:   correct,
-		IncorrectChars: incorrect,
-		ExtraChars:     extra,
-		Errors:         incorrect,
-		DurationMs:     durationMs,
-		PerSecond:      perSec,
-		KeyMisses:      KeyHeatmap(log),
+		NetWPM:            netWPM,
+		RawWPM:            rawWPM,
+		Accuracy:          accuracy,
+		KeystrokeAccuracy: keystrokeAccuracy,
+		Consistency:       cons,
+		CPS:               cps,
+		CorrectChars:      correct,
+		IncorrectChars:    incorrect,
+		ExtraChars:        extra,
+		Errors:            incorrect,
+		DurationMs:        durationMs,
+		PerSecond:         perSec,
+		KeyMisses:         KeyHeatmap(log),
 	}
 }
 

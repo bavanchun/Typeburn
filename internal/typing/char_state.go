@@ -5,9 +5,10 @@ package typing
 
 // CharState classifies the display state of each position in the target text.
 //
-// NOTE: "current-error" is NOT used in v1. The engine operates in allow-continue
-// mode only: the user may keep typing past an error without being blocked.
-// Stop-on-error would require a separate state; that is deferred to a future version.
+// NOTE: "current-error" is NOT used in v1. The engine supports allow-continue
+// mode as well as a strict (stop-on-error letter) mode where incorrect inputs
+// freeze the cursor. Since the cursor simply freezes at the current position,
+// the Current state is sufficient and no separate error state is needed.
 type CharState int
 
 const (
