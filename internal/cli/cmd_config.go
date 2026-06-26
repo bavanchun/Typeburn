@@ -90,6 +90,7 @@ func configRows(s config.Settings) [][]string {
 		{"default_length", strconv.Itoa(s.DefaultLength)},
 		{"blink_cursor", strconv.FormatBool(s.BlinkCursor)},
 		{"update_check", strconv.FormatBool(s.UpdateCheck)},
+		{"strict_mode", strconv.FormatBool(s.StrictMode)},
 	}
 }
 
@@ -136,6 +137,12 @@ func configSet(s *config.Settings, key, value string) error {
 			return usageError("update_check must be true, false, 1, 0, on, off, yes, or no")
 		}
 		s.UpdateCheck = v
+	case "strict_mode":
+		v, ok := parseBool(value)
+		if !ok {
+			return usageError("strict_mode must be true, false, 1, 0, on, off, yes, or no")
+		}
+		s.StrictMode = v
 	default:
 		return usageError("unknown config key %q", key)
 	}
