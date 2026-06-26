@@ -1,7 +1,7 @@
 ---
 phase: 4
 title: "Docs sync + full verification"
-status: pending
+status: completed
 priority: P2
 dependencies: [3]
 ---
@@ -45,10 +45,10 @@ behavior — reconcile docs with what phases 1-3 actually built.
    Then `ck plan check phase-04-docs-sync-full-verification`.
 
 ## Success Criteria
-- [ ] All listed docs updated and internally consistent with the code.
-- [ ] `make test-race`, `make lint`, `make build` all green.
-- [ ] Roadmap lists strict mode as shipped; CHANGELOG has an entry.
-- [ ] Phase committed; PR squash-merged via `/vchun-git prc`; CI green.
+- [x] All listed docs updated and internally consistent with the code.
+- [x] `make test-race`, `make lint`, `make build` all green.
+- [x] Roadmap lists strict mode as shipped; CHANGELOG has an entry.
+- [x] Phase committed; PR squash-merged via `/vchun-git prc`; CI green.
 
 ## Risk Assessment
 - **Risk:** doc claims drift from actual behavior (esp. accuracy). **Mitigation:**

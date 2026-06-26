@@ -148,16 +148,17 @@ All computation (WPM, accuracy, consistency) derives from this immutable log.
 
 ```go
 type Result struct {
-  NetWPM       float64
-  RawWPM       float64
-  Accuracy     float64
-  Consistency  float64
-  CPS          float64
-  TimeMs       int64
-  CharCount    int
-  ErrorCount   int
-  ErrorHistory []int         // per-second errors
-  WPMHistory   []float64     // per-second raw WPM
+  NetWPM            float64
+  RawWPM            float64
+  Accuracy          float64
+  KeystrokeAccuracy float64
+  Consistency       float64
+  CPS               float64
+  TimeMs            int64
+  CharCount         int
+  ErrorCount        int
+  ErrorHistory      []int         // per-second errors
+  WPMHistory        []float64     // per-second raw WPM
   // ... other fields
 }
 ```
@@ -168,14 +169,15 @@ Computed from keystroke log post-hoc (no live state). Passed to ResultMsg.
 
 ```go
 type Record struct {
-  WPM       int           // rounded for display
-  NetWPM    float64       // v2: add this for precise new-best comparison
-  RawWPM    float64
-  Accuracy  float64
+  WPM         int           // rounded for display
+  NetWPM      float64       // v2: add this for precise new-best comparison
+  RawWPM      float64
+  Accuracy    float64
   Consistency float64
-  Mode      mode.Mode
-  Length    int
-  Time      time.Time
+  Mode        mode.Mode
+  Length      int
+  Time        time.Time
+  Strict      bool          // v2.5: strict typing run
   // ... other fields
 }
 ```
@@ -190,6 +192,7 @@ type Settings struct {
   DefaultMode   config.Mode   // "time" | "words" | "quote"
   DefaultLength int           // 15, 30, 60, 120 (time) or 10, 25, 50, 100 (words)
   BlinkCursor   bool
+  StrictMode    bool
 }
 ```
 
