@@ -91,6 +91,8 @@ func configRows(s config.Settings) [][]string {
 		{"blink_cursor", strconv.FormatBool(s.BlinkCursor)},
 		{"update_check", strconv.FormatBool(s.UpdateCheck)},
 		{"strict_mode", strconv.FormatBool(s.StrictMode)},
+		{"punctuation", strconv.FormatBool(s.Punctuation)},
+		{"numbers", strconv.FormatBool(s.Numbers)},
 	}
 }
 
@@ -143,6 +145,18 @@ func configSet(s *config.Settings, key, value string) error {
 			return usageError("strict_mode must be true, false, 1, 0, on, off, yes, or no")
 		}
 		s.StrictMode = v
+	case "punctuation":
+		v, ok := parseBool(value)
+		if !ok {
+			return usageError("punctuation must be true, false, 1, 0, on, off, yes, or no")
+		}
+		s.Punctuation = v
+	case "numbers":
+		v, ok := parseBool(value)
+		if !ok {
+			return usageError("numbers must be true, false, 1, 0, on, off, yes, or no")
+		}
+		s.Numbers = v
 	default:
 		return usageError("unknown config key %q", key)
 	}

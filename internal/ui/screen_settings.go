@@ -8,7 +8,8 @@ import (
 )
 
 // SettingsModel is the sub-model for the Settings screen. It owns exactly
-// 5 rows (Theme, Default mode, Default length, Blink cursor, Strict mode) and nothing else.
+// 7 rows (Theme, Default mode, Default length, Blink cursor, Strict mode,
+// Punctuation, Numbers) and nothing else.
 // It holds its settings BY VALUE; every value change emits a
 // SettingsChangedMsg so the root can persist and apply it to the live model.
 // (A callback/pointer bound in app.New() would target a copied-out struct the
@@ -131,5 +132,9 @@ func (m *SettingsModel) applyRow(rowIdx, valIdx int) {
 		m.s.BlinkCursor = (val == "on")
 	case rowStrictMode:
 		m.s.StrictMode = (val == "on")
+	case rowPunctuation:
+		m.s.Punctuation = (val == "on")
+	case rowNumbers:
+		m.s.Numbers = (val == "on")
 	}
 }

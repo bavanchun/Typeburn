@@ -57,7 +57,7 @@ func TestMaybeFrameCmd_NilWhenIdle(t *testing.T) {
 func TestFrameTick_DoesNotStartTest(t *testing.T) {
 	m := newTestModel()
 	m.screen = ScreenTyping
-	m.typing = ui.NewTyping(config.ModeTime, 30, 0, m.theme, m.keys, false, false).SetSize(80, 24)
+	m.typing = ui.NewTyping(config.ModeTime, 30, 0, m.theme, m.keys, false, false, false, false).SetSize(80, 24)
 
 	model, _ := m.handleFrameTick(ui.FrameTickMsg{T: time.UnixMilli(1234)})
 	got := model.(Model)

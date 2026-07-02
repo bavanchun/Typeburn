@@ -9,7 +9,7 @@ import (
 )
 
 // View renders the Settings screen as a centered block string.
-// Layout per mockups §4: title, separator, 4 rows, separator, help line, footer.
+// Layout per mockups §4: title, separator, 7 rows, separator, help line, footer.
 // Degraded mode (w<60 or h<20) is handled by the root View; this is only called
 // when the terminal meets the safe minimum.
 func (m SettingsModel) View() string {

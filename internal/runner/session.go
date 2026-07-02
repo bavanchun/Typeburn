@@ -20,9 +20,9 @@ type Session struct {
 
 // NewSession builds a fresh non-code typing session.
 // seed==0 uses the words package's time-based random seed.
-func NewSession(m mode.Mode, length int, ql words.QuoteLen, seed int64, strict bool) Session {
+func NewSession(m mode.Mode, length int, ql words.QuoteLen, seed int64, strict, punctuation, numbers bool) Session {
 	g := words.NewGenerator(seed)
-	target := words.ForMode(g, m, length, ql)
+	target := words.ForMode(g, m, length, ql, punctuation, numbers)
 	return Session{
 		Engine:   RebuildEngine(target, m, length, strict),
 		Target:   target,

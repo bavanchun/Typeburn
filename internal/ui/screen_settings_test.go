@@ -36,11 +36,12 @@ func settChangedFrom(t *testing.T, cmd tea.Cmd) SettingsChangedMsg {
 	return sc
 }
 
-// TestNewSettingsExactly5Rows verifies the constructor yields exactly 5 rows.
-func TestNewSettingsExactly5Rows(t *testing.T) {
+// TestNewSettingsExactly7Rows verifies the constructor yields exactly 7 rows
+// (5 original + Punctuation + Numbers).
+func TestNewSettingsExactly7Rows(t *testing.T) {
 	m := newTestSettings()
-	if len(m.rows) != 5 {
-		t.Fatalf("want 5 rows, got %d", len(m.rows))
+	if len(m.rows) != 7 {
+		t.Fatalf("want 7 rows, got %d", len(m.rows))
 	}
 }
 
@@ -68,8 +69,8 @@ func TestDownClampsAtLastRow(t *testing.T) {
 	for range 10 {
 		m, _ = m.Update(pressSettKey(tea.KeyDown))
 	}
-	if m.sel != 4 {
-		t.Fatalf("want sel=4 (clamped), got %d", m.sel)
+	if m.sel != rowNumbers {
+		t.Fatalf("want sel=%d (clamped), got %d", rowNumbers, m.sel)
 	}
 }
 
@@ -182,6 +183,47 @@ func TestTogglingStrictFlipsBool(t *testing.T) {
 	}
 }
 
+// TestTogglingPunctuationFlipsBool verifies cycling the Punctuation row
+// toggles Punctuation.
+func TestTogglingPunctuationFlipsBool(t *testing.T) {
+	m := newTestSettings()
+	for range rowPunctuation {
+		m, _ = m.Update(pressSettKey(tea.KeyDown))
+	}
+	if m.sel != rowPunctuation {
+		t.Fatalf("expected sel=%d (punctuation row), got %d", rowPunctuation, m.sel)
+	}
+
+	initial := m.s.Punctuation
+	m, cmd := m.Update(pressSettKey(tea.KeyRight))
+	if m.s.Punctuation == initial {
+		t.Fatalf("Punctuation should have toggled from %v", initial)
+	}
+	if sc := settChangedFrom(t, cmd); sc.Settings.Punctuation == initial {
+		t.Fatalf("emitted msg Punctuation should be toggled from %v", initial)
+	}
+}
+
+// TestTogglingNumbersFlipsBool verifies cycling the Numbers row toggles Numbers.
+func TestTogglingNumbersFlipsBool(t *testing.T) {
+	m := newTestSettings()
+	for range rowNumbers {
+		m, _ = m.Update(pressSettKey(tea.KeyDown))
+	}
+	if m.sel != rowNumbers {
+		t.Fatalf("expected sel=%d (numbers row), got %d", rowNumbers, m.sel)
+	}
+
+	initial := m.s.Numbers
+	m, cmd := m.Update(pressSettKey(tea.KeyRight))
+	if m.s.Numbers == initial {
+		t.Fatalf("Numbers should have toggled from %v", initial)
+	}
+	if sc := settChangedFrom(t, cmd); sc.Settings.Numbers == initial {
+		t.Fatalf("emitted msg Numbers should be toggled from %v", initial)
+	}
+}
+
 // TestValueChangeEmitsSettingsChangedMsg verifies a value change emits a
 // SettingsChangedMsg cmd while a pure selection move emits none.
 func TestValueChangeEmitsSettingsChangedMsg(t *testing.T) {
@@ -256,7 +298,7 @@ func TestViewContains5RowLabels(t *testing.T) {
 	m := newTestSettings()
 	view := m.View()
 
-	labels := []string{"Theme", "Default mode", "Default length", "Blink cursor", "Strict mode"}
+	labels := []string{"Theme", "Default mode", "Default length", "Blink cursor", "Strict mode", "Punctuation", "Numbers"}
 	for _, label := range labels {
 		if !strings.Contains(view, label) {
 			t.Errorf("view missing row label %q", label)

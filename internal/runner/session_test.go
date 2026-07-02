@@ -22,27 +22,27 @@ func TestNewSession_DeterministicTargets(t *testing.T) {
 			mode:   config.ModeWords,
 			length: 5,
 			seed:   42,
-			want:   words.ForMode(words.NewGenerator(42), config.ModeWords, 5, words.QuoteMedium),
+			want:   words.ForMode(words.NewGenerator(42), config.ModeWords, 5, words.QuoteMedium, false, false),
 		},
 		{
 			name: "quote",
 			mode: config.ModeQuote,
 			ql:   words.QuoteShort,
 			seed: 7,
-			want: words.ForMode(words.NewGenerator(7), config.ModeQuote, 0, words.QuoteShort),
+			want: words.ForMode(words.NewGenerator(7), config.ModeQuote, 0, words.QuoteShort, false, false),
 		},
 		{
 			name:   "time",
 			mode:   config.ModeTime,
 			length: 15,
 			seed:   99,
-			want:   words.ForMode(words.NewGenerator(99), config.ModeTime, 15, words.QuoteMedium),
+			want:   words.ForMode(words.NewGenerator(99), config.ModeTime, 15, words.QuoteMedium, false, false),
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewSession(tt.mode, tt.length, tt.ql, tt.seed, false)
+			got := NewSession(tt.mode, tt.length, tt.ql, tt.seed, false, false, false)
 			if got.Target != tt.want {
 				t.Fatalf("target drift:\nwant %q\ngot  %q", tt.want, got.Target)
 			}
@@ -50,6 +50,14 @@ func TestNewSession_DeterministicTargets(t *testing.T) {
 				t.Fatalf("metadata drift: %#v", got)
 			}
 		})
+	}
+}
+
+func TestNewSession_PunctuationAndNumbersThreaded(t *testing.T) {
+	plain := NewSession(config.ModeWords, 60, words.QuoteShort, 33, false, false, false)
+	got := NewSession(config.ModeWords, 60, words.QuoteShort, 33, false, true, true)
+	if got.Target == plain.Target {
+		t.Error("NewSession(punctuation=true, numbers=true): target unchanged, flags not threaded to words.ForMode")
 	}
 }
 
@@ -90,7 +98,7 @@ func TestRebuildEngine_WordsUsesWordCount(t *testing.T) {
 }
 
 func TestNewSession_StrictBlocksWrongKeys(t *testing.T) {
-	s := NewSession(config.ModeWords, 5, words.QuoteShort, 42, true)
+	s := NewSession(config.ModeWords, 5, words.QuoteShort, 42, true, false, false)
 	if s.Engine == nil {
 		t.Fatal("expected non-nil engine")
 	}

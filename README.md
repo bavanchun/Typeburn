@@ -18,6 +18,7 @@ Distraction-free, keyboard-driven, and works on any ANSI terminal.
 - **History**: scrollable table of all past tests with per-mode best marker (★)
 - **Themes**: `default` (dark, green accent) and `mono` (attribute-only, no color codes)
 - **Strict mode**: optional letter-strict mode that blocks wrong keypresses at the cursor, logging errors for keystroke-level accuracy, and excluding strict runs from personal best (★) records.
+- **Punctuation & numbers**: optional Settings toggles that mix commas/periods/capitalization and random numbers into Words/Time mode tests.
 - **NO_COLOR support**: set `NO_COLOR=1` for a fully attribute-only render (reverse, bold, underline, faint; no color codes)
 - **Minimum terminal**: 60 columns × 20 rows; graceful degraded notice below that
 - **XDG-compliant paths**: settings and history go to `$XDG_CONFIG_HOME` / `$XDG_DATA_HOME`

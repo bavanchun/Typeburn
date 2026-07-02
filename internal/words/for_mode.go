@@ -14,13 +14,17 @@ import (
 //   - ModeWords: length is the word count (10/25/50/100); returns exactly that
 //     many space-separated words.
 //   - ModeQuote: ql selects the desired quote bucket; length is ignored.
-func ForMode(g *Generator, m mode.Mode, length int, ql QuoteLen) string {
+//
+// punctuation/numbers apply only to ModeWords and ModeTime (and the default
+// fallback for unknown modes) via Generator.ApplyOptions — ModeQuote already
+// carries real punctuation and is never transformed.
+func ForMode(g *Generator, m mode.Mode, length int, ql QuoteLen, punctuation, numbers bool) string {
 	switch m {
 	case mode.ModeWords:
-		return g.Words(length)
+		return g.ApplyOptions(g.Words(length), punctuation, numbers)
 	case mode.ModeQuote:
 		return g.Quote(ql).Text
 	default: // ModeTime and any future modes default to a time buffer
-		return g.TimeBuffer()
+		return g.ApplyOptions(g.TimeBuffer(), punctuation, numbers)
 	}
 }

@@ -31,6 +31,8 @@ type Settings struct {
 	// Default is false to preserve offline-first posture.
 	UpdateCheck bool `json:"update_check"`
 	StrictMode  bool `json:"strict_mode"`
+	Punctuation bool `json:"punctuation"`
+	Numbers     bool `json:"numbers"`
 }
 
 // Defaults returns the baseline configuration used on first run or whenever
@@ -43,6 +45,8 @@ func Defaults() Settings {
 		BlinkCursor:   false,
 		UpdateCheck:   false,
 		StrictMode:    false,
+		Punctuation:   false,
+		Numbers:       false,
 	}
 }
 

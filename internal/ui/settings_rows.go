@@ -23,9 +23,11 @@ const (
 	rowDefaultLength = 2
 	rowBlinkCursor   = 3
 	rowStrictMode    = 4
+	rowPunctuation   = 5
+	rowNumbers       = 6
 )
 
-// buildRows constructs the 5 fixed settings rows from the current settings pointer.
+// buildRows constructs the 7 fixed settings rows from the current settings pointer.
 func buildRows(s *config.Settings) []settingRow {
 	// Theme row: cycles theme.Available() = ["default", "mono"].
 	themeVals := theme.Available()
@@ -64,6 +66,20 @@ func buildRows(s *config.Settings) []settingRow {
 		strictIdx = 1
 	}
 
+	// Punctuation row.
+	punctuationVals := []string{"off", "on"}
+	punctuationIdx := 0
+	if s.Punctuation {
+		punctuationIdx = 1
+	}
+
+	// Numbers row.
+	numbersVals := []string{"off", "on"}
+	numbersIdx := 0
+	if s.Numbers {
+		numbersIdx = 1
+	}
+
 	return []settingRow{
 		{
 			label:  "Theme",
@@ -94,6 +110,18 @@ func buildRows(s *config.Settings) []settingRow {
 			values: strictVals,
 			idx:    strictIdx,
 			help:   "Block wrong keys: cursor will not advance past an error.",
+		},
+		{
+			label:  "Punctuation",
+			values: punctuationVals,
+			idx:    punctuationIdx,
+			help:   "Add commas, periods, and capitalization to Words/Time tests.",
+		},
+		{
+			label:  "Numbers",
+			values: numbersVals,
+			idx:    numbersIdx,
+			help:   "Mix in random numbers for Words/Time tests.",
 		},
 	}
 }

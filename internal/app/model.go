@@ -86,7 +86,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			t = ui.NewTypingCode(sm.CodeText, m.theme, m.keys, m.settings.BlinkCursor, m.settings.StrictMode)
 		} else {
 			t = ui.NewTyping(sm.Mode, sm.Length, sm.QuoteLen,
-				m.theme, m.keys, m.settings.BlinkCursor, m.settings.StrictMode)
+				m.theme, m.keys, m.settings.BlinkCursor, m.settings.StrictMode,
+				m.settings.Punctuation, m.settings.Numbers)
 		}
 		m.typing = t.SetSize(m.w, m.h)
 		m.screen = ScreenTyping

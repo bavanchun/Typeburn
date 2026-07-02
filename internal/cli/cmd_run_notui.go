@@ -51,5 +51,5 @@ func runSession(e env, req runRequest) (runner.Session, error) {
 		}
 		return runner.NewCodeSession(text, settings.StrictMode), nil
 	}
-	return runner.NewSession(req.mode, req.length, req.quoteLen, 0, settings.StrictMode), nil
+	return runner.NewSession(req.mode, req.length, req.quoteLen, 0, settings.StrictMode, settings.Punctuation, settings.Numbers), nil
 }

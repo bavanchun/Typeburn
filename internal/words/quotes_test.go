@@ -102,11 +102,11 @@ func TestForMode_NonEmpty(t *testing.T) {
 		var result string
 		switch tc.mode {
 		case "time":
-			result = ForMode(g, "time", tc.length, tc.ql)
+			result = ForMode(g, "time", tc.length, tc.ql, false, false)
 		case "words":
-			result = ForMode(g, "words", tc.length, tc.ql)
+			result = ForMode(g, "words", tc.length, tc.ql, false, false)
 		case "quote":
-			result = ForMode(g, "quote", tc.length, tc.ql)
+			result = ForMode(g, "quote", tc.length, tc.ql, false, false)
 		}
 		if strings.TrimSpace(result) == "" {
 			t.Errorf("ForMode(%s, %d, %d): returned empty string", tc.mode, tc.length, tc.ql)
