@@ -15,10 +15,11 @@ Distraction-free, keyboard-driven, and works on any ANSI terminal.
 - **Live stats**: WPM, raw WPM, accuracy, and consistency updated every keystroke
 - **Result screen**: big-digit WPM, sparkline chart, full char breakdown
 - **Subtle motion**: animated caret (blink + fade), result reveal (WPM count-up, sparkline draw-in), new-best celebration, and Typing→Result transition — always on, auto-adapts to `NO_COLOR` (layout never shifts)
-- **History**: scrollable table of all past tests with per-mode best marker (★)
-- **Themes**: `default` (dark, green accent) and `mono` (attribute-only, no color codes)
+- **History**: scrollable table of all past tests with personal-best markers (★) for eligible runs: Time/Words by mode + length and Quote by mode; Code and Strict runs never qualify
+- **Themes**: `default`, `mono`, `solarized-dark`, `solarized-light`, `dracula`, `nord`, `gruvbox-dark`, `gruvbox-light`; `mono` is a grayscale color palette
 - **Strict mode**: optional letter-strict mode that blocks wrong keypresses at the cursor, logging errors for keystroke-level accuracy, and excluding strict runs from personal best (★) records.
-- **NO_COLOR support**: set `NO_COLOR=1` for a fully attribute-only render (reverse, bold, underline, faint; no color codes)
+- **Punctuation & numbers**: optional Settings toggles that mix commas/periods/capitalization and random numbers into Words/Time mode tests.
+- **NO_COLOR support**: any non-empty `NO_COLOR` value forces a fully attribute-only render (reverse, bold, underline, faint; no color codes), regardless of the selected theme
 - **Minimum terminal**: 60 columns × 20 rows; graceful degraded notice below that
 - **XDG-compliant paths**: settings and history go to `$XDG_CONFIG_HOME` / `$XDG_DATA_HOME`
 

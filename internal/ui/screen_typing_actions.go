@@ -27,7 +27,7 @@ func (m TypingModel) newTest() TypingModel {
 	if m.mode == config.ModeCode {
 		fresh = NewTypingCode(m.target, m.th, m.keys, m.blink, m.strict)
 	} else {
-		fresh = newTypingWithSeed(m.mode, m.length, m.ql, m.th, m.keys, m.blink, m.strict, 0)
+		fresh = newTypingWithSeed(m.mode, m.length, m.ql, m.th, m.keys, m.blink, m.strict, m.punctuation, m.numbers, 0)
 	}
 	fresh.w, fresh.h = m.w, m.h
 	return fresh

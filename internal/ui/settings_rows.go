@@ -23,11 +23,15 @@ const (
 	rowDefaultLength = 2
 	rowBlinkCursor   = 3
 	rowStrictMode    = 4
+	rowPunctuation   = 5
+	rowNumbers       = 6
 )
 
-// buildRows constructs the 5 fixed settings rows from the current settings pointer.
+var selectableDefaultModes = []string{"time", "words", "quote"}
+
+// buildRows constructs the 7 fixed settings rows from the current settings pointer.
 func buildRows(s *config.Settings) []settingRow {
-	// Theme row: cycles theme.Available() = ["default", "mono"].
+	// Theme row: cycles the available themes.
 	themeVals := theme.Available()
 	themeIdx := 0
 	for i, v := range themeVals {
@@ -38,13 +42,17 @@ func buildRows(s *config.Settings) []settingRow {
 	}
 
 	// Default mode row.
-	modeVals := []string{"time", "words", "quote"}
+	modeVals := append([]string(nil), selectableDefaultModes...)
 	modeIdx := 0
 	for i, v := range modeVals {
 		if string(s.DefaultMode) == v {
 			modeIdx = i
 			break
 		}
+	}
+	if s.DefaultMode == config.ModeCode {
+		modeVals = append(modeVals, "code")
+		modeIdx = len(modeVals) - 1
 	}
 
 	// Default length row: option list depends on current default mode.
@@ -62,6 +70,20 @@ func buildRows(s *config.Settings) []settingRow {
 	strictIdx := 0
 	if s.StrictMode {
 		strictIdx = 1
+	}
+
+	// Punctuation row.
+	punctuationVals := []string{"off", "on"}
+	punctuationIdx := 0
+	if s.Punctuation {
+		punctuationIdx = 1
+	}
+
+	// Numbers row.
+	numbersVals := []string{"off", "on"}
+	numbersIdx := 0
+	if s.Numbers {
+		numbersIdx = 1
 	}
 
 	return []settingRow{
@@ -95,16 +117,31 @@ func buildRows(s *config.Settings) []settingRow {
 			idx:    strictIdx,
 			help:   "Block wrong keys: cursor will not advance past an error.",
 		},
+		{
+			label:  "Punctuation",
+			values: punctuationVals,
+			idx:    punctuationIdx,
+			help:   "Add commas, periods, and capitalization to Words/Time tests.",
+		},
+		{
+			label:  "Numbers",
+			values: numbersVals,
+			idx:    numbersIdx,
+			help:   "Mix in random numbers for Words/Time tests.",
+		},
 	}
 }
 
 // buildLengthRow returns the string option list and the matching index for
 // defaultLength within the given mode. Quote mode exposes the bucket labels
-// (short/medium/long) defined on the Home screen; numeric modes use their
-// LengthsFor option set.
+// (short/medium/long) defined on the Home screen; Code has no length option;
+// numeric modes use their LengthsFor option set.
 func buildLengthRow(mode config.Mode, defaultLength int) ([]string, int) {
 	if mode == config.ModeQuote {
 		return quoteBucketLabels, 1 // default to "medium"
+	}
+	if mode == config.ModeCode {
+		return []string{"n/a"}, 0
 	}
 	lens := config.LengthsFor(mode)
 	vals := make([]string, len(lens))

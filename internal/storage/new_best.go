@@ -2,6 +2,11 @@ package storage
 
 import "strconv"
 
+// EligibleForBest reports whether a record may participate in personal bests.
+func EligibleForBest(r Record) bool {
+	return r.Mode != "code" && !r.Strict
+}
+
 // BestBucketKey returns the comparison key for new-best scoping.
 // For time and words modes the key includes the length parameter so that, e.g.,
 // a 60s best does not suppress a 30s best. Quote mode has no numeric length
@@ -35,6 +40,9 @@ func EffectiveWPM(r Record) float64 {
 func BestWPMPerBucket(records []Record) map[string]float64 {
 	bests := make(map[string]float64)
 	for _, r := range records {
+		if !EligibleForBest(r) {
+			continue
+		}
 		key := BestBucketKey(r.Mode, r.Length)
 		eff := EffectiveWPM(r)
 		if prev, ok := bests[key]; !ok || eff > prev {
@@ -59,13 +67,15 @@ func BestWPMPerBucket(records []Record) map[string]float64 {
 // hist must NOT already contain r; call IsNewBest before AppendHistory.
 // This function is pure and does not mutate hist.
 func IsNewBest(hist []Record, r Record) bool {
-	// Code-mode runs and strict runs are never personal bests (display-only, no leaderboard).
-	if r.Mode == "code" || r.Strict {
+	if !EligibleForBest(r) {
 		return false
 	}
 	key := BestBucketKey(r.Mode, r.Length)
 	best := -1.0
 	for _, h := range hist {
+		if !EligibleForBest(h) {
+			continue
+		}
 		if BestBucketKey(h.Mode, h.Length) == key {
 			if eff := EffectiveWPM(h); eff > best {
 				best = eff

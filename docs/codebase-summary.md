@@ -105,9 +105,9 @@ executes it, and maps returned errors to process exit codes.
 and `wordTarget` math shared by TUI and CLI.
 
 **Entry points:**
-- `NewSession(mode, length, quoteLen, seed, strict bool) Session`
-- `NewCodeSession(snippet string, strict bool) Session`
-- `RebuildEngine(target string, mode config.Mode, length int, strict bool) *typing.Engine`
+- `NewSession(mode, length, quoteLen, seed, strict, punctuation, numbers) Session`
+- `NewCodeSession(snippet, strict) Session`
+- `RebuildEngine(target string, mode mode.Mode, length int, strict bool) *typing.Engine`
 
 ---
 
@@ -155,8 +155,14 @@ policy. Pure package used by `typing`, `metrics`, `words`, `runner`, and
 - `HomeModel`: mode/length picker, defaults display, best-result badge. Emits StartTestMsg.
 - `TypingModel`: live typing test UI. Arms 100ms tick, delegates to typing.Engine, emits ResultMsg on completion.
 - `ResultModel`: big-digit WPM display, sparkline chart, stat cards, footer navigation.
-- `SettingsModel`: four setting rows (Theme/DefaultMode/DefaultLength/BlinkCursor), arrow navigation, auto-persist.
-- `HistoryModel`: scrollable table of all records, per-mode ★ badge, vim-style navigation.
+- `SettingsModel`: seven rows (Theme, Default mode, Default length, Blink
+  cursor, Strict mode, Punctuation, Numbers), arrow navigation, auto-persist.
+  `update_check` is the eighth persisted/CLI key and has no TUI row; the TUI
+  Default mode row cycles Time/Words/Quote, although persisted/CLI values also
+  accept Code and the row displays a persisted Code value until it is changed.
+- `HistoryModel`: scrollable table of all records; ★ marks eligible bucket
+  leaders (Time/Words by mode+length, Quote by mode); Code/Strict never
+  qualify. Supports vim-style navigation.
 - `CodePasteModel`: paste-only Code-mode entry screen; normalizes bracketed paste via `codetext.Normalize`.
 
 **Components (reusable):**
@@ -244,10 +250,12 @@ policy. Pure package used by `typing`, `metrics`, `words`, `runner`, and
 - `quotePack`: {short, medium, long, epic []string} — embedded quotes for each bucket
 
 **Entry points:**
-- `ForMode(generator, mode, length, quoteLen)`: return target string (Time: time buffer; Words: exact N words; Quote: random from bucket)
+- `ForMode(generator, mode, length, quoteLen, punctuation, numbers)`: return
+  target string (Time: time buffer; Words: exact N words; Quote: random from
+  bucket). Punctuation and numbers transform only Time/Words targets.
 - `Word(n)`: return n-th word from wordlist (deterministic, seeded)
 - `Quote(len QuoteLen)`: return random quote from bucket (seeded)
-- `TimeBuffer(seconds)`: generate words for Time mode (~5 chars/word avg)
+- `TimeBuffer()`: generate the oversized Words/Time buffer (~5 chars/word avg)
 
 **Files:** generator.go, for_mode.go, quotes.go, generator_test.go, for_mode_test.go, quotes_test.go.
 
@@ -255,18 +263,21 @@ policy. Pure package used by `typing`, `metrics`, `words`, `runner`, and
 
 ### `internal/config` — Settings, Keymap, XDG Paths
 
-**Purpose:** User-facing configuration (theme, mode, length, cursor blink, strict mode) +
+**Purpose:** User-facing configuration (theme, mode, length, cursor blink,
+update check, strict mode, punctuation, numbers) +
 centralized keybindings + XDG directory resolution. Settings and XDG helpers
 stay storage-agnostic; keymap intentionally centralizes Bubble Tea key bindings.
 
 **Key types:**
 - `Mode`: alias of `mode.Mode` for persisted settings compatibility
-- `Settings`: {Theme, DefaultMode, DefaultLength, BlinkCursor, StrictMode} — loaded from disk or defaults
+- `Settings`: {Theme, DefaultMode, DefaultLength, BlinkCursor, UpdateCheck,
+  StrictMode, Punctuation, Numbers} — loaded from disk or defaults
 - `Keymap`: keybinds per screen (Home/Typing/Result/Settings/History) — maps Bubble Tea key codes to actions
 - `QuoteLen`: enum for quote bucket selection
 
 **Entry points:**
-- `Defaults()`: baseline settings (theme="default", mode="time", length=30, blink=false, strict=false)
+- `Defaults()`: baseline settings (theme="default", mode="time", length=30;
+  BlinkCursor, UpdateCheck, StrictMode, Punctuation, and Numbers all false)
 - `(s *Settings) Normalize()`: repair out-of-range values in place
 - `DefaultKeymap()`: centralized keybindings
 - `ConfigDir(), DataDir()`: resolve XDG paths (fallback to ~/.config, ~/.local/share)
@@ -292,7 +303,10 @@ stay storage-agnostic; keymap intentionally centralizes Bubble Tea key bindings.
 - `EffectiveWPM(r Record)`: precise NetWPM comparison with legacy WPM fallback
 - `BestBucketKey(mode, length)`: shared leaderboard bucket key
 - `BestWPMPerBucket(records)`: shared per-bucket bests for UI badges
-- `IsNewBest(history, r)`: check if WPM is highest for that (mode, length) pair (excludes strict runs)
+- `EligibleForBest(r)`: excludes Code and Strict records from personal-best
+  eligibility
+- `IsNewBest(history, r)`: checks eligible records only; Time/Words use
+  mode+length buckets and Quote uses one mode bucket
 
 **Data flow:**
 - Settings loaded at startup in `app.NewFromDisk()`
@@ -307,21 +321,31 @@ history_record.go, history_store_test.go, new_best_test.go, settings_store_test.
 
 ### `internal/theme` — Color Mapping via Roles
 
-**Purpose:** Semantic color system. Decouple UI code from concrete hex colors. Support NO_COLOR + mono (attribute-only) themes without layout changes.
+**Purpose:** Semantic color system. Decouple UI code from concrete hex colors.
+Support grayscale `mono` and attribute-only `NO_COLOR` rendering without layout
+changes.
 
 **Key types:**
-- `Role`: enum {RoleTextPrimary, RoleAccent, RoleError, RoleCursor, ...} — semantic role (12 total)
+- `Role`: enum {RoleTextPrimary, RoleAccent, RoleError, RoleCursorBg,
+  RoleCursorFg, ...} — semantic role (16 total)
 - `Theme`: {name, colors map[Role]color.Color, noColor bool} — theme instance
 - Default theme: dark + green accent + red error
-- Mono theme: greyscale attributes (bold, underline, faint)
+- Mono theme: grayscale colors with a white accent
 
 **Entry points:**
 - `Load(name, noColor)`: return theme by name; respect NO_COLOR env
 - `(t Theme) Style(r Role)`: return lipgloss.Style for role (color + attributes)
 - `(t Theme) Color(r Role)`: return raw color.Color (nil under NO_COLOR)
-- `Available()`: list selectable themes (["default", "mono"])
+- `Available()`: list selectable themes in display order: `default`, `mono`,
+  `solarized-dark`, `solarized-light`, `dracula`, `nord`, `gruvbox-dark`,
+  `gruvbox-light`
 
-**Files:** theme.go, roles.go, default_theme.go, mono_theme.go, theme_test.go.
+Any non-empty `NO_COLOR` value overrides the selected theme and renders by
+attributes only; `mono` remains a color palette.
+
+**Files:** theme.go, roles.go, default-theme.go, mono-theme.go,
+solarized-dark-theme.go, solarized-light-theme.go, dracula-theme.go,
+nord-theme.go, gruvbox-dark-theme.go, gruvbox-light-theme.go, theme_test.go.
 
 ---
 

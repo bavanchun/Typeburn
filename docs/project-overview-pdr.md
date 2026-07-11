@@ -15,14 +15,41 @@ and a scriptable v2 CLI.
 
 ---
 
-## v1 Feature Scope (Shipped)
+## Current Product State
+
+**Public stable release:** `v2.4.1`. **Upcoming release:** one consolidated
+`v2.5.0`, which is unreleased. The following describes the current runtime
+contract, including changes being prepared for that release.
+
+- **Themes:** `default`, `mono`, `solarized-dark`, `solarized-light`,
+  `dracula`, `nord`, `gruvbox-dark`, `gruvbox-light`. `mono` is a grayscale
+  color palette. Any non-empty `NO_COLOR` value forces attribute-only rendering
+  regardless of the selected theme.
+- **Persisted/CLI settings:** `theme`, `default_mode`, `default_length`,
+  `blink_cursor`, `update_check`, `strict_mode`, `punctuation`, `numbers`.
+  The Settings TUI exposes seven rows: Theme, Default mode, Default length,
+  Blink cursor, Strict mode, Punctuation, Numbers. `update_check` is
+  persisted/CLI-only.
+- **Mode and target settings:** persisted/CLI `default_mode` accepts Time,
+  Words, Quote, or Code; the TUI Settings row cycles only Time/Words/Quote.
+  It displays a persisted Code value until the user changes the mode.
+  `default_length` is non-negative and constrained for Time/Words; Quote and
+  Code have no numeric selector. Punctuation and numbers apply only to
+  Words/Time targets.
+- **Strict and best markers:** Strict blocks wrong forward keystrokes. Code and
+  Strict records never qualify for ★ markers; Time/Words use mode+length
+  buckets and Quote uses one mode bucket.
+
+---
+
+## v1 Feature Scope and Later Additions (Historical)
 
 ### Modes & Durations
 - **Time:** 15, 30, 60, 120 seconds (timer counts down; test ends when time expires)
 - **Words:** 10, 25, 50, 100 words (test ends when word count typed)
 - **Quote:** Short/Medium/Long/Epic from embedded pack (test ends when quote complete)
-- **Code:** User text via `--text`, in-app paste, or `run --mode code --text`
-  (exact whitespace match)
+- **Later addition — Code:** User text via `--text`, in-app paste, or
+  `run --mode code --text` (exact whitespace match)
 
 ### Test Metrics
 - **Net WPM:** correct characters / 5 / seconds × 60
@@ -48,7 +75,8 @@ and a scriptable v2 CLI.
 - `NO_COLOR` env: Switches to attribute-only rendering (no color codes, same layout)
 
 ### Input & UX
-- **Typing mode:** Printable chars + backspace; allow-continue default, with optional letter-strict (stop-on-error) mode
+- **Typing mode:** Printable chars + backspace; allow-continue default.
+  **Later addition — Strict:** optional letter-strict (stop-on-error) mode.
 - **Keybindings:** Centralized, per design spec (Home/Typing/Result/Settings/History each have distinct binds)
 - **Resize handling:** Graceful degradation notice if <60 cols or <20 rows; auto-resume when resized
 - **Paste support:** Ctrl+V pastes entire clipboard into typing; each char logged
@@ -108,5 +136,6 @@ and a scriptable v2 CLI.
 
 ## Development Status
 
-**v2.0 CLI implementation complete in working tree.** CI gates must pass before
-release.
+`v2.4.1` is the publicly released stable version. The consolidated `v2.5.0`
+release remains upcoming/unreleased; its integration work must pass CI and
+release gates before publication.

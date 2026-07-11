@@ -6,8 +6,10 @@ package words
 import (
 	_ "embed"
 	"math/rand/v2"
+	"strconv"
 	"strings"
 	"time"
+	"unicode"
 )
 
 //go:embed data/english-1000.txt
@@ -68,4 +70,86 @@ func (g *Generator) Words(n int) string {
 // user somehow exhausts it.
 func (g *Generator) TimeBuffer() string {
 	return g.Words(timeBufferWords)
+}
+
+// punctuationMarks are trailing marks applied to a token; earlier entries are
+// weighted more heavily by repetition (commas more common than semicolons).
+var punctuationMarks = []byte{',', ',', ',', '.', '.', ';'}
+
+// ApplyOptions returns text with punctuation and/or number substitutions
+// applied, using the Generator's own seeded rng so output stays deterministic
+// per seed. Token count is always preserved: punctuation only appends marks
+// or capitalizes existing tokens, and numbers only replaces a token in place
+// — neither adds nor removes word slots. A no-op (both flags false) returns
+// text unchanged.
+func (g *Generator) ApplyOptions(text string, punctuation, numbers bool) string {
+	if !punctuation && !numbers {
+		return text
+	}
+	tokens := strings.Fields(text)
+	if len(tokens) == 0 {
+		return text
+	}
+	if numbers {
+		g.applyNumbers(tokens)
+	}
+	if punctuation {
+		g.applyPunctuation(tokens)
+	}
+	return strings.Join(tokens, " ")
+}
+
+// applyNumbers substitutes ~10-15% of tokens with a random 1-4 digit string.
+func (g *Generator) applyNumbers(tokens []string) {
+	for i := range tokens {
+		if g.rng.IntN(100) < 12 {
+			digits := g.rng.IntN(4) + 1
+			max := 1
+			for range digits {
+				max *= 10
+			}
+			// IntN(max-1)+1 bounds the result to [1, max-1], i.e. exactly
+			// `digits` digits — IntN(max)+1 would include max itself (one
+			// digit too many, e.g. 10000 when digits==4).
+			tokens[i] = strconv.Itoa(g.rng.IntN(max-1) + 1)
+		}
+	}
+}
+
+// applyPunctuation appends trailing marks to ~15-20% of tokens, wraps ~2-3%
+// of tokens in quotes, capitalizes the token following a period or
+// semicolon, and always closes the final token with a mark. Applied after
+// applyNumbers so a numeric token can also be punctuated.
+func (g *Generator) applyPunctuation(tokens []string) {
+	capitalizeNext := false
+	for i, tok := range tokens {
+		if capitalizeNext {
+			tokens[i] = capitalizeFirst(tok)
+			capitalizeNext = false
+		}
+		if g.rng.IntN(100) < 3 {
+			tokens[i] = `"` + tokens[i] + `"`
+		}
+		last := i == len(tokens)-1
+		roll := g.rng.IntN(100)
+		switch {
+		case last:
+			tokens[i] = tokens[i] + "."
+		case roll < 17:
+			mark := punctuationMarks[g.rng.IntN(len(punctuationMarks))]
+			tokens[i] = tokens[i] + string(mark)
+			if mark == '.' || mark == ';' {
+				capitalizeNext = true
+			}
+		}
+	}
+}
+
+func capitalizeFirst(s string) string {
+	if s == "" {
+		return s
+	}
+	r := []rune(s)
+	r[0] = unicode.ToUpper(r[0])
+	return string(r)
 }

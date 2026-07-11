@@ -8,14 +8,15 @@ import (
 )
 
 // SettingsModel is the sub-model for the Settings screen. It owns exactly
-// 5 rows (Theme, Default mode, Default length, Blink cursor, Strict mode) and nothing else.
+// 7 rows (Theme, Default mode, Default length, Blink cursor, Strict mode,
+// Punctuation, Numbers) and nothing else.
 // It holds its settings BY VALUE; every value change emits a
 // SettingsChangedMsg so the root can persist and apply it to the live model.
 // (A callback/pointer bound in app.New() would target a copied-out struct the
 // program never renders.) Row types/helpers live in settings_rows.go.
 type SettingsModel struct {
 	rows []settingRow
-	sel  int // currently-selected row index (0-4)
+	sel  int // currently-selected row index (0-6)
 	s    config.Settings
 	th   theme.Theme
 	km   config.Keymap
@@ -91,8 +92,17 @@ func (m SettingsModel) changedCmd() tea.Cmd {
 // and writes it into the local settings value.
 func (m SettingsModel) cycleSelected(delta int) SettingsModel {
 	row := &m.rows[m.sel]
-	n := len(row.values)
-	row.idx = ((row.idx+delta)%n + n) % n
+	if m.sel == rowDefaultMode && m.s.DefaultMode == config.ModeCode {
+		row.values = append([]string(nil), selectableDefaultModes...)
+		if delta < 0 {
+			row.idx = len(row.values) - 1
+		} else {
+			row.idx = 0
+		}
+	} else {
+		n := len(row.values)
+		row.idx = ((row.idx+delta)%n + n) % n
+	}
 
 	m.applyRow(m.sel, row.idx)
 
@@ -121,6 +131,9 @@ func (m *SettingsModel) applyRow(rowIdx, valIdx int) {
 		if m.s.DefaultMode == config.ModeQuote {
 			// Quote uses bucket labels ("short"/"medium"/"long"); no int to store.
 			m.s.DefaultLength = 0
+		} else if m.s.DefaultMode == config.ModeCode {
+			// Code has no length setting.
+			return
 		} else {
 			lens := config.LengthsFor(m.s.DefaultMode)
 			if valIdx < len(lens) {
@@ -131,5 +144,9 @@ func (m *SettingsModel) applyRow(rowIdx, valIdx int) {
 		m.s.BlinkCursor = (val == "on")
 	case rowStrictMode:
 		m.s.StrictMode = (val == "on")
+	case rowPunctuation:
+		m.s.Punctuation = (val == "on")
+	case rowNumbers:
+		m.s.Numbers = (val == "on")
 	}
 }

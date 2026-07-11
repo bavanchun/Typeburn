@@ -1,0 +1,1 @@
+- [Typeburn settings-toggle conventions](project_typeburn_conventions.md) — call-chain to check for new persisted bool settings; watch for spec'd sub-requirements silently dropped even when listed tests pass

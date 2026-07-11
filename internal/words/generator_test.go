@@ -1,6 +1,7 @@
 package words
 
 import (
+	"regexp"
 	"strings"
 	"testing"
 )
@@ -89,5 +90,154 @@ func TestWordList_NonEmpty(t *testing.T) {
 	const minWords = 200
 	if len(wordList) < minWords {
 		t.Errorf("word list has %d entries, want at least %d", len(wordList), minWords)
+	}
+}
+
+func TestApplyOptions_NoOp(t *testing.T) {
+	g := NewGenerator(42)
+	text := g.Words(50)
+	got := g.ApplyOptions(text, false, false)
+	if got != text {
+		t.Errorf("ApplyOptions with both flags false must be a no-op:\ngot:  %q\nwant: %q", got, text)
+	}
+}
+
+func TestApplyOptions_PunctuationDeterministic(t *testing.T) {
+	a := NewGenerator(7)
+	textA := a.Words(50)
+	gotA := a.ApplyOptions(textA, true, false)
+
+	b := NewGenerator(7)
+	textB := b.Words(50)
+	gotB := b.ApplyOptions(textB, true, false)
+
+	if gotA != gotB {
+		t.Error("ApplyOptions(punctuation=true): same seed produced different output")
+	}
+}
+
+func TestApplyOptions_PunctuationAddsMarks(t *testing.T) {
+	g := NewGenerator(1)
+	text := g.Words(80)
+	got := g.ApplyOptions(text, true, false)
+
+	found := false
+	for _, r := range got {
+		if r == ',' || r == '.' || r == ';' {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Errorf("ApplyOptions(punctuation=true) on 80 words produced no punctuation marks: %q", got)
+	}
+}
+
+func TestApplyOptions_PunctuationCapitalizesAfterPeriod(t *testing.T) {
+	g := NewGenerator(3)
+	text := g.Words(80)
+	got := g.ApplyOptions(text, true, false)
+
+	tokens := strings.Fields(got)
+	found := false
+	for i := 0; i < len(tokens)-1; i++ {
+		if strings.HasSuffix(tokens[i], ".") {
+			next := tokens[i+1]
+			r := []rune(next)[0]
+			if r >= 'A' && r <= 'Z' {
+				found = true
+				break
+			}
+		}
+	}
+	if !found {
+		t.Errorf("expected at least one word following a '.' to be capitalized: %q", got)
+	}
+}
+
+func TestApplyOptions_PunctuationCapitalizesAfterSemicolon(t *testing.T) {
+	g := NewGenerator(6)
+	text := g.Words(200)
+	got := g.ApplyOptions(text, true, false)
+
+	tokens := strings.Fields(got)
+	found := false
+	for i := 0; i < len(tokens)-1; i++ {
+		if strings.HasSuffix(tokens[i], ";") {
+			next := tokens[i+1]
+			r := []rune(next)[0]
+			if r >= 'A' && r <= 'Z' {
+				found = true
+				break
+			}
+		}
+	}
+	if !found {
+		t.Errorf("expected at least one word following a ';' to be capitalized: %q", got)
+	}
+}
+
+func TestApplyOptions_PunctuationWrapsSomeTokensInQuotes(t *testing.T) {
+	g := NewGenerator(4)
+	text := g.Words(300)
+	got := g.ApplyOptions(text, true, false)
+
+	found := strings.Contains(got, `"`)
+	if !found {
+		t.Errorf("ApplyOptions(punctuation=true) on 300 words produced no quote-wrapped token: %q", got)
+	}
+}
+
+func TestApplyOptions_NumbersProduceDigits(t *testing.T) {
+	g := NewGenerator(2)
+	text := g.Words(80)
+	got := g.ApplyOptions(text, false, true)
+
+	digitToken := regexp.MustCompile(`^\d+[,.;]?$`)
+	found := false
+	for _, tok := range strings.Fields(got) {
+		if digitToken.MatchString(tok) {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Errorf("ApplyOptions(numbers=true) on 80 words produced no numeric token: %q", got)
+	}
+}
+
+func TestApplyOptions_TokenCountPreserved(t *testing.T) {
+	cases := []struct {
+		punctuation, numbers bool
+	}{
+		{false, false},
+		{true, false},
+		{false, true},
+		{true, true},
+	}
+	for _, c := range cases {
+		g := NewGenerator(9)
+		text := g.Words(60)
+		wantCount := len(strings.Fields(text))
+		got := g.ApplyOptions(text, c.punctuation, c.numbers)
+		gotCount := len(strings.Fields(got))
+		if gotCount != wantCount {
+			t.Errorf("punctuation=%v numbers=%v: token count changed: got %d, want %d",
+				c.punctuation, c.numbers, gotCount, wantCount)
+		}
+	}
+}
+
+func TestApplyOptions_DeterministicAcrossOptions(t *testing.T) {
+	a := NewGenerator(15)
+	textA := a.Words(60)
+	gotA := a.ApplyOptions(textA, true, true)
+
+	b := NewGenerator(15)
+	textB := b.Words(60)
+	gotB := b.ApplyOptions(textB, true, true)
+
+	if gotA != gotB {
+		t.Error("ApplyOptions(punctuation=true, numbers=true): same seed produced different output")
 	}
 }
