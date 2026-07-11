@@ -4,9 +4,9 @@
 
 ## Current Release State
 
-**Public stable:** `v2.5.0` (2026-07-11). **In-progress:** corrective
-`v2.5.1` migrating Go module to `/v2` path; Phases 1–3 complete, pending
-protected merge and stable tag.
+**Public stable:** `v2.5.1` (2026-07-11). The corrective release migrated the
+Go module to its required `/v2` path and restored proxy-only `go install`.
+Protected merge, release publication, and public proxy validation are complete.
 
 ---
 
@@ -261,11 +261,14 @@ protected merge and stable tag.
   Settings toggles add punctuation/capitalization and numeric tokens to
   Words/Time generation while leaving Quote and Code unchanged.
   Ship date: 2026-07-11.
-- ⏳ **v2.5.1 (Corrective release):** Migrated Go module path to
+- ✅ **v2.5.1 (Corrective release):** Migrated Go module path to
   `github.com/bavanchun/Typeburn/v2` with entrypoint moved from root `main.go`
   to `cmd/typeburn/main.go` so `go install .../v2/cmd/typeburn@latest` produces
   a lowercase `typeburn` binary. All documentation reconciled with the `/v2`
-  module path. Phases 1–3 complete; pending protected merge and stable tag.
+  module path. The protected merge, immutable release, and public Go proxy
+  checks completed successfully. The published `v2.5.0` tag remains immutable;
+  its broken Go-module install channel was fixed forward by `v2.5.1`.
+  Ship date: 2026-07-11.
 
 
 ### Next (Optional)
@@ -302,12 +305,12 @@ the remaining entries are historical planning ideas, not the current roadmap.
 
 ## Conclusion
 
-**Typeburn v2.5.0 is the current public stable release.** Post-1.0 work has
+**Typeburn v2.5.1 is the current public stable release.** Post-1.0 work has
 been additive or corrective: v2.0.0 added a professional scriptable CLI,
 v2.1.x added opt-in update checks plus audited defect cleanup, v2.2.0 added
 per-key error heatmaps, v2.3.0 added the self-update command, v2.4.0/v2.4.1
 added update UX and animations, and v2.5.0 added Strict typing and
-punctuation/numbers toggles. v2.5.1 is a corrective release migrating the Go
-module path to `/v2`.
+punctuation/numbers toggles. v2.5.1 fixed forward the immutable v2.5.0 Go
+module-channel defect by migrating the module path to `/v2`.
 
 M1 (timer re-arm) and M2 (new-best precision) — the identified correctness bugs — were fixed in v1.0 (d6369de) and v1.0.1 respectively. v1.4.0 fixed a Settings live-apply bug (changes were persisted but not applied in-session) and improved the wide-terminal typing layout. Remaining backlog is additive or cosmetic.

@@ -1,7 +1,7 @@
 ---
 phase: 4
 title: "Prepare protected corrective release"
-status: pending
+status: done
 effort: "M"
 ---
 
@@ -55,6 +55,6 @@ Land through protected main, freeze one release SHA, and prove archive release b
 
 ## Success Criteria
 
-- [ ] Frozen merged SHA passes local and disposable archive proofs.
-- [ ] Seven assets and isolation checks pass; cleanup is verified.
-- [ ] Commit requirement is satisfied by squash merge; no synthetic commit.
+- [x] Frozen merged SHA `8307ee6c` passes local and disposable archive proofs.
+- [x] Seven assets and isolation checks pass; cleanup is verified (run `29158988295`).
+- [x] Commit requirement is satisfied by PR #59 squash merge; no synthetic commit.

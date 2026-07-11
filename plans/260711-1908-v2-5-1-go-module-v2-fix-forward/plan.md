@@ -1,7 +1,7 @@
 ---
 title: "v2.5.1 Go module v2 fix-forward"
 description: "Repair the broken v2 Go-install channel without mutating v2.5.0."
-status: in-progress
+status: completed
 priority: P1
 branch: "fix/v2-module-path"
 tags: [release, go-modules, corrective]
@@ -38,8 +38,8 @@ proxy. Keep the published `v2.5.0` tag and release untouched.
 | 1 | [Lock module and command contract](./phase-01-lock-module-and-command-contract.md) | Done |
 | 2 | [Migrate module imports and command entrypoint](./phase-02-migrate-module-imports-and-command-entrypoint.md) | Done |
 | 3 | [Reconcile install documentation and release contracts](./phase-03-reconcile-install-documentation-and-release-contracts.md) | Done |
-| 4 | [Prepare protected corrective release](./phase-04-prepare-protected-corrective-release.md) | Pending |
-| 5 | [Publish and verify v2.5.1 fix-forward](./phase-05-publish-and-verify-v2-5-1-fix-forward.md) | Pending |
+| 4 | [Prepare protected corrective release](./phase-04-prepare-protected-corrective-release.md) | Done |
+| 5 | [Publish and verify v2.5.1 fix-forward](./phase-05-publish-and-verify-v2-5-1-fix-forward.md) | Done |
 
 ## Dependencies
 
@@ -110,3 +110,14 @@ must not change. Five phases preserve the immutable publish boundary.
 Before stable tagging, repair the corrective PR. After stable mutation, never
 move `v2.5.1`; use `v2.5.2` for any further correction. Treat proxy state as
 append-only.
+
+## Completion Evidence
+
+- Protected PR: #59, squash merge `8307ee6c9384dceb27aaa639bdac980b43906e0b`.
+- Main CI: run `29158912514`, success.
+- Disposable archive proof: run `29158988295`, seven assets verified, latest
+  and tap isolated, release/tag cleanup verified.
+- Stable release: annotated `v2.5.1` peels to the merged SHA; run
+  `29159099750` succeeded with seven assets.
+- Channels: pinned installer, Homebrew tap commit `eb517cdac4febeb3cbdf5496618edd46c7b15c73`,
+  updater discovery, and public proxy-only exact/latest installs all verified.
