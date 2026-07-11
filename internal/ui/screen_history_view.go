@@ -60,7 +60,7 @@ func (m HistoryModel) View() string {
 			// Float equality is safe here: we compare the same stored value
 			// (EffectiveWPM(r)) against what BestWPMPerBucket already derived from
 			// the same records — no recomputation drift possible.
-			isBestRow := storage.EffectiveWPM(r) == bests[key]
+			isBestRow := storage.EligibleForBest(r) && storage.EffectiveWPM(r) == bests[key]
 			body.WriteString(renderHistoryRow(r, i == m.sel, isBestRow, m.th))
 			body.WriteString("\n")
 		}

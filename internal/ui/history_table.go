@@ -41,7 +41,7 @@ func renderHistoryHeader(th theme.Theme) string {
 func renderHistoryRow(r storage.Record, selected bool, isBestRow bool, th theme.Theme) string {
 	// Format each column value.
 	date := r.Time.Format("2006-01-02 15:04")
-	modeLabel := modeLabel(r.Mode, r.Length)
+	label := displayModeLabel(r.Mode, r.Length)
 	wpm := fmt.Sprintf("%d", r.WPM)
 	acc := fmt.Sprintf("%.0f%%", r.Accuracy)
 	cons := fmt.Sprintf("%.0f%%", r.Consistency)
@@ -64,7 +64,7 @@ func renderHistoryRow(r storage.Record, selected bool, isBestRow bool, th theme.
 		accStyled := bgStyle.Render(th.Style(accRole).Render(fmt.Sprintf("%-*s", colAccW, acc)))
 		consStyled := bgStyle.Render(th.Style(theme.RoleTextPrimary).Render(fmt.Sprintf("%-*s", colConsW, cons)))
 		dateStyled := bgStyle.Render(th.Style(theme.RoleTextPrimary).Render(fmt.Sprintf("%-*s", colDateW, date)))
-		modeStyled := bgStyle.Render(th.Style(theme.RoleTextPrimary).Render(fmt.Sprintf("%-*s", colModeW, modeLabel)))
+		modeStyled := bgStyle.Render(th.Style(theme.RoleTextPrimary).Render(fmt.Sprintf("%-*s", colModeW, label)))
 		return bar + " " + dateStyled + " " + modeStyled + " " + wpmStyled + " " + accStyled + " " + consStyled + star
 	}
 
@@ -73,20 +73,8 @@ func renderHistoryRow(r storage.Record, selected bool, isBestRow bool, th theme.
 	accStyled := th.Style(accRole).Render(fmt.Sprintf("%-*s", colAccW, acc))
 	consStyled := th.Style(theme.RoleTextPrimary).Render(fmt.Sprintf("%-*s", colConsW, cons))
 	dateStyled := th.Style(theme.RoleTextMuted).Render(fmt.Sprintf("%-*s", colDateW, date))
-	modeStyled := th.Style(theme.RoleTextMuted).Render(fmt.Sprintf("%-*s", colModeW, modeLabel))
+	modeStyled := th.Style(theme.RoleTextMuted).Render(fmt.Sprintf("%-*s", colModeW, label))
 	return "   " + dateStyled + " " + modeStyled + " " + wpmStyled + " " + accStyled + " " + consStyled + star
-}
-
-// modeLabel formats a mode+length label for display (e.g. "time 30", "words 50", "quote").
-func modeLabel(mode string, length int) string {
-	switch mode {
-	case "time":
-		return fmt.Sprintf("time %d", length)
-	case "words":
-		return fmt.Sprintf("words %d", length)
-	default:
-		return "quote"
-	}
 }
 
 // renderHistoryMeta renders the "showing X–Y of N" meta line in RoleTextFaint.

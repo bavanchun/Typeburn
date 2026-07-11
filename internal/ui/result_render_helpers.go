@@ -6,7 +6,6 @@ import (
 
 	"charm.land/lipgloss/v2"
 
-	"github.com/bavanchun/Typeburn/internal/config"
 	"github.com/bavanchun/Typeburn/internal/theme"
 )
 
@@ -72,19 +71,6 @@ func accColorRole(acc float64) theme.Role {
 		return theme.RoleWarning
 	default:
 		return theme.RoleTextPrimary
-	}
-}
-
-// modeMetaLabel formats the mode+length string for the result meta line.
-// Quote mode has no numeric length so it returns "quote".
-func modeMetaLabel(mode config.Mode, length int) string {
-	switch mode {
-	case config.ModeTime:
-		return fmt.Sprintf("time %d", length)
-	case config.ModeWords:
-		return fmt.Sprintf("words %d", length)
-	default:
-		return "quote"
 	}
 }
 

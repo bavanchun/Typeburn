@@ -154,5 +154,5 @@ func (m ResultModel) renderCharStats() string {
 func (m ResultModel) renderMeta() string {
 	style := m.th.Style(theme.RoleTextFaint)
 	dur := fmt.Sprintf("%.0fs", float64(m.res.DurationMs)/1000.0)
-	return style.Render(dur + " · " + modeMetaLabel(m.mode, m.length) + " · english")
+	return style.Render(dur + " · " + displayModeLabel(string(m.mode), m.length) + " · english")
 }
