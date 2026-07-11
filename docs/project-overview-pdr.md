@@ -17,9 +17,11 @@ and a scriptable v2 CLI.
 
 ## Current Product State
 
-**Public stable release:** `v2.4.1`. **Upcoming release:** one consolidated
-`v2.5.0`, which is unreleased. The following describes the current runtime
-contract, including changes being prepared for that release.
+**Public stable release:** `v2.5.0` (2026-07-11). Its GitHub release, archives,
+installer, Homebrew cask, and updater shipped successfully, but its Go module
+channel is invalid because the source module path lacks the required `/v2`
+suffix. Corrective `v2.5.1` is in progress to migrate the module path and
+restore proxy-only `go install` without mutating the published v2.5.0 tag.
 
 - **Themes:** `default`, `mono`, `solarized-dark`, `solarized-light`,
   `dracula`, `nord`, `gruvbox-dark`, `gruvbox-light`. `mono` is a grayscale
@@ -136,6 +138,7 @@ contract, including changes being prepared for that release.
 
 ## Development Status
 
-`v2.4.1` is the publicly released stable version. The consolidated `v2.5.0`
-release remains upcoming/unreleased; its integration work must pass CI and
-release gates before publication.
+`v2.5.0` is the publicly released stable version. Strict typing and the
+punctuation/numbers toggles are shipped. Corrective `v2.5.1` is pending the
+protected merge and release gates needed to restore the Go module channel with
+`github.com/bavanchun/Typeburn/v2` and a lowercase `typeburn` command.

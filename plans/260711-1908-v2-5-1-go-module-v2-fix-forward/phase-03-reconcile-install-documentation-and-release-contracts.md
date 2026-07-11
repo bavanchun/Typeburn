@@ -58,4 +58,5 @@ Align user and developer truth with `/v2/cmd/typeburn`, preserving history and r
 
 - [x] Current install, compile, run, and update instructions agree exactly.
 - [x] Historical truth and non-module GitHub URLs remain intact.
-- [x] Commit: merged into `fix(module): migrate Typeburn to the v2 module path` (ef36f6e).
+- [x] Commits: `fix(docs): correct stale install tags, roadmap truth, entrypoint
+  description, plan checkboxes` (`21beeded`) and follow-up PDR reconciliation.
