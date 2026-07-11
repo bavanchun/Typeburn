@@ -74,6 +74,7 @@ must not change. Five phases preserve the immutable publish boundary.
 - [Go v2 command contract](./research/go-v2-command-contract.md)
 - [Migration impact inventory](./research/migration-impact-inventory.md)
 - [Release recovery](./research/release-recovery.md)
+- [Phase 1 RED contract proof](./reports/phase-01-red-contract-proof.md)
 
 ## Red Team Review
 
@@ -100,8 +101,9 @@ must not change. Five phases preserve the immutable publish boundary.
   workflow proof, and two clean public-proxy installs cover failure layers.
 - **Release/Security:** PASS — protected merge, tag immutability, credential
   readiness, containment, and fix-forward boundaries are explicit.
-- **Consistency sweep:** PASS — 5 phases, 0 broken dependencies, every phase has
-  at least one commit boundary, and no success criterion depends on v2.5.0 being mutable.
+- **Consistency sweep:** PASS after corrective proof — 5 phases, 0 broken
+  dependencies, dedicated Phase 1 evidence commit, Phase 2 migration commit,
+  Phase 3 documentation commits, and no criterion depends on mutating v2.5.0.
 
 ## Rollback Boundary
 

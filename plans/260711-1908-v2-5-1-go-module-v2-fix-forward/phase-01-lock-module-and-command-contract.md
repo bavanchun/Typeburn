@@ -52,5 +52,6 @@ tests before changing production code.
 ## Success Criteria
 
 - [x] Tests lock module path, command path, binary case, and `@latest`.
-- [x] Expected red failure is recorded; production code is untouched.
-- [x] Commit: merged into `fix(module): migrate Typeburn to the v2 module path` (ef36f6e).
+- [x] Expected red failure is recorded in
+  `reports/phase-01-red-contract-proof.md`; production code stayed at v2.5.0.
+- [x] Dedicated evidence commit: `test(release): record v2 module RED contract`.
