@@ -4,10 +4,9 @@
 
 ## Current Release State
 
-**Public stable:** `v2.4.1` (2026-06-20). **Upcoming:** one consolidated
-`v2.5.0`, currently unreleased. Strict typing and punctuation/numbers are
-integration work for that release, not separate shipped `v2.5.0` or `v2.6.0`
-releases.
+**Public stable:** `v2.5.0` (2026-07-11). **In-progress:** corrective
+`v2.5.1` migrating Go module to `/v2` path; Phases 1–3 complete, pending
+protected merge and stable tag.
 
 ---
 
@@ -256,17 +255,17 @@ releases.
 - ✅ **v2.3.0 (Self-Update):** stdlib-only atomic self-updater via `typeburn update`, preflight managed-install check, redirect allowlist, O_EXCL locks, archive path-traversal safety, Windows move-aside rollback. Ship date: 2026-05-30.
 - ✅ **v2.4.0 (Update UX):** In-app hint directs to self-updater; download progress reporting. Ship date: 2026-05-30.
 - ✅ **v2.4.1 (UI Animations):** stdlib-only terminal motion layer (blink/fade caret, stats reveal count-up, sparkle personal best celebration, Typing→Result transition) with NO_COLOR adaptation and hot-path token cache. Ship date: 2026-06-20.
-- ⏳ **v2.5.0 (Upcoming consolidated release):** Letter-strict typing blocks
+- ✅ **v2.5.0 (Strict + Punctuation/Numbers):** Letter-strict typing blocks
   wrong forward keypresses and records them for keystroke-level accuracy;
   Strict runs are excluded from personal bests. Punctuation and Numbers
   Settings toggles add punctuation/capitalization and numeric tokens to
-  Words/Time generation while leaving Quote and Code unchanged. This release
-  has not shipped.
+  Words/Time generation while leaving Quote and Code unchanged.
+  Ship date: 2026-07-11.
 - ⏳ **v2.5.1 (Corrective release):** Migrated Go module path to
   `github.com/bavanchun/Typeburn/v2` with entrypoint moved from root `main.go`
   to `cmd/typeburn/main.go` so `go install .../v2/cmd/typeburn@latest` produces
   a lowercase `typeburn` binary. All documentation reconciled with the `/v2`
-  module path. This release has not shipped.
+  module path. Phases 1–3 complete; pending protected merge and stable tag.
 
 
 ### Next (Optional)
@@ -303,11 +302,12 @@ the remaining entries are historical planning ideas, not the current roadmap.
 
 ## Conclusion
 
-**Typeburn v2.4.1 is the current public stable release.** Post-1.0 work has
+**Typeburn v2.5.0 is the current public stable release.** Post-1.0 work has
 been additive or corrective: v2.0.0 added a professional scriptable CLI,
 v2.1.x added opt-in update checks plus audited defect cleanup, v2.2.0 added
-per-key error heatmaps, v2.3.0 added the self-update command, and v2.4.0/v2.4.1
-added update UX and animations. The consolidated v2.5.0 work—Strict typing and
-punctuation/numbers—is upcoming and unreleased.
+per-key error heatmaps, v2.3.0 added the self-update command, v2.4.0/v2.4.1
+added update UX and animations, and v2.5.0 added Strict typing and
+punctuation/numbers toggles. v2.5.1 is a corrective release migrating the Go
+module path to `/v2`.
 
 M1 (timer re-arm) and M2 (new-best precision) — the identified correctness bugs — were fixed in v1.0 (d6369de) and v1.0.1 respectively. v1.4.0 fixed a Settings live-apply bug (changes were persisted but not applied in-session) and improved the wide-terminal typing layout. Remaining backlog is additive or cosmetic.

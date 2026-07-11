@@ -51,6 +51,6 @@ tests before changing production code.
 
 ## Success Criteria
 
-- [ ] Tests lock module path, command path, binary case, and `@latest`.
-- [ ] Expected red failure is recorded; production code is untouched.
-- [ ] Commit: `test(release): lock v2 module install contract`.
+- [x] Tests lock module path, command path, binary case, and `@latest`.
+- [x] Expected red failure is recorded; production code is untouched.
+- [x] Commit: merged into `fix(module): migrate Typeburn to the v2 module path` (ef36f6e).

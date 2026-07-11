@@ -63,7 +63,7 @@ local install, Make, and GoReleaser.
 
 ## Success Criteria
 
-- [ ] Module/import and lowercase command proofs pass.
-- [ ] Full quality, size, and snapshot gates pass.
-- [ ] Workflow files stay byte-identical unless a verified gap is documented.
-- [ ] Commit: `fix(module): migrate Typeburn to the v2 module path`.
+- [x] Module/import and lowercase command proofs pass.
+- [x] Full quality, size, and snapshot gates pass.
+- [x] Workflow files stay byte-identical unless a verified gap is documented.
+- [x] Commit: `fix(module): migrate Typeburn to the v2 module path` (ef36f6e).

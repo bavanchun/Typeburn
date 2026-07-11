@@ -56,6 +56,6 @@ Align user and developer truth with `/v2/cmd/typeburn`, preserving history and r
 
 ## Success Criteria
 
-- [ ] Current install, compile, run, and update instructions agree exactly.
-- [ ] Historical truth and non-module GitHub URLs remain intact.
-- [ ] Commit: `fix(docs): publish the v2 module installation contract`.
+- [x] Current install, compile, run, and update instructions agree exactly.
+- [x] Historical truth and non-module GitHub URLs remain intact.
+- [x] Commit: merged into `fix(module): migrate Typeburn to the v2 module path` (ef36f6e).

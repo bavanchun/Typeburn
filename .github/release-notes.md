@@ -1,4 +1,4 @@
-## v2.5.1 — Corrective Release
+## [2.5.1] - 2026-07-11 — Corrective Release
 
 ### Fixed
 

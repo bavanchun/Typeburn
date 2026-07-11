@@ -11,7 +11,7 @@ release section is extracted verbatim and passed to GoReleaser via
 
 ## [Unreleased]
 
-## [v2.5.1] — 2026-07-11
+## [2.5.1] - 2026-07-11
 
 ### Fixed
 
@@ -345,7 +345,7 @@ terminal typing test built with Go and Bubble Tea v2.
   [SECURITY.md](./SECURITY.md).
 
 [Unreleased]: https://github.com/bavanchun/Typeburn/compare/v2.5.1...HEAD
-[v2.5.1]: https://github.com/bavanchun/Typeburn/releases/tag/v2.5.1
+[2.5.1]: https://github.com/bavanchun/Typeburn/releases/tag/v2.5.1
 [2.5.0]: https://github.com/bavanchun/Typeburn/releases/tag/v2.5.0
 [2.4.1]: https://github.com/bavanchun/Typeburn/releases/tag/v2.4.1
 [2.0.0]: https://github.com/bavanchun/Typeburn/releases/tag/v2.0.0
