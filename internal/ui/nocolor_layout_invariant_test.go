@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/bavanchun/Typeburn/internal/theme"
+	"github.com/bavanchun/Typeburn/v2/internal/theme"
 )
 
 // The animation system's core invariant: under NO_COLOR every animated moment is

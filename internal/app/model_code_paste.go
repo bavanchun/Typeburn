@@ -1,6 +1,6 @@
 package app
 
-import "github.com/bavanchun/Typeburn/internal/ui"
+import "github.com/bavanchun/Typeburn/v2/internal/ui"
 
 // openCodePaste switches to ScreenCodePaste with a fresh, sized paste
 // sub-model. Triggered by ui.NavCodePasteMsg (Home Code row, no snippet).

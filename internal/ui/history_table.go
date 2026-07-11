@@ -6,8 +6,8 @@ import (
 
 	"charm.land/lipgloss/v2"
 
-	"github.com/bavanchun/Typeburn/internal/storage"
-	"github.com/bavanchun/Typeburn/internal/theme"
+	"github.com/bavanchun/Typeburn/v2/internal/storage"
+	"github.com/bavanchun/Typeburn/v2/internal/theme"
 )
 
 // historyColWidths defines the fixed character widths for each table column.

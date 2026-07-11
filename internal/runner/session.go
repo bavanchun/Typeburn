@@ -2,9 +2,9 @@
 package runner
 
 import (
-	"github.com/bavanchun/Typeburn/internal/mode"
-	"github.com/bavanchun/Typeburn/internal/typing"
-	"github.com/bavanchun/Typeburn/internal/words"
+	"github.com/bavanchun/Typeburn/v2/internal/mode"
+	"github.com/bavanchun/Typeburn/v2/internal/typing"
+	"github.com/bavanchun/Typeburn/v2/internal/words"
 )
 
 // Session is the pure typing state needed to run a test.

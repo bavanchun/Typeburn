@@ -1,11 +1,11 @@
 package app
 
 import (
-	"github.com/bavanchun/Typeburn/internal/config"
-	"github.com/bavanchun/Typeburn/internal/storage"
-	"github.com/bavanchun/Typeburn/internal/theme"
-	"github.com/bavanchun/Typeburn/internal/ui"
-	"github.com/bavanchun/Typeburn/internal/update"
+	"github.com/bavanchun/Typeburn/v2/internal/config"
+	"github.com/bavanchun/Typeburn/v2/internal/storage"
+	"github.com/bavanchun/Typeburn/v2/internal/theme"
+	"github.com/bavanchun/Typeburn/v2/internal/ui"
+	"github.com/bavanchun/Typeburn/v2/internal/update"
 )
 
 // NewFromDisk builds the root model loading persisted settings from disk.

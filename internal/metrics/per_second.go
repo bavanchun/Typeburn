@@ -1,7 +1,7 @@
 package metrics
 
 import (
-	"github.com/bavanchun/Typeburn/internal/typing"
+	"github.com/bavanchun/Typeburn/v2/internal/typing"
 )
 
 // PerSecond holds a single one-second interval's worth of typing statistics,

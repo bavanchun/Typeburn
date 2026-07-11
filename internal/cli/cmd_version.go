@@ -7,8 +7,8 @@ import (
 	"runtime"
 	"sync"
 
-	"github.com/bavanchun/Typeburn/internal/update"
-	"github.com/bavanchun/Typeburn/internal/version"
+	"github.com/bavanchun/Typeburn/v2/internal/update"
+	"github.com/bavanchun/Typeburn/v2/internal/version"
 	"github.com/spf13/cobra"
 )
 
@@ -153,7 +153,7 @@ func renderVersionCheckHuman(cmd *cobra.Command, currentVer string, result *upda
 		fmt.Fprintf(cmd.ErrOrStderr(), "could not check for updates: %v\n", checkErr)
 	case result.UpgradeAvailable:
 		fmt.Fprintf(cmd.OutOrStdout(),
-			"\ntypeburn %s is available (you have %s).\nRelease notes: %s\nUpgrade with one of:\n  brew upgrade typeburn\n  curl -fsSL https://raw.githubusercontent.com/bavanchun/Typeburn/main/install.sh | sh\n  go install github.com/bavanchun/Typeburn@latest\n",
+			"\ntypeburn %s is available (you have %s).\nRelease notes: %s\nUpgrade with one of:\n  brew upgrade typeburn\n  curl -fsSL https://raw.githubusercontent.com/bavanchun/Typeburn/main/install.sh | sh\n  go install github.com/bavanchun/Typeburn/v2/cmd/typeburn@latest\n",
 			result.Latest, currentVer, result.ReleaseURL,
 		)
 	default:

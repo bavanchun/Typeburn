@@ -8,7 +8,7 @@ Typeburn is a Monkeytype-style terminal typing test: Go 1.25 + Bubble Tea v2 / L
 
 ```sh
 make build       # ldflags-stamped binary → ./bin/typeburn
-make run         # go run . (launches TUI)
+make run         # go run ./cmd/typeburn (launches TUI)
 make test        # go test ./...
 make test-race   # go test ./... -race -count=1   ← the CI gate; must be GREEN
 make lint        # gofmt -l check (must be empty) + go vet ./... + no-TUI guard
@@ -39,7 +39,7 @@ go test ./internal/version/ -run TestResolve_LdflagsWin -v
 
 **Storage is defensive.** Atomic temp-file + rename; any corrupt/missing file returns safe defaults and never panics; history is capped at the 200 newest records. Settings load once at startup (`app.NewFromDisk()`); history loads on demand and after each test.
 
-**CLI/versioning is hybrid.** `internal/version` reads ldflags-injected `Version/Commit/Date` (set by Makefile + GoReleaser); when empty (bare `go install`) it falls back to `debug.ReadBuildInfo()`, final fallback `"dev"`. `main.go` is a thin fang/cobra entrypoint. The pure `internal/cli.Decide()` preserves v1 root aliases: `--version` short-circuits to the banner; `--text <file>`/`-` selects Code mode. Root-level unknown args still fall through to the TUI; recognized subcommands parse strictly. `-v` is intentionally unbound (reserved for a future `--verbose`).
+**CLI/versioning is hybrid.** `internal/version` reads ldflags-injected `Version/Commit/Date` (set by Makefile + GoReleaser); when empty (bare `go install`) it falls back to `debug.ReadBuildInfo()`, final fallback `"dev"`. `cmd/typeburn/main.go` is a thin fang/cobra entrypoint. The pure `internal/cli.Decide()` preserves v1 root aliases: `--version` short-circuits to the banner; `--text <file>`/`-` selects Code mode. Root-level unknown args still fall through to the TUI; recognized subcommands parse strictly. `-v` is intentionally unbound (reserved for a future `--verbose`).
 
 ## Git Workflow (protected main — enforced)
 
@@ -58,7 +58,7 @@ Every change — code, docs, config, release prep — follows:
 ## Conventions & Constraints
 
 - **File size:** keep every Go file < 200 LOC. Split by concern (`screen_x.go` / `screen_x_view.go` / `screen_x_actions.go` / `screen_x_test.go`). Core logic uses `snake_case` filenames; small utility/output modules use `kebab-case`.
-- **Module path is case-sensitive:** `github.com/bavanchun/Typeburn` (capital `T`). ldflags `-X` targets and `go install` both depend on this exact casing.
+- **Module path is case-sensitive:** `github.com/bavanchun/Typeburn/v2` (capital `T`). ldflags `-X` targets and `go install` both depend on this exact casing.
 - **Allowed dependencies:** stdlib, `charm.land/*`, `github.com/charmbracelet/*`, `github.com/spf13/cobra`, and `golang.org/x/*`. Anything else requires explicit user approval per dependency.
 
 ## Release Engineering (read before touching release files)

@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bavanchun/Typeburn/internal/update"
+	"github.com/bavanchun/Typeburn/v2/internal/update"
 )
 
 // upgradeResult is a stub Check result with an upgrade available.

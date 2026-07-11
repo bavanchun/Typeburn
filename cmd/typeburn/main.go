@@ -6,7 +6,7 @@ import (
 
 	"github.com/charmbracelet/fang"
 
-	"github.com/bavanchun/Typeburn/internal/cli"
+	"github.com/bavanchun/Typeburn/v2/internal/cli"
 )
 
 func main() {

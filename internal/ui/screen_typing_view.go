@@ -5,7 +5,7 @@ import (
 
 	"charm.land/lipgloss/v2"
 
-	"github.com/bavanchun/Typeburn/internal/config"
+	"github.com/bavanchun/Typeburn/v2/internal/config"
 )
 
 // fixedOverhead is the number of non-stream rows in the typing screen layout:

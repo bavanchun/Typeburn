@@ -5,8 +5,8 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"github.com/bavanchun/Typeburn/internal/codetext"
-	"github.com/bavanchun/Typeburn/internal/theme"
+	"github.com/bavanchun/Typeburn/v2/internal/codetext"
+	"github.com/bavanchun/Typeburn/v2/internal/theme"
 )
 
 // CodePasteModel is the sub-model for ScreenCodePaste. It captures one

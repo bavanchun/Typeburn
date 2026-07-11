@@ -3,9 +3,9 @@ package app
 import (
 	"math"
 
-	"github.com/bavanchun/Typeburn/internal/config"
-	"github.com/bavanchun/Typeburn/internal/storage"
-	"github.com/bavanchun/Typeburn/internal/ui"
+	"github.com/bavanchun/Typeburn/v2/internal/config"
+	"github.com/bavanchun/Typeburn/v2/internal/storage"
+	"github.com/bavanchun/Typeburn/v2/internal/ui"
 )
 
 // buildRecord converts a ResultMsg into a storage.Record for persistence.

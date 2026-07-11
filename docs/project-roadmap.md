@@ -262,6 +262,11 @@ releases.
   Settings toggles add punctuation/capitalization and numeric tokens to
   Words/Time generation while leaving Quote and Code unchanged. This release
   has not shipped.
+- ⏳ **v2.5.1 (Corrective release):** Migrated Go module path to
+  `github.com/bavanchun/Typeburn/v2` with entrypoint moved from root `main.go`
+  to `cmd/typeburn/main.go` so `go install .../v2/cmd/typeburn@latest` produces
+  a lowercase `typeburn` binary. All documentation reconciled with the `/v2`
+  module path. This release has not shipped.
 
 
 ### Next (Optional)
@@ -284,7 +289,7 @@ the remaining entries are historical planning ideas, not the current roadmap.
 ### v1.0 Release
 - **Artifact:** Binary in ./bin/typeburn
 - **Distribution:** GitHub Releases (source + pre-built linux/darwin binaries)
-- **Installation:** `go install Typeburn@latest` (via go.mod/go.sum versioning)
+- **Installation:** `go install github.com/bavanchun/Typeburn/v2/cmd/typeburn@latest` (via go.mod/go.sum versioning)
 - **Minimum Go:** 1.25+
 - **Minimum terminal:** 60 cols × 20 rows (ANSI 256-color or truecolor recommended)
 

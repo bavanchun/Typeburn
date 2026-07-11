@@ -31,7 +31,7 @@
 
 ```
 monkeytype/
-├── main.go                   # entrypoint
+├── cmd/typeburn/main.go       # entrypoint
 ├── go.mod / go.sum           # dependencies
 ├── internal/
 │   ├── app/                  # root Elm model + routing
@@ -52,7 +52,7 @@ monkeytype/
 
 ### Compilation & Tooling
 
-- **go build:** Must compile without errors (`go build -o bin/typeburn .`)
+- **go build:** Must compile without errors (`go build -o bin/typeburn ./cmd/typeburn`)
 - **go vet:** No warnings (`go vet ./...`)
 - **gofmt:** Automatic formatting enforced (`gofmt -w .` before commit; CI checks with `gofmt -l`)
 - **go test:** All tests PASS (`go test ./... -race -count=1`)

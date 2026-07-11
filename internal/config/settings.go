@@ -3,7 +3,7 @@
 // types to disk.
 package config
 
-import "github.com/bavanchun/Typeburn/internal/mode"
+import "github.com/bavanchun/Typeburn/v2/internal/mode"
 
 // Mode identifies a test mode. Stored as a string for forward-compatible JSON.
 type Mode = mode.Mode

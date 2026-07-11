@@ -1,8 +1,8 @@
 package metrics
 
 import (
-	"github.com/bavanchun/Typeburn/internal/mode"
-	"github.com/bavanchun/Typeburn/internal/typing"
+	"github.com/bavanchun/Typeburn/v2/internal/mode"
+	"github.com/bavanchun/Typeburn/v2/internal/typing"
 )
 
 // Result holds all derived metrics after a completed test.

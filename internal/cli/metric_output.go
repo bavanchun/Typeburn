@@ -3,7 +3,7 @@ package cli
 import (
 	"fmt"
 
-	"github.com/bavanchun/Typeburn/internal/metrics"
+	"github.com/bavanchun/Typeburn/v2/internal/metrics"
 )
 
 // keyMissTableRows caps how many most_missed rows the table view shows; the

@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"github.com/bavanchun/Typeburn/internal/theme"
+	"github.com/bavanchun/Typeburn/v2/internal/theme"
 )
 
 // PersistenceNotice renders a single-line, dismissible toast shown when a

@@ -4,9 +4,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bavanchun/Typeburn/internal/config"
-	"github.com/bavanchun/Typeburn/internal/metrics"
-	"github.com/bavanchun/Typeburn/internal/ui"
+	"github.com/bavanchun/Typeburn/v2/internal/config"
+	"github.com/bavanchun/Typeburn/v2/internal/metrics"
+	"github.com/bavanchun/Typeburn/v2/internal/ui"
 )
 
 // ui.FrameTickCmd's command, when run, must produce a FrameTickMsg carrying the

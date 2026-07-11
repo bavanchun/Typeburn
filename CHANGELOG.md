@@ -11,6 +11,18 @@ release section is extracted verbatim and passed to GoReleaser via
 
 ## [Unreleased]
 
+## [v2.5.1] — 2026-07-11
+
+### Fixed
+
+- **Go module path**: migrated to `github.com/bavanchun/Typeburn/v2` so
+  `go install github.com/bavanchun/Typeburn/v2/cmd/typeburn@latest` works
+  correctly. The command binary is lowercase `typeburn`.
+- **Command entrypoint**: moved from root `main.go` to `cmd/typeburn/main.go`
+  to produce the correct lowercase binary name via `go install`.
+- **All documentation**: reconciled install, build, and update instructions
+  with the `/v2` module path.
+
 ## [2.5.0] - 2026-07-11
 
 ### Added
@@ -332,7 +344,8 @@ terminal typing test built with Go and Bubble Tea v2.
   HTTPS transport and the pipeline-generated `checksums.txt`. See
   [SECURITY.md](./SECURITY.md).
 
-[Unreleased]: https://github.com/bavanchun/Typeburn/compare/v2.5.0...HEAD
+[Unreleased]: https://github.com/bavanchun/Typeburn/compare/v2.5.1...HEAD
+[v2.5.1]: https://github.com/bavanchun/Typeburn/releases/tag/v2.5.1
 [2.5.0]: https://github.com/bavanchun/Typeburn/releases/tag/v2.5.0
 [2.4.1]: https://github.com/bavanchun/Typeburn/releases/tag/v2.4.1
 [2.0.0]: https://github.com/bavanchun/Typeburn/releases/tag/v2.0.0

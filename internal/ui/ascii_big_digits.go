@@ -3,7 +3,7 @@ package ui
 import (
 	"strings"
 
-	"github.com/bavanchun/Typeburn/internal/theme"
+	"github.com/bavanchun/Typeburn/v2/internal/theme"
 )
 
 // digitGlyphs maps each decimal digit 0-9 to a 5-row ASCII block-art glyph.

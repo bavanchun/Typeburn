@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/bavanchun/Typeburn/internal/mode"
-	"github.com/bavanchun/Typeburn/internal/typing"
+	"github.com/bavanchun/Typeburn/v2/internal/mode"
+	"github.com/bavanchun/Typeburn/v2/internal/typing"
 )
 
 func benchWordsTarget(n int) string {

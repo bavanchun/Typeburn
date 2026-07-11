@@ -1,6 +1,6 @@
 package ui
 
-import "github.com/bavanchun/Typeburn/internal/metrics"
+import "github.com/bavanchun/Typeburn/v2/internal/metrics"
 
 // makeTestMetricsResult returns a sample metrics.Result suitable for use
 // across multiple screen test files in this package.

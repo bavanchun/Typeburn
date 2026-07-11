@@ -62,7 +62,7 @@
 
 ---
 
-### Entrypoint — `main.go` & Flag Parsing
+### Entrypoint — `cmd/typeburn/main.go` & Flag Parsing
 
 **Purpose:** Thin fang/cobra entrypoint. It builds `internal/cli.NewRoot()`,
 executes it, and maps returned errors to process exit codes.
@@ -74,7 +74,7 @@ executes it, and maps returned errors to process exit codes.
 
 **Rationale:** Avoids polluting the TUI with error banners or usage text; unknown input is gracefully treated as "user wants to type."
 
-**Files:** `main.go`, `internal/cli/decide.go`, `internal/cli/decide_test.go`.
+**Files:** `cmd/typeburn/main.go`, `internal/cli/decide.go`, `internal/cli/decide_test.go`.
 
 ---
 

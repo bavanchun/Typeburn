@@ -3,7 +3,7 @@ package app
 import (
 	"strings"
 
-	"github.com/bavanchun/Typeburn/internal/theme"
+	"github.com/bavanchun/Typeburn/v2/internal/theme"
 )
 
 // screenTitle is the human label for a screen, used by the placeholder views

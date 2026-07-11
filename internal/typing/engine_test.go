@@ -3,8 +3,8 @@ package typing_test
 import (
 	"testing"
 
-	"github.com/bavanchun/Typeburn/internal/config"
-	"github.com/bavanchun/Typeburn/internal/typing"
+	"github.com/bavanchun/Typeburn/v2/internal/config"
+	"github.com/bavanchun/Typeburn/v2/internal/typing"
 )
 
 // TestBackspace validates deletion and corrected-error behaviour.

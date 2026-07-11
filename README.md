@@ -3,7 +3,7 @@
 [![CI](https://github.com/bavanchun/Typeburn/actions/workflows/ci.yml/badge.svg)](https://github.com/bavanchun/Typeburn/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/bavanchun/Typeburn?sort=semver)](https://github.com/bavanchun/Typeburn/releases/latest)
 [![Go](https://img.shields.io/github/go-mod/go-version/bavanchun/Typeburn)](https://go.dev/)
-[![Go Reference](https://pkg.go.dev/badge/github.com/bavanchun/Typeburn.svg)](https://pkg.go.dev/github.com/bavanchun/Typeburn)
+[![Go Reference](https://pkg.go.dev/badge/github.com/bavanchun/Typeburn/v2.svg)](https://pkg.go.dev/github.com/bavanchun/Typeburn/v2)
 [![License](https://img.shields.io/github/license/bavanchun/Typeburn)](./LICENSE)
 
 A Monkeytype-style terminal typing test built with Go and Bubble Tea v2.
@@ -54,12 +54,12 @@ sha256 against `checksums.txt`**, and installs `typeburn` into `~/.local/bin`
 **2. `go install` (latest tagged release):**
 
 ```sh
-go install github.com/bavanchun/Typeburn@latest
+go install github.com/bavanchun/Typeburn/v2/cmd/typeburn@latest
 ```
 
 > The module path is **case-sensitive — the capital `T` in `Typeburn` is
-> required**. `go install` installs an executable named `Typeburn` into
-> `$(go env GOPATH)/bin`.
+> required**. `go install` installs an executable named `typeburn` (lowercase)
+> into `$(go env GOPATH)/bin`.
 >
 > A freshly published release may lag the Go module proxy by up to ~1 hour;
 > until the proxy ingests the tag, `go install ...@vX.Y.Z` can 404. Downloading
@@ -72,16 +72,16 @@ Requires **Go 1.25+**.
 Grab the archive for your OS/arch from the
 [latest release](https://github.com/bavanchun/Typeburn/releases/latest)
 (linux/darwin/windows × amd64/arm64), verify it against `checksums.txt`,
-extract, and run the `typeburn` binary (the release archives ship a lowercase
-`typeburn`; only the `go install` path above produces `Typeburn`).
+extract, and run the `typeburn` binary (all install channels produce a
+lowercase `typeburn`).
 
 **4. Build from source:**
 
 ```sh
 make build            # → ./bin/typeburn (lowercase, local convention)
 # or
-go build -o typeburn .
-make run               # run without installing (or: go run .)
+go build -o typeburn ./cmd/typeburn
+make run               # run without installing (or: go run ./cmd/typeburn)
 ```
 
 **5. Homebrew (macOS/Linux):**
@@ -148,7 +148,7 @@ detects a corrupted or truncated download, **not** a compromised release host
 
 Builds installed by a package manager are **not** self-updated: a Homebrew or
 `go install` binary prints the matching upgrade command (`brew upgrade typeburn`
-/ `go install github.com/bavanchun/Typeburn@latest`) and exits without touching
+/ `go install github.com/bavanchun/Typeburn/v2/cmd/typeburn@latest`) and exits without touching
 anything. On a non-interactive stream (pipe/redirect) `update` refuses unless
 `--yes` is passed, rather than blocking on a prompt.
 

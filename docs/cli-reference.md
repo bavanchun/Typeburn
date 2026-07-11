@@ -131,7 +131,7 @@ A newer version is available: v2.1.0
 Upgrade:
   brew upgrade typeburn
   curl -fsSL https://raw.githubusercontent.com/bavanchun/Typeburn/main/install.sh | sh
-  go install github.com/bavanchun/Typeburn@latest
+  go install github.com/bavanchun/Typeburn/v2/cmd/typeburn@latest
 ```
 
 JSON schema (`--check-update --json`):

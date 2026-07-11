@@ -3,7 +3,7 @@ package ui
 import (
 	"strings"
 
-	"github.com/bavanchun/Typeburn/internal/theme"
+	"github.com/bavanchun/Typeburn/v2/internal/theme"
 )
 
 // RenderTabs renders a horizontal row of mode-selector tabs per design §5.5/§6.

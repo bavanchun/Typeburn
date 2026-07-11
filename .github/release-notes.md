@@ -1,24 +1,13 @@
-## [2.5.0] - 2026-07-11
-
-### Added
-
-- **Strict typing mode** — an optional letter-strict typing mode:
-  - Block wrong keypresses: the cursor freezes and does not advance past an incorrect character; the user must type the correct character to proceed.
-  - Log blocked error keystrokes: they are recorded in the keystroke log and correctly reduce the typing accuracy.
-  - Keystroke-level accuracy metric: strict runs compute and save `KeystrokeAccuracy` (based on total non-backspace forward keystrokes) rather than final-state accuracy.
-  - Excluded from bests: strict runs are saved in history but excluded from personal best (★) records.
-  - Settings TUI toggle and CLI config key (`typeburn config set strict_mode on|off`) persisted in `settings.json` (backward-compatible).
-- **Punctuation and numbers toggles** — optional persisted Settings controls that
-  add commas, periods, capitalization, and numeric tokens to Words/Time target
-  generation; Quote and Code targets remain unchanged.
+## v2.5.1 — Corrective Release
 
 ### Fixed
 
-- Code records now use the `code` label rather than being displayed as Quote
-  records in History and Result metadata.
-- Code and Strict records consistently remain ineligible for personal-best (★)
-  markers across result detection and History display.
-- Settings now represents a CLI-persisted Code default without a missing length
-  value or a misleading Time selection.
+- **Go module channel**: `go install github.com/bavanchun/Typeburn/v2/cmd/typeburn@latest`
+  now works correctly. The v2.5.0 release used a root module path that the Go
+  proxy could not resolve for install.
+- **Command binary**: moved entrypoint to `cmd/typeburn/` so `go install`
+  produces a lowercase `typeburn` binary matching all other install channels.
+- **Documentation**: all install, build, and update guidance now uses the
+  corrected `/v2/cmd/typeburn` path.
 
-[2.5.0]: https://github.com/bavanchun/Typeburn/releases/tag/v2.5.0
+No features, dependency changes, or breaking changes. The v2.5.0 tag and release remain untouched.

@@ -1,4 +1,4 @@
-module github.com/bavanchun/Typeburn
+module github.com/bavanchun/Typeburn/v2
 
 go 1.25.0
 

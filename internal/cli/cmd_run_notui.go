@@ -6,11 +6,11 @@ import (
 	"io"
 	"os"
 
-	"github.com/bavanchun/Typeburn/internal/cli/notui"
-	"github.com/bavanchun/Typeburn/internal/cli/output"
-	"github.com/bavanchun/Typeburn/internal/config"
-	"github.com/bavanchun/Typeburn/internal/metrics"
-	"github.com/bavanchun/Typeburn/internal/runner"
+	"github.com/bavanchun/Typeburn/v2/internal/cli/notui"
+	"github.com/bavanchun/Typeburn/v2/internal/cli/output"
+	"github.com/bavanchun/Typeburn/v2/internal/config"
+	"github.com/bavanchun/Typeburn/v2/internal/metrics"
+	"github.com/bavanchun/Typeburn/v2/internal/runner"
 )
 
 func runNoTUI(ctx context.Context, e env, req runRequest) error {

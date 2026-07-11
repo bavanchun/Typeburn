@@ -4,9 +4,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/bavanchun/Typeburn/internal/metrics"
-	"github.com/bavanchun/Typeburn/internal/mode"
-	"github.com/bavanchun/Typeburn/internal/typing"
+	"github.com/bavanchun/Typeburn/v2/internal/metrics"
+	"github.com/bavanchun/Typeburn/v2/internal/mode"
+	"github.com/bavanchun/Typeburn/v2/internal/typing"
 )
 
 func benchCodeTarget(n int) string {

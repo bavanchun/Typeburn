@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bavanchun/Typeburn/internal/storage"
+	"github.com/bavanchun/Typeburn/v2/internal/storage"
 )
 
 func TestHistoryEmptyJSON(t *testing.T) {
