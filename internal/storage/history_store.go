@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"sort"
 
-	"github.com/bavanchun/Typeburn/internal/config"
+	"github.com/bavanchun/Typeburn/v2/internal/config"
 )
 
 // historyCapMax is the maximum number of records kept in history.json.

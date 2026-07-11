@@ -6,8 +6,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/bavanchun/Typeburn/internal/cli/output"
-	"github.com/bavanchun/Typeburn/internal/storage"
+	"github.com/bavanchun/Typeburn/v2/internal/cli/output"
+	"github.com/bavanchun/Typeburn/v2/internal/storage"
 )
 
 func newHistoryCmd(e env) *cobra.Command {

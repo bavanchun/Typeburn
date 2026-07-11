@@ -21,7 +21,7 @@ Thanks for your interest in improving Typeburn.
 
 ```sh
 make build       # → ./bin/typeburn (ldflags-stamped)
-make run         # go run .
+make run         # go run ./cmd/typeburn
 make test        # go test ./...
 make test-race   # go test ./... -race -count=1   (the CI gate)
 make lint        # gofmt -l check + go vet

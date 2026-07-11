@@ -6,9 +6,9 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 
-	"github.com/bavanchun/Typeburn/internal/anim"
-	"github.com/bavanchun/Typeburn/internal/theme"
-	"github.com/bavanchun/Typeburn/internal/ui"
+	"github.com/bavanchun/Typeburn/v2/internal/anim"
+	"github.com/bavanchun/Typeburn/v2/internal/theme"
+	"github.com/bavanchun/Typeburn/v2/internal/ui"
 )
 
 // altView wraps a frame string in the alternate screen buffer. The altscreen

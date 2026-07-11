@@ -1,7 +1,7 @@
 package words
 
 import (
-	"github.com/bavanchun/Typeburn/internal/mode"
+	"github.com/bavanchun/Typeburn/v2/internal/mode"
 )
 
 // ForMode returns the target string for a typing test given the active mode

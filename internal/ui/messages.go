@@ -6,9 +6,9 @@ package ui
 import (
 	"time"
 
-	"github.com/bavanchun/Typeburn/internal/config"
-	"github.com/bavanchun/Typeburn/internal/metrics"
-	"github.com/bavanchun/Typeburn/internal/words"
+	"github.com/bavanchun/Typeburn/v2/internal/config"
+	"github.com/bavanchun/Typeburn/v2/internal/metrics"
+	"github.com/bavanchun/Typeburn/v2/internal/words"
 )
 
 // FrameTickMsg drives the self-stopping animation frame loop owned by the root

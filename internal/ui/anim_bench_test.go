@@ -4,9 +4,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/bavanchun/Typeburn/internal/config"
-	"github.com/bavanchun/Typeburn/internal/theme"
-	"github.com/bavanchun/Typeburn/internal/typing"
+	"github.com/bavanchun/Typeburn/v2/internal/config"
+	"github.com/bavanchun/Typeburn/v2/internal/theme"
+	"github.com/bavanchun/Typeburn/v2/internal/typing"
 )
 
 // benchTypingState builds a realistic mid-test word-stream: a 100-word target

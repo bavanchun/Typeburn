@@ -4,7 +4,7 @@
 
 ## High-Level Architecture
 
-`main.go` builds a fang/cobra root command in `internal/cli`. Bare `typeburn`
+`cmd/typeburn/main.go` builds a fang/cobra root command in `internal/cli`. Bare `typeburn`
 still launches the Bubble Tea TUI, while subcommands provide scriptable
 history/config/version/replay/run flows.
 
@@ -358,7 +358,7 @@ Ensures no screen attempts to render below the minimum; user sees a resize promp
 ## Package Dependency Graph
 
 ```
-main.go
+main.go (cmd/typeburn/)
   └─ app.Model
       ├─ ui (all screens)
       ├─ theme
@@ -395,9 +395,9 @@ No circular imports; pure packages have zero UI dependencies.
 
 ### Init
 
-1. `main.go` calls `app.NewFromDisk()`
-2. Loads settings from XDG_CONFIG (or defaults if missing)
-3. Loads theme based on settings.Theme
+1. `cmd/typeburn/main.go` calls `cli.NewRoot()` to build the Cobra command tree
+2. `fang.Execute()` runs the root command, which loads settings from XDG_CONFIG (or defaults)
+3. The `run` subcommand loads theme based on settings.Theme
 4. Creates root Model with Home screen active
 5. `tea.NewProgram(m)` starts event loop
 
@@ -433,7 +433,7 @@ The `internal/version` package supports two injection paths:
    - Commit/Date: from vcs.revision and vcs.time build settings
    - Ultimate fallback: version = "dev"
 
-**Entry point:** `--version` flag (parsed in `main.go` via pure `decide()` function) prints a one-line banner:
+**Entry point:** `--version` flag (handled by `cmd/typeburn/main.go` via `cli.NewRoot()` and Cobra) prints a one-line banner:
 ```
 typeburn v1.0.0 (61a4afd, 2026-05-18T21:10:00Z, go1.26.2 darwin/arm64)
 ```
@@ -464,7 +464,7 @@ make snapshot      # GoReleaser dry-run (builds + archives, no publish)
 **Integrity:** SHA-256 checksums in `checksums.txt` (GoReleaser native); verify with `sha256sum -c checksums.txt`
 
 **Installation paths:**
-- `go install github.com/bavanchun/Typeburn@v1.0.0` (from GitHub via Go module)
+- `go install github.com/bavanchun/Typeburn/v2/cmd/typeburn@latest` (from GitHub via Go module)
 - Download pre-built binary from [Releases](https://github.com/bavanchun/Typeburn/releases)
 
 ### Release Process (Fix-Forward Policy)
@@ -484,9 +484,9 @@ Users can install Typeburn via five independent channels; all verify integrity v
 | Channel | Entry Point | Verification | Dependencies | Platforms |
 |---------|-----------|--------------|--------------|-----------|
 | **Hardened installer** | `curl -fsSL https://raw.githubusercontent.com/bavanchun/Typeburn/main/install.sh \| sh` | SHA-256 checksums.txt (POSIX sh, no sudo) | None (uses system curl, tar/unzip, uname) | Linux, macOS (any x86_64/arm64) |
-| **Go install** | `go install github.com/bavanchun/Typeburn@v1.5.0` | Go module checksum (go.sum) | Go 1.25+ | All platforms |
+| **Go install** | `go install github.com/bavanchun/Typeburn/v2/cmd/typeburn@latest` | Go module checksum (go.sum) | Go 1.25+ | All platforms |
 | **Manual archive** | Download from [GitHub Releases](https://github.com/bavanchun/Typeburn/releases) | SHA-256 in checksums.txt | tar/unzip | All platforms |
-| **Build from source** | `git clone + go build ./...` | git commit signature (if configured) | Go 1.25+ | All platforms |
+| **Build from source** | `git clone + go build ./cmd/typeburn` | git commit signature (if configured) | Go 1.25+ | All platforms |
 | **Homebrew tap** | `brew install bavanchun/tap-typeburn/typeburn` | Tap cask (signed by maintainer) | Homebrew | macOS (x86_64/arm64) |
 
 **Installer (install.sh) design:**

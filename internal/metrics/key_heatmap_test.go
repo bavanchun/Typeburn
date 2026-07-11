@@ -4,9 +4,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/bavanchun/Typeburn/internal/config"
-	"github.com/bavanchun/Typeburn/internal/metrics"
-	"github.com/bavanchun/Typeburn/internal/typing"
+	"github.com/bavanchun/Typeburn/v2/internal/config"
+	"github.com/bavanchun/Typeburn/v2/internal/metrics"
+	"github.com/bavanchun/Typeburn/v2/internal/typing"
 )
 
 // ks is a terse Keystroke constructor for table-driven heatmap tests.

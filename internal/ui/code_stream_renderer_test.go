@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/bavanchun/Typeburn/internal/theme"
-	"github.com/bavanchun/Typeburn/internal/typing"
+	"github.com/bavanchun/Typeburn/v2/internal/theme"
+	"github.com/bavanchun/Typeburn/v2/internal/typing"
 )
 
 var ansiRE = regexp.MustCompile("\x1b\\[[0-9;]*m")

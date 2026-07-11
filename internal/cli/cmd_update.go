@@ -10,8 +10,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/bavanchun/Typeburn/internal/update"
-	"github.com/bavanchun/Typeburn/internal/version"
+	"github.com/bavanchun/Typeburn/v2/internal/update"
+	"github.com/bavanchun/Typeburn/v2/internal/version"
 	"github.com/spf13/cobra"
 
 	"golang.org/x/term"

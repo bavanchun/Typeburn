@@ -5,7 +5,7 @@ import (
 
 	"charm.land/lipgloss/v2"
 
-	"github.com/bavanchun/Typeburn/internal/theme"
+	"github.com/bavanchun/Typeburn/v2/internal/theme"
 )
 
 // DegradedNotice renders the "terminal too small" notice per design §4.3.

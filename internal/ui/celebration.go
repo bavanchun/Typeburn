@@ -5,7 +5,7 @@ import (
 
 	"charm.land/lipgloss/v2"
 
-	"github.com/bavanchun/Typeburn/internal/theme"
+	"github.com/bavanchun/Typeburn/v2/internal/theme"
 )
 
 // New-best celebration timing/shape. The burst rides the same frame loop as the

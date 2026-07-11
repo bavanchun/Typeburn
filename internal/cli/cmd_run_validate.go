@@ -6,9 +6,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/bavanchun/Typeburn/internal/config"
-	"github.com/bavanchun/Typeburn/internal/theme"
-	"github.com/bavanchun/Typeburn/internal/words"
+	"github.com/bavanchun/Typeburn/v2/internal/config"
+	"github.com/bavanchun/Typeburn/v2/internal/theme"
+	"github.com/bavanchun/Typeburn/v2/internal/words"
 )
 
 func buildRunRequest(cmd *cobra.Command, f runFlags, settings config.Settings) (runRequest, error) {

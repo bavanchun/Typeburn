@@ -1,7 +1,7 @@
 package typing
 
 import (
-	"github.com/bavanchun/Typeburn/internal/mode"
+	"github.com/bavanchun/Typeburn/v2/internal/mode"
 )
 
 // Complete reports whether the test is finished according to the active mode.

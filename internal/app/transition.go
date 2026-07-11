@@ -5,7 +5,7 @@ import (
 
 	"charm.land/lipgloss/v2"
 
-	"github.com/bavanchun/Typeburn/internal/ui"
+	"github.com/bavanchun/Typeburn/v2/internal/ui"
 )
 
 // transitionDurMs is the Typing→Result transition length. Short enough to feel

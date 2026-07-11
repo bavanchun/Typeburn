@@ -5,7 +5,7 @@ import (
 	"math"
 	"strings"
 
-	"github.com/bavanchun/Typeburn/internal/theme"
+	"github.com/bavanchun/Typeburn/v2/internal/theme"
 )
 
 // sparkBars are the 8 unicode block elements from lowest to highest.

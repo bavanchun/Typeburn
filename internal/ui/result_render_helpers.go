@@ -6,7 +6,7 @@ import (
 
 	"charm.land/lipgloss/v2"
 
-	"github.com/bavanchun/Typeburn/internal/theme"
+	"github.com/bavanchun/Typeburn/v2/internal/theme"
 )
 
 // heatmapMaxEntries caps how many missed keys the Result line shows.

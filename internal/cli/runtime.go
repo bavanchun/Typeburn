@@ -9,12 +9,12 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"github.com/bavanchun/Typeburn/internal/app"
-	"github.com/bavanchun/Typeburn/internal/codetext"
-	"github.com/bavanchun/Typeburn/internal/config"
-	"github.com/bavanchun/Typeburn/internal/storage"
-	"github.com/bavanchun/Typeburn/internal/update"
-	"github.com/bavanchun/Typeburn/internal/version"
+	"github.com/bavanchun/Typeburn/v2/internal/app"
+	"github.com/bavanchun/Typeburn/v2/internal/codetext"
+	"github.com/bavanchun/Typeburn/v2/internal/config"
+	"github.com/bavanchun/Typeburn/v2/internal/storage"
+	"github.com/bavanchun/Typeburn/v2/internal/update"
+	"github.com/bavanchun/Typeburn/v2/internal/version"
 )
 
 type env struct {

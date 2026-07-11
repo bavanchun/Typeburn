@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"github.com/bavanchun/Typeburn/internal/theme"
+	"github.com/bavanchun/Typeburn/v2/internal/theme"
 )
 
 // StatCard renders a labelled stat value pair per design §5.3.

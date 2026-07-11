@@ -3,7 +3,7 @@ package ui
 import (
 	"strings"
 
-	"github.com/bavanchun/Typeburn/internal/theme"
+	"github.com/bavanchun/Typeburn/v2/internal/theme"
 )
 
 // logoLines is the block-art ("ANSI Shadow" style) wordmark for "TYPEBURN",

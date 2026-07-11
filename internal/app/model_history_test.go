@@ -4,9 +4,9 @@ import (
 	"math"
 	"testing"
 
-	"github.com/bavanchun/Typeburn/internal/config"
-	"github.com/bavanchun/Typeburn/internal/metrics"
-	"github.com/bavanchun/Typeburn/internal/ui"
+	"github.com/bavanchun/Typeburn/v2/internal/config"
+	"github.com/bavanchun/Typeburn/v2/internal/metrics"
+	"github.com/bavanchun/Typeburn/v2/internal/ui"
 )
 
 func TestBuildRecord_QuoteModeLength(t *testing.T) {

@@ -2,10 +2,10 @@
 //
 // Version, Commit and Date are injected by the linker via
 //
-//	-ldflags "-X github.com/bavanchun/Typeburn/internal/version.Version=..."
+//	-ldflags "-X github.com/bavanchun/Typeburn/v2/internal/version.Version=..."
 //
 // (wired in the Makefile and .goreleaser.yaml). When they are not set — for
-// example after `go install github.com/bavanchun/Typeburn@v1.0.0`, which
+// example after `go install github.com/bavanchun/Typeburn/v2/cmd/typeburn@v2.5.1`, which
 // applies no ldflags — Resolve falls back to the module build information the
 // Go toolchain embeds in every binary.
 package version

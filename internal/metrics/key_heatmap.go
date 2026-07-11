@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"unicode"
 
-	"github.com/bavanchun/Typeburn/internal/typing"
+	"github.com/bavanchun/Typeburn/v2/internal/typing"
 )
 
 // KeyMiss is a per-key fumble tally for one case-folded target rune.

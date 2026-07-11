@@ -3,7 +3,7 @@ package ui
 import (
 	tea "charm.land/bubbletea/v2"
 
-	"github.com/bavanchun/Typeburn/internal/typing"
+	"github.com/bavanchun/Typeburn/v2/internal/typing"
 )
 
 // HasActiveAnim reports whether a fast-frame caret animation is live at nowMs:

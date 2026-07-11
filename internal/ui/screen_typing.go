@@ -3,11 +3,11 @@ package ui
 import (
 	tea "charm.land/bubbletea/v2"
 
-	"github.com/bavanchun/Typeburn/internal/config"
-	"github.com/bavanchun/Typeburn/internal/runner"
-	"github.com/bavanchun/Typeburn/internal/theme"
-	"github.com/bavanchun/Typeburn/internal/typing"
-	"github.com/bavanchun/Typeburn/internal/words"
+	"github.com/bavanchun/Typeburn/v2/internal/config"
+	"github.com/bavanchun/Typeburn/v2/internal/runner"
+	"github.com/bavanchun/Typeburn/v2/internal/theme"
+	"github.com/bavanchun/Typeburn/v2/internal/typing"
+	"github.com/bavanchun/Typeburn/v2/internal/words"
 )
 
 // TypingModel is the sub-model for the typing test screen. The root app.Model

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/bavanchun/Typeburn/internal/metrics"
+	"github.com/bavanchun/Typeburn/v2/internal/metrics"
 )
 
 func RenderPrompt(w io.Writer, target string) {

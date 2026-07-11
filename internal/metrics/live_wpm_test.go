@@ -4,7 +4,7 @@ import (
 	"math"
 	"testing"
 
-	"github.com/bavanchun/Typeburn/internal/typing"
+	"github.com/bavanchun/Typeburn/v2/internal/typing"
 )
 
 func TestLiveWPM(t *testing.T) {

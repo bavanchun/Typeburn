@@ -1,6 +1,6 @@
 package metrics
 
-import "github.com/bavanchun/Typeburn/internal/typing"
+import "github.com/bavanchun/Typeburn/v2/internal/typing"
 
 // LiveWPM estimates current net WPM from forward keystrokes in the log.
 // Returns 0 when elapsedMs < 500ms (too noisy) or the log is empty.

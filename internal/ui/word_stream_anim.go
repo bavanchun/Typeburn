@@ -1,8 +1,8 @@
 package ui
 
 import (
-	"github.com/bavanchun/Typeburn/internal/theme"
-	"github.com/bavanchun/Typeburn/internal/typing"
+	"github.com/bavanchun/Typeburn/v2/internal/theme"
+	"github.com/bavanchun/Typeburn/v2/internal/typing"
 )
 
 // streamTokenCache holds the static prefix of styled word-stream tokens so the

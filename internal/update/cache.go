@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/bavanchun/Typeburn/internal/config"
+	"github.com/bavanchun/Typeburn/v2/internal/config"
 )
 
 const (

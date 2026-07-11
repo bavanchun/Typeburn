@@ -3,9 +3,9 @@ package ui
 import (
 	"charm.land/lipgloss/v2"
 
-	"github.com/bavanchun/Typeburn/internal/anim"
-	"github.com/bavanchun/Typeburn/internal/theme"
-	"github.com/bavanchun/Typeburn/internal/typing"
+	"github.com/bavanchun/Typeburn/v2/internal/anim"
+	"github.com/bavanchun/Typeburn/v2/internal/theme"
+	"github.com/bavanchun/Typeburn/v2/internal/typing"
 )
 
 // Caret animation timing. blinkHalfMs is half the 530ms blink cycle (the

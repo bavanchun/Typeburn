@@ -3,7 +3,7 @@ package ui
 import (
 	"strings"
 
-	"github.com/bavanchun/Typeburn/internal/theme"
+	"github.com/bavanchun/Typeburn/v2/internal/theme"
 )
 
 // Hint is a single key+action pair rendered in the footer.

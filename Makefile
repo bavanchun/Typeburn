@@ -7,7 +7,7 @@ BIN_DIR := ./bin
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 COMMIT := $(shell git rev-parse --short HEAD 2>/dev/null || echo none)
 DATE := $(shell date -u +%Y-%m-%dT%H:%M:%SZ)
-MODULE := github.com/bavanchun/Typeburn/internal/version
+MODULE := github.com/bavanchun/Typeburn/v2/internal/version
 LDFLAGS := -s -w \
 	-X $(MODULE).Version=$(VERSION) \
 	-X $(MODULE).Commit=$(COMMIT) \
@@ -18,10 +18,10 @@ SIZE_LIMIT ?= 10485760
 .PHONY: build run test test-race lint fmt clean version snapshot release size-check notui-noexit-check
 
 build:
-	@go build -trimpath -ldflags '$(LDFLAGS)' -o $(BIN_DIR)/$(BINARY) .
+	@go build -trimpath -ldflags '$(LDFLAGS)' -o $(BIN_DIR)/$(BINARY) ./cmd/typeburn
 
 run:
-	go run .
+	go run ./cmd/typeburn
 
 test:
 	go test ./...

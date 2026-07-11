@@ -8,7 +8,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"github.com/spf13/cobra"
 
-	"github.com/bavanchun/Typeburn/internal/config"
+	"github.com/bavanchun/Typeburn/v2/internal/config"
 )
 
 func testRunCmd(flags runFlags, changed ...string) *cobra.Command {

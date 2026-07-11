@@ -7,9 +7,9 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"github.com/bavanchun/Typeburn/internal/config"
-	"github.com/bavanchun/Typeburn/internal/metrics"
-	"github.com/bavanchun/Typeburn/internal/ui"
+	"github.com/bavanchun/Typeburn/v2/internal/config"
+	"github.com/bavanchun/Typeburn/v2/internal/metrics"
+	"github.com/bavanchun/Typeburn/v2/internal/ui"
 )
 
 // sandboxXDG points history/settings writes at temp dirs so completing a test in

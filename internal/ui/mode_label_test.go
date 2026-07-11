@@ -4,9 +4,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/bavanchun/Typeburn/internal/config"
-	"github.com/bavanchun/Typeburn/internal/storage"
-	"github.com/bavanchun/Typeburn/internal/theme"
+	"github.com/bavanchun/Typeburn/v2/internal/config"
+	"github.com/bavanchun/Typeburn/v2/internal/storage"
+	"github.com/bavanchun/Typeburn/v2/internal/theme"
 )
 
 func TestDisplayModeLabel(t *testing.T) {

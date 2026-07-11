@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/bavanchun/Typeburn/internal/config"
-	"github.com/bavanchun/Typeburn/internal/typing"
+	"github.com/bavanchun/Typeburn/v2/internal/config"
+	"github.com/bavanchun/Typeburn/v2/internal/typing"
 )
 
 func TestReplayJSON(t *testing.T) {

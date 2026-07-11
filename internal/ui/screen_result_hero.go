@@ -5,7 +5,7 @@ import (
 	"math"
 	"strings"
 
-	"github.com/bavanchun/Typeburn/internal/theme"
+	"github.com/bavanchun/Typeburn/v2/internal/theme"
 )
 
 // renderHero renders the big-digit WPM block beside the acc/raw/consistency stat

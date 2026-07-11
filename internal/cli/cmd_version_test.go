@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bavanchun/Typeburn/internal/update"
+	"github.com/bavanchun/Typeburn/v2/internal/update"
 )
 
 func stubCheck(result *update.Result, err error) func(ctx context.Context, ver string, force bool) (*update.Result, error) {
@@ -180,5 +180,27 @@ func TestVersionCheckUpdate_JSONWrapper(t *testing.T) {
 	}
 	if _, ok := got["update_check"]; !ok {
 		t.Error("wrapper missing 'update_check' key")
+	}
+}
+
+func TestVersionCheckUpdate_V2InstallAdvice(t *testing.T) {
+	orig := getCheckFn()
+	setCheckFn(stubCheck(&update.Result{
+		Current:          "v2.5.0",
+		Latest:           "v2.5.1",
+		UpgradeAvailable: true,
+		ReleaseURL:       "https://github.com/bavanchun/Typeburn/releases/tag/v2.5.1",
+		CheckedAt:        time.Now().UTC(),
+	}, nil))
+	defer setCheckFn(orig)
+
+	var out bytes.Buffer
+	if err := versionRoot(t, &out, &bytes.Buffer{}, "version", "--check-update"); err != nil {
+		t.Fatalf("version --check-update: %v", err)
+	}
+	body := out.String()
+	const wantCmd = "go install github.com/bavanchun/Typeburn/v2/cmd/typeburn@latest"
+	if !strings.Contains(body, wantCmd) {
+		t.Errorf("expected v2 install advice %q in output, got:\n%s", wantCmd, body)
 	}
 }

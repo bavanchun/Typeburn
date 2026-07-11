@@ -3,8 +3,8 @@ package ui
 import (
 	"testing"
 
-	"github.com/bavanchun/Typeburn/internal/config"
-	"github.com/bavanchun/Typeburn/internal/theme"
+	"github.com/bavanchun/Typeburn/v2/internal/config"
+	"github.com/bavanchun/Typeburn/v2/internal/theme"
 )
 
 func TestRestartSame_ResetsTimers(t *testing.T) {

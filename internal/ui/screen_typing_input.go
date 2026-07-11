@@ -5,7 +5,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"github.com/bavanchun/Typeburn/internal/config"
+	"github.com/bavanchun/Typeburn/v2/internal/config"
 )
 
 // defaultNowFn is the production caret clock: wall-clock epoch milliseconds.

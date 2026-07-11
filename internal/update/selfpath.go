@@ -70,7 +70,7 @@ func instructionFor(i Install) string {
 	case InstallHomebrew:
 		return "brew upgrade typeburn"
 	case InstallGo:
-		return "go install github.com/bavanchun/Typeburn@latest"
+		return "go install github.com/bavanchun/Typeburn/v2/cmd/typeburn@latest"
 	default:
 		return ""
 	}
