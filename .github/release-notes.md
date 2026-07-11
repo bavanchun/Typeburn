@@ -10,4 +10,6 @@
 - **Documentation**: all install, build, and update guidance now uses the
   corrected `/v2/cmd/typeburn` path.
 
-No features, dependency changes, or breaking changes. The v2.5.0 tag and release remain untouched.
+No features or dependency changes. CLI, config, storage, and release-archive
+contracts remain compatible; Go module/import identity intentionally moves to
+the required `/v2` path. The v2.5.0 tag and release remain untouched.
