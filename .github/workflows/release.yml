@@ -47,9 +47,29 @@ jobs:
       - name: Test (race detector)
         run: go test ./... -race -count=1
 
+  verify-main:
+    name: Verify tag commit is reachable from main
+    needs: [test]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 0
+      - name: Reject tags outside main
+        run: |
+          git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
+          tag_commit=$(git rev-parse "${{ github.ref_name }}^{commit}")
+          if ! git merge-base --is-ancestor "$tag_commit" origin/main; then
+            echo "::error::tag commit $tag_commit is not reachable from origin/main"
+            exit 1
+          fi
+
   goreleaser:
     name: Publish release
-    needs: [test]
+    needs: [test, verify-main]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -65,18 +85,35 @@ jobs:
         with:
           go-version: "1.25.x"
           cache: true
-      - name: Run GoReleaser
+      - name: Verify Homebrew tap write permission
+        if: ${{ !contains(github.ref_name, '-') }}
+        env:
+          GH_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          can_push=$(gh api repos/bavanchun/homebrew-tap-typeburn --jq '.permissions.push')
+          if [ "$can_push" != "true" ]; then
+            echo "::error::HOMEBREW_TAP_TOKEN cannot push to the Homebrew tap"
+            exit 1
+          fi
+      - name: Run GoReleaser (prerelease)
+        if: ${{ contains(github.ref_name, '-') }}
         uses: goreleaser/goreleaser-action@1a80836c5c9d9e5755a25cb59ec6f45a3b5f41a8 # v7
         with:
           version: "v2.15.4"
           args: release --clean --release-notes=.github/release-notes.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Scoped at the STEP level only (never job-level): a fine-grained
-          # PAT with contents r/w on bavanchun/homebrew-tap-typeburn ONLY.
-          # GoReleaser reads it as {{ .Env.HOMEBREW_TAP_TOKEN }} to commit the
-          # cask cross-repo; the default GITHUB_TOKEN cannot. Job `permissions:`
-          # (contents: write, source repo) is intentionally left unchanged.
+      - name: Run GoReleaser (stable)
+        if: ${{ !contains(github.ref_name, '-') }}
+        uses: goreleaser/goreleaser-action@1a80836c5c9d9e5755a25cb59ec6f45a3b5f41a8 # v7
+        with:
+          version: "v2.15.4"
+          args: release --clean --release-notes=.github/release-notes.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Scoped at the stable publish step only: a fine-grained PAT with
+          # contents r/w on bavanchun/homebrew-tap-typeburn. Prereleases never
+          # receive it, and this step follows the non-mutating permission check.
           HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
       - name: Assert asset count
         env:

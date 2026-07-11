@@ -11,6 +11,8 @@ release section is extracted verbatim and passed to GoReleaser via
 
 ## [Unreleased]
 
+## [2.5.0] - 2026-07-11
+
 ### Added
 
 - **Strict typing mode** — an optional letter-strict typing mode:
@@ -29,6 +31,8 @@ release section is extracted verbatim and passed to GoReleaser via
   records in History and Result metadata.
 - Code and Strict records consistently remain ineligible for personal-best (★)
   markers across result detection and History display.
+- Settings now represents a CLI-persisted Code default without a missing length
+  value or a misleading Time selection.
 
 ## [2.4.1] - 2026-06-20
 
@@ -328,7 +332,8 @@ terminal typing test built with Go and Bubble Tea v2.
   HTTPS transport and the pipeline-generated `checksums.txt`. See
   [SECURITY.md](./SECURITY.md).
 
-[Unreleased]: https://github.com/bavanchun/Typeburn/compare/v2.4.1...HEAD
+[Unreleased]: https://github.com/bavanchun/Typeburn/compare/v2.5.0...HEAD
+[2.5.0]: https://github.com/bavanchun/Typeburn/releases/tag/v2.5.0
 [2.4.1]: https://github.com/bavanchun/Typeburn/releases/tag/v2.4.1
 [2.0.0]: https://github.com/bavanchun/Typeburn/releases/tag/v2.0.0
 [1.5.0]: https://github.com/bavanchun/Typeburn/releases/tag/v1.5.0
