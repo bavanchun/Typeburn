@@ -1,7 +1,7 @@
 ---
 phase: 5
 title: "Publish and verify v2.5.1 fix-forward"
-status: pending
+status: done
 effort: "L"
 ---
 
@@ -66,8 +66,8 @@ publish v2.5.2. Never move or delete the v2.5.1 tag.
 
 ## Success Criteria
 
-- [ ] Annotated v2.5.1 and exact workflow point to frozen main SHA.
-- [ ] GitHub, installer, Homebrew, updater, assets, and banners agree.
-- [ ] Proxy-only exact and latest installs create lowercase typeburn v2.5.1.
-- [ ] v2.5.0 stays immutable; old plan closes as superseded and recovered.
-- [ ] Commit completion metadata and journal through a post-release documentation PR.
+- [x] Annotated v2.5.1 and run `29159099750` point to frozen main SHA `8307ee6c`.
+- [x] GitHub, installer, Homebrew, updater, seven assets, and banners agree.
+- [x] Proxy-only exact and latest installs create lowercase typeburn v2.5.1.
+- [x] v2.5.0 stays immutable; old plan closes as superseded and recovered.
+- [x] Completion metadata and journal prepared for post-release documentation PR.
