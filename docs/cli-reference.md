@@ -44,13 +44,14 @@ Flags:
 | `--duration N` | time | Positive seconds |
 | `--words N` | words | Positive word count |
 | `--quote-len short|medium|long` | quote | Defaults to medium |
-| `--theme NAME` | TUI | Initial-only override; Settings changes inside the TUI win |
+| `--theme NAME` | TUI | Initial-only override; one of `default`, `mono`, `solarized-dark`, `solarized-light`, `dracula`, `nord`, `gruvbox-dark`, `gruvbox-light`; Settings changes inside the TUI win |
 | `--text PATH|-` | code | Required for CLI Code mode |
 | `--no-tui` | all | Raw stdin/stdout runner; stdin must be a terminal |
 | `--json` | `--no-tui` only | Emits final metrics JSON |
 
-Code mode from the CLI never opens the in-app paste screen. Use bare `typeburn`
-and choose Code to paste interactively.
+Code mode from the CLI never opens the in-app paste screen. A persisted
+`default_mode=code` is honored by `run`, but `--text` is still required; use
+bare `typeburn` and choose Code to paste interactively.
 
 Raw mode limitation: if a `--no-tui` process is killed by SIGKILL or the parent
 terminal disappears, Typeburn cannot restore the terminal. Run `reset` or
@@ -76,17 +77,24 @@ typeburn config set theme nord
 typeburn config set update_check on
 ```
 
-Keys: `theme`, `default_mode`, `default_length`, `blink_cursor`, `update_check`.
+Keys: `theme`, `default_mode`, `default_length`, `blink_cursor`, `update_check`,
+`strict_mode`, `punctuation`, `numbers`.
 
 | Key | Values | Default | Notes |
 |---|---|---|---|
-| `theme` | name string | `default` | Built-in theme name |
-| `default_mode` | `time\|words\|quote\|code` | `time` | |
-| `default_length` | positive int | `30` | Seconds or word count |
-| `blink_cursor` | `true\|false` | `false` | |
-| `update_check` | `on\|off` (also `true\|false\|yes\|no\|1\|0`) | `off` | Opt-in opportunistic check |
+| `theme` | `default\|mono\|solarized-dark\|solarized-light\|dracula\|nord\|gruvbox-dark\|gruvbox-light` | `default` | Built-in theme name |
+| `default_mode` | `time\|words\|quote\|code` | `time` | The TUI Settings row cycles only Time/Words/Quote |
+| `default_length` | non-negative integer | `30` | Constrained to the selected Time/Words options; Quote/Code have no numeric selector |
+| `blink_cursor` | Boolean | `false` | Typing-screen cursor blink |
+| `update_check` | Boolean | `false` | Opt-in opportunistic check; persisted/CLI-only, not a Settings TUI row |
+| `strict_mode` | Boolean | `false` | Blocks wrong forward keystrokes |
+| `punctuation` | Boolean | `false` | Applies only to Words/Time targets |
+| `numbers` | Boolean | `false` | Applies only to Words/Time targets |
 
-`config set` is strict: invalid values exit 1 before writing `settings.json`.
+Boolean values are trimmed and case-insensitive: `true`, `1`, `on`, or `yes`;
+and `false`, `0`, `off`, or `no`. `config set` is strict: invalid values exit 1
+before writing `settings.json`. Punctuation and numbers do not transform Quote
+targets; Code uses its supplied text unchanged.
 
 ### update_check
 

@@ -73,21 +73,28 @@ Each sub-model has `SetSize(w, h)` to handle WindowSizeMsg; root calls it on res
 
 ## Full Test Flow (Home → Typing → Result → History)
 
-1. **Home screen:** User selects mode (Time/Words/Quote) + length; presses Enter
-   - Emits `StartTestMsg{Mode, Length, QuoteLen}`
+1. **Home screen:** User selects mode (Time/Words/Quote/Code) + its available
+   option; presses Enter. Code starts from supplied text or opens CodePaste when
+   no text is present.
+   - Emits `StartTestMsg{Mode, Length, QuoteLen}` for generated targets, or
+     `StartTestMsg{Mode: Code, CodeText}` for a supplied Code snippet
 2. **Root receives StartTestMsg:**
-   - Creates new `TypingModel` with mode/length/generated target words
+   - Creates a new `TypingModel` with the generated target or supplied Code
+     snippet
    - Switches `screen = ScreenTyping`
    - Returns `TypingModel.InitCmd()` to arm the 100ms timer tick so the caret blinks before the first keystroke
 3. **Typing screen:**
    - User types; each keystroke → `tea.KeyPressMsg`
    - TypingModel.Update() → `typing.Engine.Apply(rune)` logs keystroke
    - Every ~100ms, tickMsg → recalculate live WPM/accuracy/consistency from keystroke log
-   - Test completes on: (Time mode: timer expires) OR (Words mode: word count reached) OR (Quote mode: all runes typed)
+   - Test completes on: Time timer expiry, Words word-count target, or an exact
+     full-target match for Quote and Code
    - Emits `ResultMsg` with final `metrics.Result`
 4. **Root receives ResultMsg:**
    - Calls `storage.AppendHistory()` to persist record (atomic write, cap 200)
-   - Calls `storage.IsNewBest()` to detect if this is a new personal best for that mode+length
+   - Calls `storage.IsNewBest()` for eligible records: Time/Words use
+     mode+length buckets, Quote uses one mode bucket, and Code/Strict never
+     qualify
    - Creates ResultModel with record + new-best flag
    - Switches `screen = ScreenResult`
 5. **Result screen:**
@@ -95,7 +102,8 @@ Each sub-model has `SetSize(w, h)` to handle WindowSizeMsg; root calls it on res
    - User can: Tab/Enter to restart same test, Ctrl+R for new test, 3 to view History, Esc to home
 6. **History screen:**
    - Scrollable table of all records; reverse-sorted (newest first)
-   - ★ badge on per-mode best; grey out records from other modes/lengths
+   - ★ badge on eligible bucket leaders: Time/Words use mode+length, Quote
+     uses one mode bucket, and Code/Strict records never qualify
 
 ---
 
@@ -107,6 +115,9 @@ Each sub-model has `SetSize(w, h)` to handle WindowSizeMsg; root calls it on res
 - **`internal/typing`:** Engine state machine + keystroke logging. No UI/Bubble Tea.
 - **`internal/metrics`:** WPM/accuracy/consistency computation. No UI/Bubble Tea.
 - **`internal/words`:** Word generator + quote pack. No UI/Bubble Tea.
+- **`internal/runner`:** Shared session factory. `NewSession(mode, length,
+  quoteLen, seed, strict, punctuation, numbers)` builds non-Code sessions;
+  `NewCodeSession(snippet, strict)` builds supplied-snippet sessions.
 - **`internal/anim`:** Easing, color/value interpolation, tween, clock. Pure functions of time; no UI/Bubble Tea.
 - **`internal/storage`:** JSON persistence (atomic write, XDG paths). No UI/Bubble Tea.
 - **`internal/theme`:** Role-based color mapping. No UI/Bubble Tea.
@@ -122,7 +133,8 @@ Each sub-model has `SetSize(w, h)` to handle WindowSizeMsg; root calls it on res
 
 ### UI Package
 
-- **`internal/ui`:** Screen models (Home/Typing/Result/Settings/History) + components (word-stream, stat-card, table, timer).
+- **`internal/ui`:** Screen models (Home/Typing/Result/Settings/History/CodePaste)
+  + components (word-stream, stat-card, table, timer).
 - **`internal/app`:** Root Elm model + routing logic.
 
 This separation allows metrics to be tested without running the terminal, and reused in future CLI/server projects.
@@ -170,14 +182,14 @@ Computed from keystroke log post-hoc (no live state). Passed to ResultMsg.
 ```go
 type Record struct {
   WPM         int           // rounded for display
-  NetWPM      float64       // v2: add this for precise new-best comparison
+  NetWPM      float64       // unrounded value for precise new-best comparison
   RawWPM      float64
   Accuracy    float64
   Consistency float64
-  Mode        mode.Mode
+  Mode        string        // "time" | "words" | "quote" | "code"
   Length      int
   Time        time.Time
-  Strict      bool          // v2.5: strict typing run
+  Strict      bool          // strict typing run
   // ... other fields
 }
 ```
@@ -188,13 +200,24 @@ Persisted to history.json; compared via storage's exported best-bucket helpers.
 
 ```go
 type Settings struct {
-  Theme         string        // "default" | "mono"
-  DefaultMode   config.Mode   // "time" | "words" | "quote"
-  DefaultLength int           // 15, 30, 60, 120 (time) or 10, 25, 50, 100 (words)
+  Theme         string        // one of the eight selectable theme names
+  DefaultMode   config.Mode   // "time" | "words" | "quote" | "code"
+  DefaultLength int           // non-negative; constrained for Time/Words
   BlinkCursor   bool
+  UpdateCheck   bool
   StrictMode    bool
+  Punctuation   bool
+  Numbers       bool
 }
 ```
+
+The eight persisted and CLI-configurable keys are `theme`, `default_mode`,
+`default_length`, `blink_cursor`, `update_check`, `strict_mode`, `punctuation`,
+and `numbers`. The seven TUI Settings rows are Theme, Default mode, Default
+length, Blink cursor, Strict mode, Punctuation, and Numbers; `update_check` is
+persisted/CLI-only. The TUI Default mode row cycles Time/Words/Quote, while
+persisted and CLI values also accept Code. Quote and Code have no numeric
+length selector; punctuation and numbers affect only Words/Time targets.
 
 Loaded from XDG_CONFIG_HOME at startup; auto-persisted on settings change.
 
@@ -245,24 +268,25 @@ Two independent tick loops run by design — the existing timer is never coupled
 **Never hardcode color.** Screen code references semantic roles:
 
 ```go
-type Role string
+type Role int
 const (
   RoleTextPrimary
   RoleTextMuted
   RoleAccent
   RoleError
-  RoleCursor
-  // ... 12 roles total
+  RoleCursorBg
+  RoleCursorFg
+  // ... 16 roles total
 )
 ```
 
-Theme maps each role to a color (or attribute-only under NO_COLOR):
+Theme maps each role to a color (or attributes only under `NO_COLOR`):
 
 ```go
 type Theme struct {
   name    string
   colors  map[Role]color.Color
-  noColor bool // true if NO_COLOR env set or mono theme chosen
+  noColor bool // true when a non-empty NO_COLOR env value is set
 }
 
 func (t Theme) Style(r Role) lipgloss.Style {
@@ -270,9 +294,15 @@ func (t Theme) Style(r Role) lipgloss.Style {
 }
 ```
 
-### NO_COLOR Behavior
+### Theme Selection and `NO_COLOR`
 
-If `NO_COLOR=1` set or theme="mono", the theme switches to attribute-only:
+The selectable themes, in display order, are `default`, `mono`,
+`solarized-dark`, `solarized-light`, `dracula`, `nord`, `gruvbox-dark`,
+`gruvbox-light`. `mono` is a grayscale color palette; it does not select the
+attribute-only path.
+
+Any non-empty `NO_COLOR` value switches rendering to attribute-only regardless
+of the selected theme:
 - Accent → bold
 - Error → underline
 - Muted → normal + slightly dimmer attribute

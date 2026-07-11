@@ -2,6 +2,15 @@
 
 ---
 
+## Current Release State
+
+**Public stable:** `v2.4.1` (2026-06-20). **Upcoming:** one consolidated
+`v2.5.0`, currently unreleased. Strict typing and punctuation/numbers are
+integration work for that release, not separate shipped `v2.5.0` or `v2.6.0`
+releases.
+
+---
+
 ## v1.0 — Complete (2026-05-18)
 
 **Status:** SHIPPED. All 10 phases implemented, tested, shipped.
@@ -180,8 +189,8 @@
 | Constraint | Rationale | Impact |
 |------------|-----------|--------|
 | ASCII wordlist only | CJK width handling deferred; simple word length ~5 chars | No CJK quotes in v1 |
-| 4 settings only (v1 scope; superseded — 7 settings as of v2.6.0) | Minimize surface area; avoid scope creep | No sound, smooth scroll, etc. |
-| Per-mode best only | Simpler history; full leaderboard deferred | ★ badge scoped to mode+length |
+| 4 settings only (historical v1 scope; current product has 7 TUI rows and 8 persisted keys) | Minimize surface area; avoid scope creep | No sound, smooth scroll, etc. |
+| Scoped best buckets | Simpler history; full leaderboard deferred | ★ badge uses mode+length for Time/Words and one bucket for Quote |
 | 200-record history cap | Storage simplicity; no pagination | Oldest tests auto-rotated |
 | No backend | Local-only; no sync | Multiplayer/leaderboard future |
 
@@ -208,7 +217,7 @@
 - ✅ README + design-guidelines + system-architecture docs complete
 - ✅ Code review SHIP verdict; M1 fixed in v1.0 (d6369de), M2 accepted as documented v1 decision
 
-### Shipped Post-1.0
+### Post-1.0 Release History and Upcoming Work
 - ✅ **v1.0.1:** M2 new-best sub-WPM precision fixed; always-zero `missed` stat removed.
 - ✅ **v1.1.0:** Six theme packs (Solarized D/L, Dracula, Nord, Gruvbox D/L);
   non-blocking persistence-failure notice; post-1.0 doc corrections.
@@ -231,7 +240,7 @@
 - ✅ **v2.0.0 (Pro CLI):** cobra/fang subcommands (`run`, `history`,
   `version`, `config`, `replay`), JSON outputs, schema-versioned replay logs,
   and raw `run --no-tui`; v1 root aliases remain compatible. Ship date:
-  2026-05-20.
+  2026-05-21.
 - ✅ **v2.1.0 (Update Check):** opt-in `update_check` config key, opportunistic
   TUI launch check (800 ms timeout, 24 h cache), Result-screen footer hint, and
   `typeburn version --check-update` explicit flag with `--json` support. Ship date: 2026-05-21.
@@ -247,8 +256,12 @@
 - ✅ **v2.3.0 (Self-Update):** stdlib-only atomic self-updater via `typeburn update`, preflight managed-install check, redirect allowlist, O_EXCL locks, archive path-traversal safety, Windows move-aside rollback. Ship date: 2026-05-30.
 - ✅ **v2.4.0 (Update UX):** In-app hint directs to self-updater; download progress reporting. Ship date: 2026-05-30.
 - ✅ **v2.4.1 (UI Animations):** stdlib-only terminal motion layer (blink/fade caret, stats reveal count-up, sparkle personal best celebration, Typing→Result transition) with NO_COLOR adaptation and hot-path token cache. Ship date: 2026-06-20.
-- ✅ **v2.5.0 (Strict Mode):** Letter-strict typing mode blocking wrong keypresses at cursor, logging error keystrokes for keystroke-level accuracy, and settings TUI toggle + CLI config, with runs excluded from personal bests. Ship date: 2026-06-26.
-- ✅ **v2.6.0 (Punctuation & Numbers):** Monkeytype-parity Settings toggles mixing commas/periods/capitalization and random numeric tokens into Words/Time mode word generation, settings-only control surface (no new CLI run flags), preserved across ctrl+r restart. Quote/Code modes and typing/metrics engine untouched. Ship date: 2026-07-02.
+- ⏳ **v2.5.0 (Upcoming consolidated release):** Letter-strict typing blocks
+  wrong forward keypresses and records them for keystroke-level accuracy;
+  Strict runs are excluded from personal bests. Punctuation and Numbers
+  Settings toggles add punctuation/capitalization and numeric tokens to
+  Words/Time generation while leaving Quote and Code unchanged. This release
+  has not shipped.
 
 
 ### Next (Optional)
@@ -256,10 +269,11 @@
 2. **Shell completions + man pages in archives** (cobra/fang can generate them;
    packaging is deferred).
 
-### v2.0 Planning (Future)
+### v2.0 Planning (Historical)
+This pre-v2.0 backlog is retained for context. Code mode was delivered later;
+the remaining entries are historical planning ideas, not the current roadmap.
 - M4: Add target delivery mechanism; remove MissedChars 0-stub or make it meaningful
 - m5: CJK width support (if quotes added)
-- Code mode (custom text input)
 - Backend sync / multiplayer (major feature)
 - Plugin system (if ecosystem demand exists)
 
@@ -284,6 +298,11 @@
 
 ## Conclusion
 
-**Typeburn v2.6.0 is the current stable release.** The codebase is clean, tested, and well-documented. Post-1.0 work has been additive or corrective: v2.0.0 added a professional scriptable CLI, v2.1.x added opt-in update checks plus audited defect cleanup, v2.2.0 added per-key error heatmaps, v2.3.0 added the self-update command, v2.4.0/v2.4.1 added animations and update UX, v2.5.0 added strict stop-on-error typing mode, and v2.6.0 added punctuation/numbers toggles for Words/Time mode.
+**Typeburn v2.4.1 is the current public stable release.** Post-1.0 work has
+been additive or corrective: v2.0.0 added a professional scriptable CLI,
+v2.1.x added opt-in update checks plus audited defect cleanup, v2.2.0 added
+per-key error heatmaps, v2.3.0 added the self-update command, and v2.4.0/v2.4.1
+added update UX and animations. The consolidated v2.5.0 work—Strict typing and
+punctuation/numbers—is upcoming and unreleased.
 
 M1 (timer re-arm) and M2 (new-best precision) — the identified correctness bugs — were fixed in v1.0 (d6369de) and v1.0.1 respectively. v1.4.0 fixed a Settings live-apply bug (changes were persisted but not applied in-session) and improved the wide-terminal typing layout. Remaining backlog is additive or cosmetic.

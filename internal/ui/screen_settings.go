@@ -16,7 +16,7 @@ import (
 // program never renders.) Row types/helpers live in settings_rows.go.
 type SettingsModel struct {
 	rows []settingRow
-	sel  int // currently-selected row index (0-4)
+	sel  int // currently-selected row index (0-6)
 	s    config.Settings
 	th   theme.Theme
 	km   config.Keymap

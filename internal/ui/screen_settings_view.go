@@ -52,7 +52,7 @@ func (m SettingsModel) View() string {
 	return full.String()
 }
 
-// renderRows renders all 4 settings rows joined by newlines.
+// renderRows renders all 7 settings rows joined by newlines.
 func (m SettingsModel) renderRows() string {
 	parts := make([]string, len(m.rows))
 	for i, row := range m.rows {

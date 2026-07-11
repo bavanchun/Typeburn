@@ -29,7 +29,7 @@ const (
 
 // buildRows constructs the 7 fixed settings rows from the current settings pointer.
 func buildRows(s *config.Settings) []settingRow {
-	// Theme row: cycles theme.Available() = ["default", "mono"].
+	// Theme row: cycles the available themes.
 	themeVals := theme.Available()
 	themeIdx := 0
 	for i, v := range themeVals {
