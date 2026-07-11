@@ -45,6 +45,56 @@ func TestNewSettingsExactly7Rows(t *testing.T) {
 	}
 }
 
+func TestCodeDefaultRendersSettings(t *testing.T) {
+	s := config.Defaults()
+	s.DefaultMode = config.ModeCode
+	m := NewSettings(s, theme.Default(), config.DefaultKeymap()).SetSize(100, 40)
+
+	if got := m.rows[rowDefaultMode].values[m.rows[rowDefaultMode].idx]; got != "code" {
+		t.Fatalf("persisted Code default should render as code, got %q", got)
+	}
+	if got := m.View(); !strings.Contains(got, "n/a") {
+		t.Fatalf("Code default length row should render n/a, got %q", got)
+	}
+
+	for range rowDefaultLength {
+		m, _ = m.Update(pressSettKey(tea.KeyDown))
+	}
+	m, _ = m.Update(pressSettKey(tea.KeyRight))
+	if m.s.DefaultLength != s.DefaultLength {
+		t.Fatalf("Code default should leave length unchanged: want %d, got %d", s.DefaultLength, m.s.DefaultLength)
+	}
+}
+
+func TestCyclingPersistedCodeDefaultUsesTUIChoices(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		key  rune
+		want config.Mode
+	}{
+		{name: "right selects time", key: tea.KeyRight, want: config.ModeTime},
+		{name: "left selects quote", key: tea.KeyLeft, want: config.ModeQuote},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			s := config.Defaults()
+			s.DefaultMode = config.ModeCode
+			m := NewSettings(s, theme.Default(), config.DefaultKeymap())
+			m, _ = m.Update(pressSettKey(tea.KeyDown))
+			m, cmd := m.Update(pressSettKey(tc.key))
+
+			if m.s.DefaultMode != tc.want {
+				t.Fatalf("selected default mode = %q, want %q", m.s.DefaultMode, tc.want)
+			}
+			if got := m.rows[rowDefaultMode].values; strings.Join(got, ",") != "time,words,quote" {
+				t.Fatalf("TUI default-mode choices = %v, want time/words/quote", got)
+			}
+			if sc := settChangedFrom(t, cmd); sc.Settings.DefaultMode != tc.want {
+				t.Fatalf("emitted default mode = %q, want %q", sc.Settings.DefaultMode, tc.want)
+			}
+		})
+	}
+}
+
 // TestDownMovesSelection verifies ↓ increments selection.
 func TestDownMovesSelection(t *testing.T) {
 	m := newTestSettings()

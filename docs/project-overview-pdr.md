@@ -32,6 +32,7 @@ contract, including changes being prepared for that release.
   persisted/CLI-only.
 - **Mode and target settings:** persisted/CLI `default_mode` accepts Time,
   Words, Quote, or Code; the TUI Settings row cycles only Time/Words/Quote.
+  It displays a persisted Code value until the user changes the mode.
   `default_length` is non-negative and constrained for Time/Words; Quote and
   Code have no numeric selector. Punctuation and numbers apply only to
   Words/Time targets.

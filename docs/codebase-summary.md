@@ -159,7 +159,7 @@ policy. Pure package used by `typing`, `metrics`, `words`, `runner`, and
   cursor, Strict mode, Punctuation, Numbers), arrow navigation, auto-persist.
   `update_check` is the eighth persisted/CLI key and has no TUI row; the TUI
   Default mode row cycles Time/Words/Quote, although persisted/CLI values also
-  accept Code.
+  accept Code and the row displays a persisted Code value until it is changed.
 - `HistoryModel`: scrollable table of all records; ★ marks eligible bucket
   leaders (Time/Words by mode+length, Quote by mode); Code/Strict never
   qualify. Supports vim-style navigation.

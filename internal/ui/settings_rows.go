@@ -27,6 +27,8 @@ const (
 	rowNumbers       = 6
 )
 
+var selectableDefaultModes = []string{"time", "words", "quote"}
+
 // buildRows constructs the 7 fixed settings rows from the current settings pointer.
 func buildRows(s *config.Settings) []settingRow {
 	// Theme row: cycles the available themes.
@@ -40,13 +42,17 @@ func buildRows(s *config.Settings) []settingRow {
 	}
 
 	// Default mode row.
-	modeVals := []string{"time", "words", "quote"}
+	modeVals := append([]string(nil), selectableDefaultModes...)
 	modeIdx := 0
 	for i, v := range modeVals {
 		if string(s.DefaultMode) == v {
 			modeIdx = i
 			break
 		}
+	}
+	if s.DefaultMode == config.ModeCode {
+		modeVals = append(modeVals, "code")
+		modeIdx = len(modeVals) - 1
 	}
 
 	// Default length row: option list depends on current default mode.
@@ -128,11 +134,14 @@ func buildRows(s *config.Settings) []settingRow {
 
 // buildLengthRow returns the string option list and the matching index for
 // defaultLength within the given mode. Quote mode exposes the bucket labels
-// (short/medium/long) defined on the Home screen; numeric modes use their
-// LengthsFor option set.
+// (short/medium/long) defined on the Home screen; Code has no length option;
+// numeric modes use their LengthsFor option set.
 func buildLengthRow(mode config.Mode, defaultLength int) ([]string, int) {
 	if mode == config.ModeQuote {
 		return quoteBucketLabels, 1 // default to "medium"
+	}
+	if mode == config.ModeCode {
+		return []string{"n/a"}, 0
 	}
 	lens := config.LengthsFor(mode)
 	vals := make([]string, len(lens))

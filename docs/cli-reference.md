@@ -83,7 +83,7 @@ Keys: `theme`, `default_mode`, `default_length`, `blink_cursor`, `update_check`,
 | Key | Values | Default | Notes |
 |---|---|---|---|
 | `theme` | `default\|mono\|solarized-dark\|solarized-light\|dracula\|nord\|gruvbox-dark\|gruvbox-light` | `default` | Built-in theme name |
-| `default_mode` | `time\|words\|quote\|code` | `time` | The TUI Settings row cycles only Time/Words/Quote |
+| `default_mode` | `time\|words\|quote\|code` | `time` | The TUI cycles Time/Words/Quote; it displays a persisted `code` value until changed |
 | `default_length` | non-negative integer | `30` | Constrained to the selected Time/Words options; Quote/Code have no numeric selector |
 | `blink_cursor` | Boolean | `false` | Typing-screen cursor blink |
 | `update_check` | Boolean | `false` | Opt-in opportunistic check; persisted/CLI-only, not a Settings TUI row |

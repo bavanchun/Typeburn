@@ -216,8 +216,9 @@ The eight persisted and CLI-configurable keys are `theme`, `default_mode`,
 and `numbers`. The seven TUI Settings rows are Theme, Default mode, Default
 length, Blink cursor, Strict mode, Punctuation, and Numbers; `update_check` is
 persisted/CLI-only. The TUI Default mode row cycles Time/Words/Quote, while
-persisted and CLI values also accept Code. Quote and Code have no numeric
-length selector; punctuation and numbers affect only Words/Time targets.
+persisted and CLI values also accept Code; it displays a persisted Code value
+until the user changes the mode. Quote and Code have no numeric length selector;
+punctuation and numbers affect only Words/Time targets.
 
 Loaded from XDG_CONFIG_HOME at startup; auto-persisted on settings change.
 

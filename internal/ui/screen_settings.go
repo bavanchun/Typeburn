@@ -92,8 +92,17 @@ func (m SettingsModel) changedCmd() tea.Cmd {
 // and writes it into the local settings value.
 func (m SettingsModel) cycleSelected(delta int) SettingsModel {
 	row := &m.rows[m.sel]
-	n := len(row.values)
-	row.idx = ((row.idx+delta)%n + n) % n
+	if m.sel == rowDefaultMode && m.s.DefaultMode == config.ModeCode {
+		row.values = append([]string(nil), selectableDefaultModes...)
+		if delta < 0 {
+			row.idx = len(row.values) - 1
+		} else {
+			row.idx = 0
+		}
+	} else {
+		n := len(row.values)
+		row.idx = ((row.idx+delta)%n + n) % n
+	}
 
 	m.applyRow(m.sel, row.idx)
 
@@ -122,6 +131,9 @@ func (m *SettingsModel) applyRow(rowIdx, valIdx int) {
 		if m.s.DefaultMode == config.ModeQuote {
 			// Quote uses bucket labels ("short"/"medium"/"long"); no int to store.
 			m.s.DefaultLength = 0
+		} else if m.s.DefaultMode == config.ModeCode {
+			// Code has no length setting.
+			return
 		} else {
 			lens := config.LengthsFor(m.s.DefaultMode)
 			if valIdx < len(lens) {
