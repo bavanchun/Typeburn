@@ -95,23 +95,30 @@ Time mode header = `WPM   elapsed / total`. Words mode header = `WPM   12 / 25` 
 │                                                                                │
 │         ╭──────────────────────────── result ─────────────────────────────╮   │
 │         │                                                                  │   │
-│         │   ██╗    ██╗██████╗ ███╗   ███╗                                  │   │
-│         │   ██║    ██║██╔══██╗████╗ ████║      94          ← big WPM       │   │
-│         │   ██║ █╗ ██║██████╔╝██╔████╔██║     w p m           accent bold  │   │
-│         │   ██║███╗██║██╔═══╝ ██║╚██╔╝██║                                  │   │
-│         │   ╚███╔███╔╝██║     ██║ ╚═╝ ██║   97% acc          ← acc=success │   │
-│         │    ╚══╝╚══╝ ╚═╝     ╚═╝     ╚═╝   raw 108 wpm        if ≥97 else │   │
-│         │                                   95% consistency    text-prim  │   │
+│         │    █████╗  ██╗  ██╗                                              │   │
+│         │   ██╔══██╗ ██║  ██║                                              │   │
+│         │   ╚██████║ ███████║      acc          ← two big numbers:         │   │
+│         │    ╚═══██║ ╚═══██║       97%            wpm digits accent bold,  │   │
+│         │    █████╔╝     ██║                      acc bold accColorRole    │   │
+│         │    ╚════╝      ╚═╝                                               │   │
+│         │   wpm ★ new best                                                 │   │
+│         │                                                                  │   │
+│         │   raw 108 wpm   consistency 95%       ← secondary stat cards     │   │
 │         │                                                                  │   │
 │         │   wpm over time                                                  │   │
-│         │   110┤                              ▁▂▄▆█▇▆        ← graph line  │   │
-│         │    90┤              ▂▃▅▆▇▆▅▄▅▆▇▇▆▇▇█████████          accent     │   │
-│         │    70┤      ▁▃▅▆▇▇▇█                                  axis=faint │   │
-│         │    50┼──┬────┬────┬────┬────┬────┬────┬────┬──                    │   │
-│         │       0    4    8   12   16   20   24   28  s                     │   │
+│         │   120┤    ⣠⠴⠋⠉⠒⠤⣀⡠x⠊⠉⠒⠢⠤⣀⡠⠔⠋├4     ← WPM braille line accent,    │   │
+│         │      │ ⡠⠔⠁                    │       error x markers RoleError  │   │
+│         │    60┤⠊      x               ├2       left Y=wpm right Y=errors  │   │
+│         │      │                       │                                   │   │
+│         │     0┤                       ├0       axes/ticks text-faint      │   │
+│         │      ┼───────────────────────┴                                   │   │
+│         │       0   4   8   12  16  20                                     │   │
 │         │                                                                  │   │
-│         │   correct 142  incorrect 4   extra 1   missed 0   ← labels muted │   │
-│         │   30s · time 30 · english                            values prim │   │
+│         │   test type  time 30 · english   consistency 95%  ← 2-col grid   │   │
+│         │   raw        108 wpm             time        30s                 │   │
+│         │   characters 142/4/1                                             │   │
+│         │                                                                  │   │
+│         │   most missed:  e ×4   t ×3   a ×2                               │   │
 │         ╰──────────────────────────────────────────────────────────────────╯   │
 │                                          panel: surface bg, border rounded     │
 │                                                                                │
@@ -120,11 +127,20 @@ Time mode header = `WPM   elapsed / total`. Words mode header = `WPM   12 / 25` 
 ```
 
 Notes:
-- Hero `94` in ASCII big-digits, `accent` `Bold`. `wpm` label `text-muted`.
-- Accuracy `97% acc` colored `success` when ≥ target, `warning` if low, else `text-primary`. Raw + consistency `text-primary`.
-- Sparkline/graph: bars `▁▂▃▄▅▆▇█` in `accent`; y-axis ticks + baseline in `text-faint` (`border` color). One rounded `border` panel only here; title `result` on the top border.
-- Footer stats row: labels `text-muted`, numbers `Bold` `text-primary`; `incorrect` value `error` if > 0.
-- New best → append ` ★ new best` in `success` next to WPM.
+- Hero = two big numbers: WPM in ASCII big-digits (`accent` `Bold`) beside a
+  prominent `acc` block (`Bold`, colored by `accColorRole`: `success` ≥97,
+  `warning` <90, else `text-primary`). `raw` + `consistency` are a secondary
+  stat-card row beneath. New best → append ` ★ new best` in `success` to `wpm`.
+- Graph: dual-axis line chart — WPM as a braille sub-cell line (`accent`, left
+  Y-axis 0..max) plus red `x` error markers (`error`, right Y-axis 0..maxErr);
+  X-axis = seconds. Axes/ticks `text-faint`. Long runs downsample into equal
+  buckets so the chart never overflows the panel.
+- Stats grid (2 columns; stacks vertically on narrow panels): left = `test
+  type` / `raw` / `characters correct/incorrect/extra`; right = `consistency` /
+  `time`. Labels `text-muted`, values `Bold` `text-primary`; `incorrect` count
+  `error` if > 0.
+- Heatmap `most missed` row unchanged below the grid. One rounded `border`
+  panel only here; title `result` on the top border.
 
 ---
 
