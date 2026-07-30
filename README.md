@@ -13,8 +13,8 @@ Distraction-free, keyboard-driven, and works on any ANSI terminal.
 
 - **Four test modes**: Time (15/30/60/120 s), Words (10/25/50/100 words), Quote (short/medium/long/epic), Code (your own text via `--text` or in-app paste)
 - **Live stats**: WPM, raw WPM, accuracy, and consistency updated every keystroke
-- **Result screen**: big-digit WPM, sparkline chart, full char breakdown
-- **Subtle motion**: animated caret (blink + fade), result reveal (WPM count-up, sparkline draw-in), new-best celebration, and Typing→Result transition — always on, auto-adapts to `NO_COLOR` (layout never shifts)
+- **Result screen**: big wpm + acc hero, dual-axis WPM/errors line graph, 2-column stats grid, most-missed keys
+- **Subtle motion**: animated caret (blink + fade), result reveal (WPM count-up, graph draw-in), new-best celebration, and Typing→Result transition — always on, auto-adapts to `NO_COLOR` (layout never shifts)
 - **History**: scrollable table of all past tests with personal-best markers (★) for eligible runs: Time/Words by mode + length and Quote by mode; Code and Strict runs never qualify
 - **Themes**: `default`, `mono`, `solarized-dark`, `solarized-light`, `dracula`, `nord`, `gruvbox-dark`, `gruvbox-light`; `mono` is a grayscale color palette
 - **Strict mode**: optional letter-strict mode that blocks wrong keypresses at the cursor, logging errors for keystroke-level accuracy, and excluding strict runs from personal best (★) records.

@@ -93,13 +93,11 @@ func (m ResultModel) renderPanel() string {
 	var inner strings.Builder
 	inner.WriteString(m.renderHero(innerW))
 	inner.WriteString("\n\n")
-	inner.WriteString(m.renderSparkline(innerW))
+	inner.WriteString(m.renderGraph(innerW))
 	inner.WriteString("\n\n")
-	inner.WriteString(m.renderCharStats())
-	inner.WriteString("\n")
+	inner.WriteString(m.renderStatsGrid(innerW))
+	inner.WriteString("\n\n")
 	inner.WriteString(m.renderKeyHeatmap(innerW))
-	inner.WriteString("\n")
-	inner.WriteString(m.renderMeta())
 
 	// Build bordered panel, then inject "result" title on the top border line.
 	borderColor := m.th.Color(theme.RoleBorder)
@@ -114,45 +112,52 @@ func (m ResultModel) renderPanel() string {
 	return injectBorderTitle(panel, titleStyled)
 }
 
-// renderSparkline renders the "wpm over time" sparkline section.
-func (m ResultModel) renderSparkline(innerW int) string {
+// renderGraph renders the "wpm over time" dual-axis line graph section. The
+// reveal draw-in reuses the sparkVisibleBars progress source (one source of
+// truth, so the graph settles exactly with the rest of the reveal).
+func (m ResultModel) renderGraph(innerW int) string {
 	header := m.th.Style(theme.RoleTextMuted).Render("wpm over time")
-
-	vals := make([]float64, len(m.res.PerSecond))
-	for i, ps := range m.res.PerSecond {
-		vals[i] = ps.RawWPM
-	}
-
-	visible := sparkVisibleBars(len(vals), m.revealStartMs, m.nowMs)
-	graph := sparklineVisible(vals, innerW, 3, visible, m.th)
+	visible := sparkVisibleBars(len(m.res.PerSecond), m.revealStartMs, m.nowMs)
+	graph := RenderResultGraph(m.res.PerSecond, innerW, 5, visible, m.th)
 	if graph == "" {
 		graph = m.th.Style(theme.RoleTextFaint).Render("(no data)")
 	}
 	return header + "\n" + graph
 }
 
-// renderCharStats renders the correct/incorrect/extra/missed counts line.
-func (m ResultModel) renderCharStats() string {
-	labelStyle := m.th.Style(theme.RoleTextMuted)
-	valueStyle := m.th.Style(theme.RoleTextPrimary).Bold(true)
-	errStyle := m.th.Style(theme.RoleError).Bold(true)
+// renderStatsGrid renders the 2-column stats grid: test type / raw /
+// characters on the left, consistency / time on the right. Below TierMid the
+// two columns stack vertically so 60-col terminals never overflow.
+func (m ResultModel) renderStatsGrid(innerW int) string {
+	label := m.th.Style(theme.RoleTextMuted)
+	value := m.th.Style(theme.RoleTextPrimary).Bold(true)
 
-	incVal := valueStyle.Render(fmt.Sprintf("%d", m.res.IncorrectChars))
+	incVal := value.Render(fmt.Sprintf("%d", m.res.IncorrectChars))
 	if m.res.IncorrectChars > 0 {
-		incVal = errStyle.Render(fmt.Sprintf("%d", m.res.IncorrectChars))
+		incVal = m.th.Style(theme.RoleError).Bold(true).Render(fmt.Sprintf("%d", m.res.IncorrectChars))
+	}
+	chars := value.Render(fmt.Sprintf("%d", m.res.CorrectChars)) +
+		label.Render("/") + incVal +
+		label.Render("/") + value.Render(fmt.Sprintf("%d", m.res.ExtraChars))
+
+	left := []string{
+		label.Render("test type") + "  " + value.Render(displayModeLabel(string(m.mode), m.length)+" · english"),
+		label.Render("raw") + "        " + value.Render(fmt.Sprintf("%.0f wpm", m.res.RawWPM)),
+		label.Render("characters") + " " + chars,
+	}
+	right := []string{
+		label.Render("consistency") + " " + value.Render(fmt.Sprintf("%.0f%%", m.res.Consistency)),
+		label.Render("time") + "        " + value.Render(fmt.Sprintf("%.0fs", float64(m.res.DurationMs)/1000.0)),
 	}
 
-	parts := []string{
-		labelStyle.Render("correct") + " " + valueStyle.Render(fmt.Sprintf("%d", m.res.CorrectChars)),
-		labelStyle.Render("incorrect") + " " + incVal,
-		labelStyle.Render("extra") + " " + valueStyle.Render(fmt.Sprintf("%d", m.res.ExtraChars)),
+	leftCol := strings.Join(left, "\n")
+	rightCol := strings.Join(right, "\n")
+	// Two columns need colW ≥ 30 so the longest left line ("test type
+	// words 100 · english", 30 chars) never wraps inside its column block.
+	if innerW < 60 {
+		return leftCol + "\n" + rightCol
 	}
-	return strings.Join(parts, "   ")
-}
-
-// renderMeta renders the duration · mode length · english line.
-func (m ResultModel) renderMeta() string {
-	style := m.th.Style(theme.RoleTextFaint)
-	dur := fmt.Sprintf("%.0fs", float64(m.res.DurationMs)/1000.0)
-	return style.Render(dur + " · " + displayModeLabel(string(m.mode), m.length) + " · english")
+	colW := innerW / 2
+	leftBlock := lipgloss.NewStyle().Width(colW).Render(leftCol)
+	return lipgloss.JoinHorizontal(lipgloss.Top, leftBlock, rightCol)
 }

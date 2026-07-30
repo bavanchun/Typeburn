@@ -5,14 +5,21 @@ import (
 	"math"
 	"strings"
 
+	"charm.land/lipgloss/v2"
+
 	"github.com/bavanchun/Typeburn/v2/internal/theme"
 )
 
-// renderHero renders the big-digit WPM block beside the acc/raw/consistency stat
-// cards. During the reveal the WPM counts up in a fixed-width digit slot (no
-// jitter) and each stat card stagger-fades in; once settled it is byte-identical
-// to the static hero.
+// heroBlockGap separates the WPM big-digit block from the acc block.
+const heroBlockGap = "     "
+
+// renderHero renders the two-big-number hero: the ASCII big-digit WPM block
+// (left) beside a prominent acc block (right), with raw + consistency as a
+// secondary card row underneath. During the reveal the WPM counts up in a
+// fixed-width digit slot (no jitter), the acc block and secondary cards
+// stagger-fade in; once settled it is byte-identical to the static hero.
 func (m ResultModel) renderHero(innerW int) string {
+	_ = innerW
 	finalWPM := int(math.Round(m.res.NetWPM))
 	displayWPM := countUpValue(finalWPM, m.revealStartMs, m.nowMs)
 	bigWPM := BigDigits(finalWPM, m.th)
@@ -29,36 +36,42 @@ func (m ResultModel) renderHero(innerW int) string {
 	if m.strict {
 		accVal = m.res.KeystrokeAccuracy
 	}
-	accLine := revealLine(
-		StatCard("acc", fmt.Sprintf("%.0f%%", accVal), accColorRole(accVal), m.th),
-		cardProgress(0, m.revealStartMs, m.nowMs), m.th,
-	)
-	rawLine := revealLine(
-		StatCard("raw", fmt.Sprintf("%.0f wpm", m.res.RawWPM), theme.RoleTextPrimary, m.th),
-		cardProgress(1, m.revealStartMs, m.nowMs), m.th,
-	)
-	consLine := revealLine(
-		StatCard("consistency", fmt.Sprintf("%.0f%%", m.res.Consistency), theme.RoleTextPrimary, m.th),
-		cardProgress(2, m.revealStartMs, m.nowMs), m.th,
-	)
-	secondaryCol := strings.Join([]string{accLine, rawLine, consLine}, "\n")
-
-	bigLines := strings.Split(bigWPM+"\n"+wpmLabel, "\n")
-	secLines := strings.Split(secondaryCol, "\n")
-	for len(bigLines) < len(secLines) {
-		bigLines = append(bigLines, "")
+	accP := cardProgress(0, m.revealStartMs, m.nowMs)
+	accBlock := []string{
+		revealLine(m.th.Style(theme.RoleTextMuted).Render("acc"), accP, m.th),
+		revealLine(m.th.Style(accColorRole(accVal)).Bold(true).Render(fmt.Sprintf("%.0f%%", accVal)), accP, m.th),
 	}
-	for len(secLines) < len(bigLines) {
-		secLines = append(secLines, "")
+
+	// Manual side-by-side join: acc block vertically centered against the digit
+	// rows. Digit rows share one width; only rows that carry acc content get
+	// padded, so blank right-hand space never trails other rows.
+	bigLines := strings.Split(bigWPM+"\n"+wpmLabel, "\n")
+	bigW := maxLineWidth(bigWPM)
+	offset := (len(bigLines) - len(accBlock)) / 2
+	if offset < 0 {
+		offset = 0
 	}
 
 	rows := make([]string, len(bigLines))
-	for i := range bigLines {
-		sec := ""
-		if i < len(secLines) {
-			sec = secLines[i]
+	for i, line := range bigLines {
+		rows[i] = line
+		if i >= offset && i-offset < len(accBlock) {
+			pad := bigW - lipgloss.Width(line)
+			if pad < 0 {
+				pad = 0
+			}
+			rows[i] += strings.Repeat(" ", pad) + heroBlockGap + accBlock[i-offset]
 		}
-		rows[i] = bigLines[i] + "   " + sec
 	}
-	return strings.Join(rows, "\n")
+
+	rawCard := revealLine(
+		StatCard("raw", fmt.Sprintf("%.0f wpm", m.res.RawWPM), theme.RoleTextPrimary, m.th),
+		cardProgress(1, m.revealStartMs, m.nowMs), m.th,
+	)
+	consCard := revealLine(
+		StatCard("consistency", fmt.Sprintf("%.0f%%", m.res.Consistency), theme.RoleTextPrimary, m.th),
+		cardProgress(2, m.revealStartMs, m.nowMs), m.th,
+	)
+
+	return strings.Join(rows, "\n") + "\n\n" + rawCard + "   " + consCard
 }

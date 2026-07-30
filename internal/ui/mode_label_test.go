@@ -77,10 +77,10 @@ func TestHistoryView_EligibleTiesShowBestMarkers(t *testing.T) {
 func TestResultView_CodeMetaIsNotQuote(t *testing.T) {
 	msg := ResultMsg{Result: makeTestMetricsResult(), Mode: config.ModeCode, CodeText: "func main() {}"}
 	view := NewResult(msg, theme.Default(), config.DefaultKeymap()).SetSize(80, 24).View()
-	if !strings.Contains(view, "· code · english") {
+	if !strings.Contains(view, "code · english") {
 		t.Fatalf("result did not render code metadata:\n%s", view)
 	}
-	if strings.Contains(view, "· quote · english") {
+	if strings.Contains(view, "quote · english") {
 		t.Fatalf("result mislabeled code as quote:\n%s", view)
 	}
 }

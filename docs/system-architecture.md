@@ -256,7 +256,7 @@ Two independent tick loops run by design — the existing timer is never coupled
 
 **Shared clock.** The root stamps `animNowMs` from each `FrameTickMsg` and forwards it to the active sub-model, which stores it; `View` reads the stored value. Every animation is a pure function of `(startMs, nowMs, durMs)` (mirrors `metrics.Compute` replay), so frames are deterministic and unit-testable via an injected clock.
 
-**Moments.** Caret (blink + new-cell fade + trail, on the typing hot path; a prefix-token cache keeps per-frame work to the ≤3 animated cells), Result reveal (WPM count-up, sparkline draw-in, staggered cards), new-best celebration (one-shot sparkle burst), and the Typing→Result transition (crossfade / wipe).
+**Moments.** Caret (blink + new-cell fade + trail, on the typing hot path; a prefix-token cache keeps per-frame work to the ≤3 animated cells), Result reveal (WPM count-up, graph draw-in, staggered cards), new-best celebration (one-shot sparkle burst), and the Typing→Result transition (crossfade / wipe).
 
 **Invariants.** Every settled frame is byte-identical to the pre-animation static render. Mid-animation stays **layout-identical** — same line count and per-line rune width — so the celebration overlays glyphs onto blank cells without reflow.
 
