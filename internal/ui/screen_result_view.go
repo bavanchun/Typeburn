@@ -152,7 +152,9 @@ func (m ResultModel) renderStatsGrid(innerW int) string {
 
 	leftCol := strings.Join(left, "\n")
 	rightCol := strings.Join(right, "\n")
-	if innerW < 56 {
+	// Two columns need colW ≥ 30 so the longest left line ("test type
+	// words 100 · english", 30 chars) never wraps inside its column block.
+	if innerW < 60 {
 		return leftCol + "\n" + rightCol
 	}
 	colW := innerW / 2

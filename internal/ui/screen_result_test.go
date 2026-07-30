@@ -408,3 +408,21 @@ func TestResultHero_TwoBigNumbers(t *testing.T) {
 		}
 	}
 }
+
+// TestResultStatsGrid_NeverWrapsInsideColumn guards the 2-col/stacked
+// threshold: the longest left line ("test type  words 100 · english") must
+// never wrap inside its column block at any panel width.
+func TestResultStatsGrid_NeverWrapsInsideColumn(t *testing.T) {
+	res := metrics.Result{RawWPM: 108, Consistency: 95, CorrectChars: 142,
+		IncorrectChars: 4, ExtraChars: 1, DurationMs: 30000}
+	msg := ResultMsg{Result: res, Mode: config.ModeWords, Length: 100}
+	m := NewResult(msg, theme.Default(), config.DefaultKeymap())
+	for innerW := 36; innerW <= 100; innerW++ {
+		grid := stripANSI(m.renderStatsGrid(innerW))
+		for _, line := range strings.Split(grid, "\n") {
+			if strings.HasPrefix(strings.TrimSpace(line), "english") {
+				t.Fatalf("innerW=%d: left column wrapped mid-entry:\n%s", innerW, grid)
+			}
+		}
+	}
+}
