@@ -120,54 +120,7 @@ func sparklineVisible(vals []float64, width, chartH, visible int, th theme.Theme
 	return sb.String()
 }
 
-// xAxisLabels builds a compact x-axis label row. It places second markers at
-// intervals of 4 (or fewer for short sequences) to keep the row readable.
-// Returns a plain string; the caller applies styling.
-func xAxisLabels(n int) string {
-	if n == 0 {
-		return ""
-	}
-
-	// Place markers at 0, 4, 8, ... seconds.
-	step := 4
-	if n <= 4 {
-		step = 1
-	}
-	var parts []string
-	lastEnd := 0
-	for i := 0; i < n; i += step {
-		label := fmt.Sprintf("%d", i)
-		// Only append if there's room.
-		if i+len(label) <= n {
-			// Pad from lastEnd to i with spaces, then add label.
-			for lastEnd < i {
-				parts = append(parts, " ")
-				lastEnd++
-			}
-			parts = append(parts, label)
-			lastEnd += len(label)
-		}
-	}
-	// Fill remaining.
-	for lastEnd < n {
-		parts = append(parts, " ")
-		lastEnd++
-	}
-
-	return strings.Join(parts, "")
-}
-
-// minMax returns the minimum and maximum values in vals.
-// Assumes len(vals) > 0.
-func minMax(vals []float64) (min, max float64) {
-	min, max = vals[0], vals[0]
-	for _, v := range vals[1:] {
-		if v < min {
-			min = v
-		}
-		if v > max {
-			max = v
-		}
-	}
-	return min, max
-}
+// NOTE: minMax and xAxisLabels now live in result_graph.go (moved there when the
+// dual-axis graph became their primary consumer). sparklineVisible keeps calling
+// them unchanged — same package. This whole file is removed in Phase 3 once the
+// graph replaces the bar sparkline on the Result screen.
