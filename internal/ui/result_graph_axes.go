@@ -3,7 +3,30 @@ package ui
 import (
 	"fmt"
 	"strings"
+
+	"github.com/bavanchun/Typeburn/v2/internal/metrics"
 )
+
+// bucketSamples folds perSec into ceil(len/secPerCell) buckets: mean RawWPM,
+// summed Errors. Sec keeps each bucket's starting second.
+func bucketSamples(perSec []metrics.PerSecond, secPerCell int) []metrics.PerSecond {
+	out := make([]metrics.PerSecond, 0, (len(perSec)+secPerCell-1)/secPerCell)
+	for i := 0; i < len(perSec); i += secPerCell {
+		end := i + secPerCell
+		if end > len(perSec) {
+			end = len(perSec)
+		}
+		var b metrics.PerSecond
+		b.Sec = perSec[i].Sec
+		for _, ps := range perSec[i:end] {
+			b.RawWPM += ps.RawWPM
+			b.Errors += ps.Errors
+		}
+		b.RawWPM /= float64(end - i)
+		out = append(out, b)
+	}
+	return out
+}
 
 // axisPipe returns the left (┤/│) or right (├/│) axis join for a row; tick rows
 // carry the horizontal stub, plain rows a continuous vertical line.

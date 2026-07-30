@@ -175,3 +175,28 @@ func TestRenderResultGraph_NoColorLayoutIdentical(t *testing.T) {
 		}
 	}
 }
+
+func TestRenderResultGraph_LongRunDownsamples(t *testing.T) {
+	ps := make([]metrics.PerSecond, 120)
+	for i := range ps {
+		ps[i] = metrics.PerSecond{Sec: i, RawWPM: 80 + float64(i%20), Errors: i % 7 / 6}
+	}
+	const width = 56 // TierNarrow inner width
+	out := stripANSI(RenderResultGraph(ps, width, 5, len(ps), theme.Default()))
+	for i, line := range strings.Split(out, "\n") {
+		if got := len([]rune(line)); got > width {
+			t.Errorf("line %d width %d exceeds panel width %d:\n%q", i, got, width, line)
+		}
+	}
+	// Reveal blanking must still be reflow-free after downsampling.
+	settled := strings.Split(out, "\n")
+	half := strings.Split(stripANSI(RenderResultGraph(ps, width, 5, 60, theme.Default())), "\n")
+	if len(settled) != len(half) {
+		t.Fatalf("downsampled reveal changed line count: %d != %d", len(half), len(settled))
+	}
+	for i := range settled {
+		if len([]rune(settled[i])) != len([]rune(half[i])) {
+			t.Errorf("downsampled reveal reflowed line %d", i)
+		}
+	}
+}
