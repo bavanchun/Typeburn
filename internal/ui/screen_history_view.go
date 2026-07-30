@@ -93,6 +93,11 @@ func (m HistoryModel) View() string {
 	return full.String()
 }
 
+// sparkBars are the 8 unicode block elements from lowest to highest, used by
+// the inline History trend sparkline (the Result screen draws a braille line
+// graph instead — see result_graph.go).
+var sparkBars = []rune{'▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'}
+
 // sparklineInline renders a compact single-row sparkline string for the trend
 // label. It uses only the bar characters (no axis) for inline display.
 func sparklineInline(vals []float64, th theme.Theme) string {

@@ -27,26 +27,34 @@ var brailleBits = [2][4]byte{
 // row, so the two series never ambiguously overlap — including under NO_COLOR/mono
 // where roles collapse to attributes but layout is byte-identical.
 //
-// One braille cell is drawn per second (X-axis = seconds). `visible` animates a
-// rightward draw-in: columns at/after `visible` blank to equal-width spaces so
-// the layout never reflows; visible==len(perSec) is byte-identical to static.
-// `width` is the available content width, reserved for narrow-terminal caps;
-// the cell count follows len(perSec), mirroring Sparkline's contract.
+// One braille cell is drawn per second (X-axis = seconds); runs longer than the
+// available `width` downsample into equal buckets (mean WPM, summed errors) so
+// long Time-mode tests never overflow the panel. `visible` (in input-sample
+// units) animates a rightward draw-in: columns at/after the mapped cell blank
+// to equal-width spaces so the layout never reflows; visible==len(perSec) is
+// byte-identical to static.
 func RenderResultGraph(perSec []metrics.PerSecond, width, chartH, visible int, th theme.Theme) string {
-	_ = width
 	if len(perSec) == 0 {
 		return ""
 	}
-	cols := len(perSec)
 	if chartH <= 0 {
 		chartH = 5
 	}
 	if visible < 0 {
 		visible = 0
 	}
-	if visible > cols {
-		visible = cols
+	if visible > len(perSec) {
+		visible = len(perSec)
 	}
+
+	// Downsample to the chart cell budget (width minus axis labels and pipes).
+	secPerCell := 1
+	if maxCells := width - 4 - 3 - 2; maxCells >= 8 && len(perSec) > maxCells {
+		secPerCell = (len(perSec) + maxCells - 1) / maxCells
+		perSec = bucketSamples(perSec, secPerCell)
+		visible = (visible + secPerCell - 1) / secPerCell
+	}
+	cols := len(perSec)
 
 	// Scales: WPM 0..maxWPM (left), Errors 0..maxErr (right).
 	wpmVals := make([]float64, cols)
@@ -133,8 +141,29 @@ func RenderResultGraph(perSec []metrics.PerSecond, width, chartH, visible int, t
 	b.WriteString("\n")
 	b.WriteString(faint.Render(strings.Repeat(" ", leftW) + "┼" + strings.Repeat("─", cols) + "┴" + strings.Repeat(" ", rightW)))
 	b.WriteString("\n")
-	b.WriteString(faint.Render(strings.Repeat(" ", leftW) + " " + xAxisLabels(cols) + " " + strings.Repeat(" ", rightW)))
+	b.WriteString(faint.Render(strings.Repeat(" ", leftW) + " " + xAxisLabels(cols, secPerCell) + " " + strings.Repeat(" ", rightW)))
 	return b.String()
+}
+
+// bucketSamples folds perSec into ceil(len/secPerCell) buckets: mean RawWPM,
+// summed Errors. Sec keeps each bucket's starting second.
+func bucketSamples(perSec []metrics.PerSecond, secPerCell int) []metrics.PerSecond {
+	out := make([]metrics.PerSecond, 0, (len(perSec)+secPerCell-1)/secPerCell)
+	for i := 0; i < len(perSec); i += secPerCell {
+		end := i + secPerCell
+		if end > len(perSec) {
+			end = len(perSec)
+		}
+		var b metrics.PerSecond
+		b.Sec = perSec[i].Sec
+		for _, ps := range perSec[i:end] {
+			b.RawWPM += ps.RawWPM
+			b.Errors += ps.Errors
+		}
+		b.RawWPM /= float64(end - i)
+		out = append(out, b)
+	}
+	return out
 }
 
 // drawSeg connects (x0,y0)-(x1,y1) on the dot grid by sampling densely enough to

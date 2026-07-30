@@ -133,25 +133,55 @@ func TestResultView_ContainsConsistency(t *testing.T) {
 	}
 }
 
-// TestResultView_ContainsStatsLine checks that char stats appear.
-func TestResultView_ContainsStatsLine(t *testing.T) {
-	view := newTestResult().View()
-	if !strings.Contains(view, "correct") {
-		t.Errorf("expected 'correct' label in view:\n%s", view)
+// TestResultView_ContainsStatsGrid checks the 2-col stats grid: characters
+// 3-tuple, test type, and time entries.
+func TestResultView_ContainsStatsGrid(t *testing.T) {
+	view := stripANSI(newTestResult().View())
+	if !strings.Contains(view, "characters") {
+		t.Errorf("expected 'characters' label in view:\n%s", view)
 	}
-	if !strings.Contains(view, "incorrect") {
-		t.Errorf("expected 'incorrect' label in view:\n%s", view)
+	if !strings.Contains(view, "142/4/1") {
+		t.Errorf("expected characters tuple '142/4/1' in view:\n%s", view)
+	}
+	if !strings.Contains(view, "english") {
+		t.Errorf("expected 'english' in test-type entry:\n%s", view)
+	}
+	if !strings.Contains(view, "time 30") {
+		t.Errorf("expected 'time 30' in test-type entry:\n%s", view)
+	}
+	if !strings.Contains(view, "30s") {
+		t.Errorf("expected duration '30s' in time entry:\n%s", view)
+	}
+	// Grid is 2-col at the default 80-col terminal: test type and consistency
+	// share a row.
+	twoCol := false
+	for _, line := range strings.Split(view, "\n") {
+		if strings.Contains(line, "test type") && strings.Contains(line, "consistency") {
+			twoCol = true
+			break
+		}
+	}
+	if !twoCol {
+		t.Errorf("test type and consistency should share a grid row at 80 cols:\n%s", view)
 	}
 }
 
-// TestResultView_ContainsMeta checks that meta line (duration · mode · english) appears.
-func TestResultView_ContainsMeta(t *testing.T) {
-	view := newTestResult().View()
-	if !strings.Contains(view, "english") {
-		t.Errorf("expected 'english' in meta line:\n%s", view)
+// TestResultView_ContainsGraph checks the dual-axis graph replaces the old
+// bar sparkline: braille line chars plus the wpm-over-time header.
+func TestResultView_ContainsGraph(t *testing.T) {
+	view := stripANSI(newTestResult().View())
+	if !strings.Contains(view, "wpm over time") {
+		t.Errorf("expected 'wpm over time' header:\n%s", view)
 	}
-	if !strings.Contains(view, "time 30") {
-		t.Errorf("expected 'time 30' in meta line:\n%s", view)
+	found := false
+	for _, r := range view {
+		if r >= 0x2800 && r <= 0x28FF {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Errorf("expected braille graph line in view:\n%s", view)
 	}
 }
 
@@ -160,65 +190,6 @@ func TestResultView_ContainsFooter(t *testing.T) {
 	view := newTestResult().View()
 	if !strings.Contains(view, "tab") {
 		t.Errorf("expected 'tab' hint in footer:\n%s", view)
-	}
-}
-
-// TestSparkline_MultiSample checks that sparkline renders for multiple samples.
-func TestSparkline_MultiSample(t *testing.T) {
-	vals := []float64{60, 80, 100, 90, 110}
-	out := Sparkline(vals, 40, 3, theme.Default())
-	if out == "" {
-		t.Fatal("Sparkline returned empty for multi-sample input")
-	}
-	// Should contain at least one bar character.
-	hasBar := false
-	for _, b := range sparkBars {
-		if strings.ContainsRune(out, b) {
-			hasBar = true
-			break
-		}
-	}
-	if !hasBar {
-		t.Errorf("Sparkline output contains no bar chars:\n%s", out)
-	}
-}
-
-// TestSparkline_EmptySample checks that Sparkline handles empty input gracefully.
-func TestSparkline_EmptySample(t *testing.T) {
-	defer func() {
-		if r := recover(); r != nil {
-			t.Fatalf("Sparkline panicked on empty input: %v", r)
-		}
-	}()
-	out := Sparkline(nil, 40, 3, theme.Default())
-	if out != "" {
-		t.Errorf("expected empty string for nil input, got %q", out)
-	}
-}
-
-// TestSparkline_SingleSample checks that Sparkline handles a single sample without panic.
-func TestSparkline_SingleSample(t *testing.T) {
-	defer func() {
-		if r := recover(); r != nil {
-			t.Fatalf("Sparkline panicked on single sample: %v", r)
-		}
-	}()
-	out := Sparkline([]float64{72}, 40, 3, theme.Default())
-	if out == "" {
-		t.Error("Sparkline returned empty for single sample")
-	}
-}
-
-// TestSparkline_AllEqualSamples checks no panic and renders when all values equal.
-func TestSparkline_AllEqualSamples(t *testing.T) {
-	defer func() {
-		if r := recover(); r != nil {
-			t.Fatalf("Sparkline panicked on all-equal samples: %v", r)
-		}
-	}()
-	out := Sparkline([]float64{80, 80, 80, 80}, 40, 3, theme.Default())
-	if out == "" {
-		t.Error("Sparkline returned empty for all-equal samples")
 	}
 }
 

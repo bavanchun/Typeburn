@@ -70,12 +70,16 @@ func minMax(vals []float64) (min, max float64) {
 	return min, max
 }
 
-// xAxisLabels builds a compact x-axis label row, placing second markers at
-// intervals of 4 (or every second for short sequences) to keep it readable.
-// Returns a plain width-n string; the caller applies styling.
-func xAxisLabels(n int) string {
+// xAxisLabels builds a compact width-n x-axis label row. Markers sit at cell
+// intervals of 4 (every cell for short charts) and print the cell's starting
+// second (cell index × secPerCell, 1 when the chart is not downsampled).
+// Returns a plain string; the caller applies styling.
+func xAxisLabels(n, secPerCell int) string {
 	if n == 0 {
 		return ""
+	}
+	if secPerCell < 1 {
+		secPerCell = 1
 	}
 	step := 4
 	if n <= 4 {
@@ -84,7 +88,7 @@ func xAxisLabels(n int) string {
 	var parts []string
 	lastEnd := 0
 	for i := 0; i < n; i += step {
-		label := fmt.Sprintf("%d", i)
+		label := fmt.Sprintf("%d", i*secPerCell)
 		if i+len(label) <= n {
 			for lastEnd < i {
 				parts = append(parts, " ")
