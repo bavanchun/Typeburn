@@ -396,3 +396,44 @@ func TestAccColorRole(t *testing.T) {
 		}
 	}
 }
+
+// TestResultHero_TwoBigNumbers checks the redesigned hero: WPM big-digit block
+// plus a prominent acc block, with raw/consistency as a secondary card row.
+func TestResultHero_TwoBigNumbers(t *testing.T) {
+	m := newTestResult()
+	hero := stripANSI(m.renderHero(68))
+	if !strings.Contains(hero, "97%") {
+		t.Errorf("hero missing acc value 97%%:\n%s", hero)
+	}
+	if !strings.Contains(hero, "acc") {
+		t.Errorf("hero missing acc label:\n%s", hero)
+	}
+	if !strings.Contains(hero, "wpm") {
+		t.Errorf("hero missing wpm label:\n%s", hero)
+	}
+	if !strings.Contains(hero, "raw") || !strings.Contains(hero, "consistency") {
+		t.Errorf("hero missing raw/consistency secondary cards:\n%s", hero)
+	}
+	// Acc value must share a line with big-digit block content (side-by-side),
+	// not sit on its own row below the digits.
+	sideBySide := false
+	for _, line := range strings.Split(hero, "\n") {
+		if strings.Contains(line, "97%") && strings.ContainsRune(line, '█') {
+			sideBySide = true
+			break
+		}
+	}
+	if !sideBySide {
+		t.Errorf("acc value should render beside the WPM digits:\n%s", hero)
+	}
+	// raw + consistency form a secondary row BELOW the big blocks — never
+	// beside the ASCII digits (that was the old 3-card side column).
+	for i, line := range strings.Split(hero, "\n") {
+		if strings.Contains(line, "raw") && strings.ContainsRune(line, '█') {
+			t.Errorf("raw card must sit below the digits, found beside them on line %d:\n%s", i, hero)
+		}
+		if strings.Contains(line, "raw") && !strings.Contains(line, "consistency") {
+			t.Errorf("raw and consistency should share the secondary row:\n%s", hero)
+		}
+	}
+}
