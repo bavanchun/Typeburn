@@ -280,8 +280,11 @@ Protected merge, release publication, and public proxy validation are complete.
   invariants preserved. Ship date: 2026-07-31.
 
 
-### Next (Optional)
-1. **Gather user feedback** on missing features (Vim motions? more themes?)
+### Next (Active)
+1. **Gather user feedback** — the active post-v2.6.0 item and a strategic
+   (not technical) decision: choose the channel (GitHub Discussions, issue
+   template, README call-out) and what to ask (Vim motions? more themes?
+   Result-screen impressions?) before committing any feature work.
 2. **Shell completions + man pages in archives** (cobra/fang can generate them;
    packaging is deferred).
 
