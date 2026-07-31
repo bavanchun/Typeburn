@@ -1,7 +1,7 @@
 ---
 phase: 4
 title: "Wire Into Update Command"
-status: pending
+status: completed
 priority: P1
 effort: "4h"
 dependencies: [3]
@@ -153,13 +153,22 @@ command, the check/preflight flow, and the confirmation prompt.
 
 ## Success Criteria
 
-- [ ] `go test ./internal/cli/ -race -count=1` green
-- [ ] Plain-path output matches a full-string golden, not just substrings
-- [ ] `go test ./... -race -count=1` reports no race in the tracker test
+- [x] `go test ./internal/cli/ -race -count=1` green
+- [x] Plain-path output matches a full-string golden, not just substrings
+- [x] `go test ./... -race -count=1` reports no race in the tracker test
 - [ ] `ctrl+c` during download leaves no leftover file in the binary's directory
-- [ ] Cancellation is refused once `StageInstalling` is reported
-- [ ] `cmd_update.go` and `cmd_update_run.go` both under 200 LOC
+      — **NOT VERIFIED by execution.** Cleanup rests on the pre-existing
+      `defer os.Remove(sumPath)` and `defer cleanup(archivePath)` in
+      `downloadVerified`/`Apply`, which this change did not touch. The new tests
+      cover the model returning `ErrCancelled`, not the filesystem afterwards.
+- [x] Cancellation is refused once `StageInstalling` is reported
+- [x] `cmd_update.go` and `cmd_update_run.go` both under 200 LOC
 - [ ] Manual run against a real release confirms the block renders and settles
+      — **NOT VERIFIED.** No pty was available in the implementation
+      environment (`script` failed: "tcgetattr/ioctl: Operation not supported on
+      socket"), so the live animation was never observed. The state machine is
+      covered by `internal/cli/updateui/model_test.go`, which is not the same
+      thing. This must be run by hand on a real terminal before merge.
 
 ## Risk Assessment
 

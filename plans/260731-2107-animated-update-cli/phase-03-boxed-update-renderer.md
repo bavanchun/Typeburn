@@ -1,7 +1,7 @@
 ---
 phase: 3
 title: "Boxed Update Renderer"
-status: pending
+status: completed
 priority: P1
 effort: "5h"
 dependencies: [2]
@@ -159,12 +159,12 @@ indeterminate form.
 
 ## Success Criteria
 
-- [ ] `go test ./internal/cli/updateui/ -race -count=1` green
-- [ ] Colored and `NO_COLOR` frames have identical line count and per-line width
-- [ ] `NO_COLOR` frame emits zero color SGR sequences
-- [ ] Top and bottom border widths equal, asserted by test
-- [ ] No hex color literal anywhere in the package
-- [ ] Every file under 200 LOC; `make lint` green
+- [x] `go test ./internal/cli/updateui/ -race -count=1` green
+- [x] Colored and `NO_COLOR` frames have identical line count and per-line width
+- [x] `NO_COLOR` frame emits zero color SGR sequences
+- [x] Top and bottom border widths equal, asserted by test
+- [x] No hex color literal anywhere in the package
+- [x] Every file under 200 LOC; `make lint` green
 
 ## Risk Assessment
 

@@ -119,6 +119,17 @@ func applyAnimated(cmd *cobra.Command, ver, latest, execPath string) (update.Out
 		return update.Outcome{}, err
 	}
 
-	res := final.(updateui.Model).Result()
+	// Bubble Tea returns on SIGTERM and on a cancelled context without routing
+	// through the model, so an unsettled model means the program was killed
+	// mid-update. The Apply goroutine may still be running; what it did is
+	// unknown here, so report that rather than a fabricated success.
+	m, ok := final.(updateui.Model)
+	if !ok {
+		return update.Outcome{}, fmt.Errorf("update ui returned an unexpected model")
+	}
+	res, settled := m.Result()
+	if !settled {
+		return update.Outcome{}, fmt.Errorf("update interrupted before it reported an outcome; re-run typeburn update to confirm the installed version")
+	}
 	return res.Outcome, res.Err
 }

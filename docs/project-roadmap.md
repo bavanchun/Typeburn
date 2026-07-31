@@ -100,6 +100,26 @@ Protected merge, release publication, and public proxy validation are complete.
 - **Deferred follow-ups:** code signing (cosign/Sigstore), delta updates,
   rollback-to-previous, `--version <tag>` pinned downgrade.
 
+#### Animated Update CLI — ✅ SHIPPED
+- **Description:** `typeburn update` renders a bordered checklist with a
+  spring-smoothed gradient bar driven by the real byte count of the release
+  archive, replacing the flat stage lines from v2.4.0. Supersedes the
+  "download progress reporting" item of that release.
+- **Design:** A short-lived, inline Bubble Tea program in
+  `internal/cli/updateui`, independent of `app.Model`. `update.Apply` runs on a
+  goroutine and publishes a mutex-guarded `Progress` snapshot that the render
+  loop samples at 40 ms — progress is state, not an event stream, so sampling
+  cannot drop a stage transition and a slow render cannot stall the download.
+  Colors resolve through `internal/theme` Roles; `NO_COLOR` renders
+  layout-identical with zero color SGR. Non-terminal streams and terminals
+  narrower than 56 columns keep the exact plain output, pinned by a golden test.
+- **Dependency:** adds `charm.land/bubbles/v2` (progress + spinner), which
+  required `bubbletea` 2.0.7 and `lipgloss` 2.0.4. Binary grew from 8,934,370 to
+  9,002,450 bytes against the 10,485,760 cap.
+- **Safety:** `ctrl+c` cancels during download and removes all temporaries; it
+  is refused from the install stage onward, where the remaining work is the
+  atomic swap.
+
 #### Code Mode (Custom Text Input)
 - **Description:** Paste arbitrary text for typing test instead of word/quote selection
 - **Effort:** ~3 days

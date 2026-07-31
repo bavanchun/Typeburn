@@ -1,7 +1,7 @@
 ---
 phase: 2
 title: "Byte-Level Progress Contract"
-status: pending
+status: completed
 priority: P1
 effort: "3h"
 dependencies: [1]
@@ -142,13 +142,13 @@ Net effect on plain output: one **added** line, `  checksums...`, before
 
 ## Success Criteria
 
-- [ ] `go test ./internal/update/ -race -count=1` green
-- [ ] `go test ./internal/cli/ -race -count=1` green with no assertion loosened
-- [ ] A 4.3 MB simulated download produces ≤ 120 progress callbacks
-- [ ] `Total == 0` path proven by a test, not by inspection
-- [ ] Plain `typeburn update` output differs from `main` by exactly one added
+- [x] `go test ./internal/update/ -race -count=1` green
+- [x] `go test ./internal/cli/ -race -count=1` green with no assertion loosened
+- [x] A 4.3 MB simulated download produces ≤ 120 progress callbacks
+- [x] `Total == 0` path proven by a test, not by inspection
+- [x] Plain `typeburn update` output differs from `main` by exactly one added
       `  checksums...` line
-- [ ] `make lint` green; every touched file under 200 LOC
+- [x] `make lint` green; every touched file under 200 LOC
 
 ## Risk Assessment
 

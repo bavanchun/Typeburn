@@ -44,6 +44,12 @@ type Model struct {
 	cur    update.Progress
 	done   bool
 	result Result
+
+	// settled records that a terminal state actually reached the model.
+	// Bubble Tea's event loop returns directly on QuitMsg (SIGTERM) and
+	// InterruptMsg without consulting the model, so without this flag a killed
+	// program would surface a zero Result that reads as a successful update.
+	settled bool
 }
 
 // tickMsg drives the progress poll.
@@ -67,8 +73,10 @@ func New(from, to string, th theme.Theme, snapshot Snapshot, results <-chan Resu
 	}
 }
 
-// Result reports what the watched run returned. Valid once the program exits.
-func (m Model) Result() Result { return m.result }
+// Result reports what the watched run returned, and whether a terminal state
+// reached the model at all. A false second return means the program was killed
+// out from under the update — the caller must not report success.
+func (m Model) Result() (Result, bool) { return m.result, m.settled }
 
 func (m Model) Init() tea.Cmd {
 	return tea.Batch(m.spin.Tick, tick(), waitForResult(m.results))
@@ -85,6 +93,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case resultMsg:
 		m.done = true
+		m.settled = true
 		m.result = Result(msg)
 		// Settle the bar at full before leaving, so the final frame is
 		// consistent with the success message the caller prints next.
@@ -119,6 +128,7 @@ func (m Model) handleKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	}
 	m.result = Result{Err: ErrCancelled}
 	m.done = true
+	m.settled = true
 	return m, tea.Quit
 }
 

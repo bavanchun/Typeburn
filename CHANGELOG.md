@@ -11,6 +11,24 @@ release section is extracted verbatim and passed to GoReleaser via
 
 ## [Unreleased]
 
+### Added
+
+- **`typeburn update` now animates.** On a terminal at least 56 columns wide,
+  the update renders a bordered checklist — checksums, downloading, verifying,
+  installing — with a spring-smoothed gradient progress bar driven by the real
+  byte count of the release archive. Built on `charm.land/bubbles/v2`.
+- The checksums fetch, which the updater always performed, is now reported as
+  its own step instead of happening invisibly.
+- Interrupting with `ctrl+c` during the download cancels cleanly and removes
+  every temporary file. The interrupt is deliberately refused once installing
+  begins, because the remaining work is the atomic binary swap.
+
+### Changed
+
+- Plain `typeburn update` output — used for pipes, redirects, CI, and terminals
+  too narrow for the frame — is unchanged apart from the new `checksums...`
+  line, and is now pinned by an exact-output test.
+
 ## [2.6.0] - 2026-07-31
 
 ### Changed

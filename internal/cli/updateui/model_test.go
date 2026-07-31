@@ -73,8 +73,12 @@ func TestModel_ResultQuitsAndIsReported(t *testing.T) {
 	next, _ := m.Update(resultMsg(Result{Outcome: want}))
 	m = next.(Model)
 
-	if m.Result().Outcome != want {
-		t.Errorf("Result() = %+v, want %+v", m.Result().Outcome, want)
+	res, settled := m.Result()
+	if res.Outcome != want {
+		t.Errorf("Result() = %+v, want %+v", res.Outcome, want)
+	}
+	if !settled {
+		t.Error("a delivered result must mark the model settled")
 	}
 	if !m.done {
 		t.Error("model should be marked done")
@@ -94,8 +98,12 @@ func TestModel_CancelBeforeInstall(t *testing.T) {
 	next, cmd := m.Update(tea.KeyPressMsg{Code: 'c', Mod: tea.ModCtrl})
 	m = next.(Model)
 
-	if m.Result().Err != ErrCancelled {
-		t.Errorf("Result().Err = %v, want ErrCancelled", m.Result().Err)
+	res, settled := m.Result()
+	if res.Err != ErrCancelled {
+		t.Errorf("Result().Err = %v, want ErrCancelled", res.Err)
+	}
+	if !settled {
+		t.Error("cancelling must mark the model settled")
 	}
 	if cmd == nil {
 		t.Error("cancelling should issue a quit command")
@@ -113,10 +121,30 @@ func TestModel_CancelRefusedDuringInstall(t *testing.T) {
 	next, cmd := m.Update(tea.KeyPressMsg{Code: 'c', Mod: tea.ModCtrl})
 	m = next.(Model)
 
-	if m.Result().Err != nil {
-		t.Errorf("Result().Err = %v, want nil (cancel refused)", m.Result().Err)
+	res, settled := m.Result()
+	if res.Err != nil {
+		t.Errorf("Result().Err = %v, want nil (cancel refused)", res.Err)
+	}
+	if settled {
+		t.Error("a refused cancel must not settle the model")
 	}
 	if cmd != nil {
 		t.Error("cancelling during install must not issue a quit command")
+	}
+}
+
+// Bubble Tea returns directly on QuitMsg (SIGTERM) and InterruptMsg without
+// routing through the model. An unsettled model must therefore never read as a
+// successful update, or a killed run would print a false success line.
+func TestModel_UnsettledUntilTerminalState(t *testing.T) {
+	p := update.Progress{Stage: update.StageDownloading, Done: 10, Total: 100}
+	m := driveable(&p, nil)
+
+	if _, settled := m.Result(); settled {
+		t.Error("a fresh model must not be settled")
+	}
+	m = step(t, m)
+	if _, settled := m.Result(); settled {
+		t.Error("progress alone must not settle the model")
 	}
 }

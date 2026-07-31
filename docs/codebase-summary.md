@@ -23,21 +23,23 @@
 **Test seams:** `getFetchURL()`/`setFetchURL()` and `getCacheFilePath()`/`setCacheFilePath()` — mutex-guarded accessors around the HTTP endpoint and temp-dir overrides used in tests.
 
 **Self-update pipeline (`typeburn update`):**
-- `Apply(ctx, currentVer, tag, execPath, goos, goarch, reportFn) (Outcome, error)`: the single entry point. Acquires an O_EXCL lock in the install dir, downloads + verifies the archive, extracts the binary, and atomically swaps it over `execPath`. `tag` MUST come from a live `Check(force=true)` Result, never the on-disk cache. `reportFn` (optional, pass nil to silence) is called with each `Stage` (downloading → verifying → installing) for progress reporting.
+- `Apply(ctx, currentVer, tag, execPath, goos, goarch, reportFn) (Outcome, error)`: the single entry point. Acquires an O_EXCL lock in the install dir, downloads + verifies the archive, extracts the binary, and atomically swaps it over `execPath`. `tag` MUST come from a live `Check(force=true)` Result, never the on-disk cache. `reportFn` (optional, pass nil to silence) is called with a `Progress` as each stage begins (checksums → downloading → verifying → installing) and repeatedly during the archive download with byte counts.
 - `Preflight(execPath, env) Plan`: classifies the install (self-managed / Homebrew / `go install`) and probes the install dir's writability, so the CLI can refuse managed installs and fail fast on a read-only dir.
 - Trust model: TLS + published SHA-256 checksums only — detects corruption/truncation, not a compromised host (binaries are unsigned; see SECURITY.md).
-- `download.go`: redirect-restricted client (follows only GitHub-owned asset hosts / same host), size caps (50 MiB archive, 64 KiB checksums), O_EXCL temp writes; `assetName`/`assetURL` mirror the GoReleaser naming.
+- `download.go`: size caps (50 MiB archive, 64 KiB checksums), O_EXCL temp writes, and optional byte-progress reporting; `assetName`/`assetURL` mirror the GoReleaser naming.
 - `verify.go`: `parseChecksums` + streaming `verifySHA256` (case-insensitive).
 - `archive.go`: `.tar.gz`/`.zip` extraction accepting only the exact top-level regular-file member (path-traversal + symlink hardened, decompression-capped).
 - `selfpath.go`: `classifyInstall`, `goBinDir`, `canWrite`, `instructionFor`.
 - `lock.go`: O_EXCL `.typeburn-update.lock` serialization.
-- `progress.go`: `Stage` enum (downloading/verifying/installing) + `String()` for human labels; `report(fn, stage)` safely invokes optional progress callback.
+- `progress.go`: `Stage` enum (checksums/downloading/verifying/installing) + `String()` for human labels; `Progress{Stage, Done, Total}` carries byte counts, where `Total == 0` means the server sent no `Content-Length` and the caller must render indeterminate rather than compute a ratio. Stages are declared in run order, so `current > s` means stage `s` has finished. `report`/`reportStage` safely invoke the optional callback.
+- `progress_writer.go`: `progressWriter` wraps the download's destination writer, counting bytes and emitting at most one callback per 50 ms plus a final `flush()`. It reports `len(p)` unchanged from `Write`, so the byte count `io.Copy` returns keeps the exact meaning the empty-download and size-cap guards depend on.
+- `download_client.go`: the redirect-restricted `http.Client` — GitHub-owned asset hosts or the same origin only, and a refusal to follow any non-HTTPS redirect (loopback exempted for test servers).
 - `replace_unix.go` / `replace_windows.go`: atomic same-dir rename; the Windows path moves the running exe aside with rollback + crash recovery (`restoreInterruptedUpdate`).
 
 **Test seams:** `getFetchURL()`/`setFetchURL()` and `getCacheFilePath()`/`setCacheFilePath()` (check); `getDownloadBase()`/`setDownloadBase()` (self-update download).
 
 **Files (check):** `result.go`, `compare.go`, `prerelease.go`, `client.go`, `cache.go`, `check.go` (+ `_test.go`).
-**Files (self-update):** `download.go`, `verify.go`, `archive.go`, `selfpath.go`, `lock.go`, `progress.go`, `preflight.go`, `apply.go`, `replace_unix.go`, `replace_windows.go` (+ `_test.go`).
+**Files (self-update):** `download.go`, `download_client.go`, `verify.go`, `archive.go`, `selfpath.go`, `lock.go`, `progress.go`, `progress_writer.go`, `preflight.go`, `apply.go`, `replace_unix.go`, `replace_windows.go` (+ `_test.go`).
 
 ---
 
@@ -91,11 +93,51 @@ executes it, and maps returned errors to process exit codes.
 - `update` (`cmd_update.go`) wires `update.Check(force)` + `update.Preflight` +
   `update.Apply` into the self-update flow: `--check` is detect-only; managed
   installs refuse with `ExitManagedInstall`; non-tty refuses without `--yes`.
-  Test seams: `setApplyFn`, `execPathFn`, `isInteractive`.
+  Test seams: `setApplyFn`, `execPathFn`, `isInteractive`, `animatable`.
+- `cmd_update_run.go` owns the install half: the `animatable` gate (stdout is a
+  terminal at least `updateui.BoxWidth + 6` columns wide), the mutex-guarded
+  `tracker` that hands progress from the `Apply` goroutine to the render loop,
+  and `plainReporter` for every non-animated stream.
 - `output` renders plain tables and deterministic indented JSON.
 
 **Files:** `internal/cli/*.go`, `internal/cli/output/*.go`,
-`internal/cli/notui/*.go`.
+`internal/cli/notui/*.go`, `internal/cli/updateui/*.go`.
+
+---
+
+### `internal/cli/updateui` — Animated Self-Update Renderer
+
+**Purpose:** The inline Bubble Tea program that renders `typeburn update` as a
+bordered checklist while the download runs. A CLI-command decoration, not a TUI
+screen — it lives under `internal/cli` (alongside `notui` and `output`) rather
+than in `internal/ui`, which owns the main TUI's screen sub-models.
+
+**Design:**
+- Does not own the update. The caller runs `update.Apply` on a goroutine and
+  passes a `Snapshot` plus a `chan Result`; this package only renders.
+- Progress is sampled on a 40 ms tick rather than consumed as an event stream.
+  Progress is state, so the newest value is always correct — sampling cannot
+  miss a stage transition, and a slow render cannot apply backpressure to the
+  download.
+- Inline view (`AltScreen = false`): the block stays in normal scrollback where
+  the command printed it, so the confirmation prompt above it and the success
+  line after it both survive.
+- Fixed `BoxWidth` (50 cells). A block that reflowed mid-download would be worse
+  than one that never appears, so the caller degrades to plain text on a
+  narrower terminal instead.
+- `ErrCancelled` is returned when the user interrupts before the install stage.
+  From `StageInstalling` onward the interrupt is refused: what remains is the
+  atomic swap, the one path that could leave a user without a working binary.
+
+**Color:** every color resolves through `internal/theme` Roles; no hex literal
+appears in the package. Two `NO_COLOR` hazards specific to `bubbles/v2` are
+handled explicitly in `styles.go` — `progress.New` seeds a default gradient that
+omitting `WithColors` does not clear, and the fill, empty track, and percentage
+text are three independent knobs. A test asserts the absence of color SGR on the
+rendered frame rather than trusting any single knob.
+
+**Files:** `model.go`, `view.go`, `styles.go`, `ansi.go`, `errors.go`
+(+ `_test.go`).
 
 ---
 

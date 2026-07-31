@@ -1,7 +1,7 @@
 ---
 phase: 1
 title: "Dependency Baseline"
-status: pending
+status: completed
 priority: P1
 effort: "0.5h"
 dependencies: []
@@ -59,10 +59,10 @@ tree to confirm.
 
 ## Success Criteria
 
-- [ ] `go.mod` requires `charm.land/bubbles/v2 v2.1.1` directly
-- [ ] `make size-check` passes
-- [ ] Recorded binary size within ~50 KB of the 8,951,522 measurement
-- [ ] `make lint` and `make test` unchanged and green
+- [x] `go.mod` requires `charm.land/bubbles/v2 v2.1.1` directly
+- [x] `make size-check` passes
+- [x] Recorded binary size within ~50 KB of the 8,951,522 measurement
+- [x] `make lint` and `make test` unchanged and green
 
 ## Risk Assessment
 

@@ -1,7 +1,7 @@
 ---
 phase: 5
 title: "Verify And Docs Sync"
-status: pending
+status: in-progress
 priority: P2
 effort: "2h"
 dependencies: [4]
