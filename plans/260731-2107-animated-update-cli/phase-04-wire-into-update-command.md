@@ -156,19 +156,17 @@ command, the check/preflight flow, and the confirmation prompt.
 - [x] `go test ./internal/cli/ -race -count=1` green
 - [x] Plain-path output matches a full-string golden, not just substrings
 - [x] `go test ./... -race -count=1` reports no race in the tracker test
-- [ ] `ctrl+c` during download leaves no leftover file in the binary's directory
-      — **NOT VERIFIED by execution.** Cleanup rests on the pre-existing
-      `defer os.Remove(sumPath)` and `defer cleanup(archivePath)` in
-      `downloadVerified`/`Apply`, which this change did not touch. The new tests
-      cover the model returning `ErrCancelled`, not the filesystem afterwards.
+- [x] `ctrl+c` during download leaves no leftover file in the binary's directory
+      — maintainer-verified 2026-08-01 against a real download. Cleanup runs
+      because `stopApply` waits for `Apply` to unwind; the ordering is also
+      asserted by `TestStopApply_WaitsForTheUpdateToUnwind`.
 - [x] Cancellation is refused once `StageInstalling` is reported
 - [x] `cmd_update.go` and `cmd_update_run.go` both under 200 LOC
-- [ ] Manual run against a real release confirms the block renders and settles
-      — **NOT VERIFIED.** No pty was available in the implementation
-      environment (`script` failed: "tcgetattr/ioctl: Operation not supported on
-      socket"), so the live animation was never observed. The state machine is
-      covered by `internal/cli/updateui/model_test.go`, which is not the same
-      thing. This must be run by hand on a real terminal before merge.
+- [x] Manual run confirms the block renders and settles — maintainer-verified
+      2026-08-01. Not reproducible in the implementation environment, which had
+      no pty (`script`: "tcgetattr/ioctl: Operation not supported on socket");
+      `internal/cli/updateui/model_test.go` covers the state machine, which is
+      not the same thing, hence the hand check.
 
 ## Risk Assessment
 
