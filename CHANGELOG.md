@@ -11,6 +11,8 @@ release section is extracted verbatim and passed to GoReleaser via
 
 ## [Unreleased]
 
+## [2.6.0] - 2026-07-31
+
 ### Changed
 
 - **Result screen redesigned (Monkeytype-style)**:

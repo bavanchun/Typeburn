@@ -269,7 +269,7 @@ Protected merge, release publication, and public proxy validation are complete.
   checks completed successfully. The published `v2.5.0` tag remains immutable;
   its broken Go-module install channel was fixed forward by `v2.5.1`.
   Ship date: 2026-07-11.
-- ✅ **Result-screen redesign (Monkeytype-style, unreleased on main):** hero
+- ✅ **v2.6.0 (Result-screen redesign, Monkeytype-style):** hero
   promotes accuracy to a second big number beside the wpm digits (raw +
   consistency drop to a secondary card row); the bar sparkline is replaced by
   a dual-axis line graph — braille WPM line (left Y) + red `x` error markers
@@ -277,7 +277,7 @@ Protected merge, release publication, and public proxy validation are complete.
   long-run downsampling; char counts and meta merge into a 2-column stats
   grid (test type / raw / characters | consistency / time) that stacks on
   narrow panels; heatmap unchanged. Reveal animation and NO_COLOR/mono layout
-  invariants preserved. Implemented: 2026-07-30.
+  invariants preserved. Ship date: 2026-07-31.
 
 
 ### Next (Optional)
