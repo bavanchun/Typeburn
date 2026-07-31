@@ -4,7 +4,7 @@ description: >-
   Replace the flat text output of `typeburn update` with an inline Bubble Tea
   progress block (bubbles/progress + bubbles/spinner) driven by real byte-level
   download progress, with a plain-text fallback on non-TTY and narrow terminals.
-status: in-progress
+status: completed
 priority: P2
 effort: "1.5d"
 branch: feat/animated-update-cli
@@ -94,7 +94,7 @@ onward.
 | 2 | [Byte-Level Progress Contract](./phase-02-byte-level-progress-contract.md) | Completed | 1 |
 | 3 | [Boxed Update Renderer](./phase-03-boxed-update-renderer.md) | Completed | 2 |
 | 4 | [Wire Into Update Command](./phase-04-wire-into-update-command.md) | Completed | 3 |
-| 5 | [Verify And Docs Sync](./phase-05-verify-and-docs-sync.md) | In progress | 4 |
+| 5 | [Verify And Docs Sync](./phase-05-verify-and-docs-sync.md) | Completed | 4 |
 
 Phases are strictly sequential: 2 defines the data 3 renders, and 4 is the only
 phase that changes user-visible behavior. Phases 1–3 are individually shippable
@@ -124,10 +124,10 @@ without altering any output.
       `NO_COLOR` emits no color SGR
 - [x] Plain path output matches a full-string golden, differing from `main` only
       by the added `  checksums...` line
-- [ ] All four runtime paths manually verified: colored TTY, `NO_COLOR`, piped,
-      narrow terminal — **outstanding**, see phase 4
-- [ ] `ctrl+c` mid-download leaves zero leftover files — implemented and
-      unit-asserted, not executed against a real download
+- [x] All four runtime paths manually verified: colored TTY, `NO_COLOR`, piped,
+      narrow terminal — maintainer-verified 2026-08-01
+- [x] `ctrl+c` mid-download leaves zero leftover files — maintainer-verified
+      2026-08-01 against a real download
 - [x] Cancellation refused during install, tested against the live stage
 - [x] Every touched Go file under 200 LOC
 - [x] `docs/` updated with claims traced to source

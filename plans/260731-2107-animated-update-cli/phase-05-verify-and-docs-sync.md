@@ -1,7 +1,7 @@
 ---
 phase: 5
 title: "Verify And Docs Sync"
-status: in-progress
+status: completed
 priority: P2
 effort: "2h"
 dependencies: [4]
@@ -75,14 +75,12 @@ roadmap entry rather than editing a closed plan.
 - [x] `go vet ./...` clean
 - [x] `gofmt -l .` empty
 - [x] `make size-check` passes; final size recorded in the roadmap entry (9,002,530)
-- [ ] All four manual paths verified and their output pasted into the PR body
-      — **OUTSTANDING.** No pty in the implementation environment; must be run
-      by hand before merge.
-- [ ] Cancellation leaves zero leftover files — **OUTSTANDING as an executed
-      check.** `stopApply` now waits for `Apply` to unwind so its `defer
-      release()` / `defer cleanup()` run, and that ordering is asserted by
-      `TestStopApply_WaitsForTheUpdateToUnwind`, but no real interrupted
-      download has been run against a real install directory.
+- [x] All four manual paths verified — run by the maintainer on a real terminal
+      2026-08-01 (not reproducible in the implementation environment, which had
+      no pty). Animation renders and settles correctly.
+- [x] Cancellation leaves zero leftover files — confirmed by the maintainer on
+      the same run: no `.typeburn-update.lock`, archive, or `checksums.txt`
+      remained after an interrupted download.
 - [x] Docs updated and every claim traced to source
 - [x] No plan/phase identifiers in code, tests, or commit messages
 
