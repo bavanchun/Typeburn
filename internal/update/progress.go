@@ -7,17 +7,28 @@ package update
 type Stage int
 
 const (
-	// StageDownloading is reported just before the release archive is fetched.
-	StageDownloading Stage = iota
+	// StageChecksums is reported just before the release checksums.txt is
+	// fetched. This work always happened; it simply was not reported before.
+	StageChecksums Stage = iota
+	// StageDownloading is reported just before the release archive is fetched,
+	// then repeatedly as bytes arrive.
+	StageDownloading
 	// StageVerifying is reported just before the SHA-256 integrity check.
 	StageVerifying
-	// StageInstalling is reported just before the binary is extracted and swapped.
+	// StageInstalling is reported just before the binary is extracted and
+	// swapped. From this point the run is no longer safely cancellable: the
+	// remaining work is the atomic rename that the updater's safety rests on.
 	StageInstalling
 )
+
+// Stages are declared in run order, so `current > s` means "stage s is already
+// finished" — front-ends rely on that ordering to render completed steps.
 
 // String returns the lowercase human label for a stage.
 func (s Stage) String() string {
 	switch s {
+	case StageChecksums:
+		return "checksums"
 	case StageDownloading:
 		return "downloading"
 	case StageVerifying:
@@ -29,10 +40,24 @@ func (s Stage) String() string {
 	}
 }
 
-// report invokes fn(s) only when fn is non-nil, so every call site can pass a
+// Progress reports how far an Apply run has advanced. Stage is always
+// meaningful. Done and Total are only populated during StageDownloading, and
+// Total is 0 when the server sent no Content-Length — render such a run as
+// indeterminate rather than computing a ratio.
+type Progress struct {
+	Stage       Stage
+	Done, Total int64
+}
+
+// report invokes fn(p) only when fn is non-nil, so every call site can pass a
 // nil reporter to stay silent without a guard of its own.
-func report(fn func(Stage), s Stage) {
+func report(fn func(Progress), p Progress) {
 	if fn != nil {
-		fn(s)
+		fn(p)
 	}
+}
+
+// reportStage is the shorthand for a stage transition carrying no byte counts.
+func reportStage(fn func(Progress), s Stage) {
+	report(fn, Progress{Stage: s})
 }

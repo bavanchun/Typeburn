@@ -28,13 +28,15 @@ func upgradeResult() *update.Result {
 // recordingApply returns an applyFn stub and a pointer to its called-flag. It
 // drives the progress reporter through every stage so callers can assert the
 // CLI prints the step lines.
-func recordingApply(called *bool) func(context.Context, string, string, string, string, string, func(update.Stage)) (update.Outcome, error) {
-	return func(_ context.Context, from, to, _, _, _ string, reportFn func(update.Stage)) (update.Outcome, error) {
+func recordingApply(called *bool) func(context.Context, string, string, string, string, string, func(update.Progress)) (update.Outcome, error) {
+	return func(_ context.Context, from, to, _, _, _ string, reportFn func(update.Progress)) (update.Outcome, error) {
 		*called = true
 		if reportFn != nil {
-			reportFn(update.StageDownloading)
-			reportFn(update.StageVerifying)
-			reportFn(update.StageInstalling)
+			reportFn(update.Progress{Stage: update.StageChecksums})
+			reportFn(update.Progress{Stage: update.StageDownloading, Done: 1, Total: 4})
+			reportFn(update.Progress{Stage: update.StageDownloading, Done: 4, Total: 4})
+			reportFn(update.Progress{Stage: update.StageVerifying})
+			reportFn(update.Progress{Stage: update.StageInstalling})
 		}
 		return update.Outcome{From: from, To: to}, nil
 	}

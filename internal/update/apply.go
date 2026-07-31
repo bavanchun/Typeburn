@@ -22,10 +22,11 @@ type Outcome struct {
 // Integrity rests on TLS + the published sha256 checksums — not signatures; this
 // detects corruption and truncation, not a compromised release host.
 //
-// reportFn, if non-nil, is called with each Stage as it begins (downloading →
-// verifying → installing) so a front-end can show progress; it is purely
-// observational and never affects control flow. Pass nil to stay silent.
-func Apply(ctx context.Context, currentVer, tag, execPath, goos, goarch string, reportFn func(Stage)) (Outcome, error) {
+// reportFn, if non-nil, is called with a Progress as each stage begins
+// (checksums → downloading → verifying → installing) and repeatedly during the
+// archive download with byte counts; it is purely observational and never
+// affects control flow. Pass nil to stay silent.
+func Apply(ctx context.Context, currentVer, tag, execPath, goos, goarch string, reportFn func(Progress)) (Outcome, error) {
 	dir := filepath.Dir(execPath)
 
 	release, err := acquireUpdateLock(dir)
@@ -40,7 +41,7 @@ func Apply(ctx context.Context, currentVer, tag, execPath, goos, goarch string, 
 	}
 	defer cleanup(archivePath)
 
-	report(reportFn, StageInstalling)
+	reportStage(reportFn, StageInstalling)
 	member := binaryMember(goos)
 	newBin, err := extractBinary(archivePath, member, dir)
 	if err != nil {
