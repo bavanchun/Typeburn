@@ -19,8 +19,9 @@ release section is extracted verbatim and passed to GoReleaser via
   byte count of the release archive. Built on `charm.land/bubbles/v2`.
 - The checksums fetch, which the updater always performed, is now reported as
   its own step instead of happening invisibly.
-- Interrupting with `ctrl+c` during the download cancels cleanly and removes
-  every temporary file. The interrupt is deliberately refused once installing
+- Interrupting with `ctrl+c` during the download stops the update and waits for
+  it to unwind, so the update lock and the partial download are removed rather
+  than left behind. The interrupt is deliberately refused once installing
   begins, because the remaining work is the atomic binary swap.
 
 ### Changed

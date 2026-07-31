@@ -115,10 +115,14 @@ Protected merge, release publication, and public proxy validation are complete.
   narrower than 56 columns keep the exact plain output, pinned by a golden test.
 - **Dependency:** adds `charm.land/bubbles/v2` (progress + spinner), which
   required `bubbletea` 2.0.7 and `lipgloss` 2.0.4. Binary grew from 8,934,370 to
-  9,002,450 bytes against the 10,485,760 cap.
-- **Safety:** `ctrl+c` cancels during download and removes all temporaries; it
-  is refused from the install stage onward, where the remaining work is the
-  atomic swap.
+  9,002,498 bytes against the 10,485,760 cap.
+- **Safety:** `ctrl+c` during download cancels the update's context and waits
+  (bounded) for `Apply` to unwind, so its deferred lock release and temp-file
+  cleanup actually run — returning early would leave the O_EXCL update lock
+  behind and block every later run. The interrupt is refused from the install
+  stage onward, and that check reads the live progress snapshot rather than the
+  40 ms-polled copy, so it cannot be beaten by a cancel arriving just after
+  `StageInstalling` is reported.
 
 #### Code Mode (Custom Text Input)
 - **Description:** Paste arbitrary text for typing test instead of word/quote selection

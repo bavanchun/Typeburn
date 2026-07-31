@@ -1,12 +1,14 @@
 package cli
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
 	"os"
 	"runtime"
 	"sync"
+	"time"
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/spf13/cobra"
@@ -97,6 +99,21 @@ func (t *tracker) get() update.Progress {
 	return t.cur
 }
 
+// applyDrainTimeout bounds how long we wait for a cancelled update to unwind.
+// Generous on purpose: if the cancel lands during the swap, the extraction and
+// rename take no context and will run to completion, and letting them finish is
+// far safer than abandoning them.
+const applyDrainTimeout = 15 * time.Second
+
+// applyDrainTimeoutForTest is the value stopApply actually waits for; tests
+// shorten it so the timeout branch is exercised without a 15s pause.
+var applyDrainTimeoutForTest = applyDrainTimeout
+
+var (
+	errUnexpectedModel = errors.New("update ui returned an unexpected model")
+	errInterrupted     = errors.New("update interrupted before it reported an outcome; re-run typeburn update to confirm the installed version")
+)
+
 // applyAnimated runs the update behind the framed renderer. The program owns
 // the terminal only for the duration of the download — the confirmation prompt
 // has already completed, and the success line is printed by the caller after
@@ -104,32 +121,60 @@ func (t *tracker) get() update.Progress {
 func applyAnimated(cmd *cobra.Command, ver, latest, execPath string) (update.Outcome, error) {
 	th := theme.Load(storage.LoadSettings().Theme, theme.EnvNoColor())
 
+	// Apply must be cancellable from here. The root context is never cancelled
+	// on its own: main passes context.Background() to fang without any signal
+	// options, so nothing upstream would ever stop the goroutine below.
+	ctx, cancel := context.WithCancel(cmd.Context())
+	defer cancel()
+
 	var trk tracker
 	results := make(chan updateui.Result, 1)
 
 	go func() {
-		outcome, err := getApplyFn()(cmd.Context(), ver, latest, execPath,
+		outcome, err := getApplyFn()(ctx, ver, latest, execPath,
 			runtime.GOOS, runtime.GOARCH, trk.set)
 		results <- updateui.Result{Outcome: outcome, Err: err}
 	}()
 
 	model := updateui.New(ver, latest, th, trk.get, results)
-	final, err := tea.NewProgram(model, tea.WithContext(cmd.Context())).Run()
+	final, err := tea.NewProgram(model, tea.WithContext(ctx)).Run()
 	if err != nil {
-		return update.Outcome{}, err
+		return update.Outcome{}, stopApply(cancel, results, err)
 	}
 
-	// Bubble Tea returns on SIGTERM and on a cancelled context without routing
-	// through the model, so an unsettled model means the program was killed
-	// mid-update. The Apply goroutine may still be running; what it did is
-	// unknown here, so report that rather than a fabricated success.
 	m, ok := final.(updateui.Model)
 	if !ok {
-		return update.Outcome{}, fmt.Errorf("update ui returned an unexpected model")
+		return update.Outcome{}, stopApply(cancel, results, errUnexpectedModel)
 	}
+
 	res, settled := m.Result()
-	if !settled {
-		return update.Outcome{}, fmt.Errorf("update interrupted before it reported an outcome; re-run typeburn update to confirm the installed version")
+	switch {
+	case !settled:
+		// Bubble Tea returns directly on QuitMsg and InterruptMsg without
+		// routing through the model, so an unsettled model means the program
+		// was killed while the update was still running.
+		return update.Outcome{}, stopApply(cancel, results, errInterrupted)
+	case errors.Is(res.Err, updateui.ErrCancelled):
+		return update.Outcome{}, stopApply(cancel, results, updateui.ErrCancelled)
 	}
 	return res.Outcome, res.Err
+}
+
+// stopApply cancels an update that is still in flight and waits for it to
+// return, so its deferred cleanup actually runs. Apply holds an O_EXCL lock
+// file in the install directory; leaking it makes every later `typeburn update`
+// refuse to start until the user deletes it by hand. The partial archive and
+// the checksums file are removed by the same defers.
+//
+// Returning without waiting is not an option: the caller exits the process
+// immediately afterwards, which would kill the goroutine mid-cleanup.
+func stopApply(cancel context.CancelFunc, results <-chan updateui.Result, cause error) error {
+	cancel()
+	select {
+	case <-results:
+		return cause
+	case <-time.After(applyDrainTimeoutForTest):
+		return fmt.Errorf("%w (it did not stop within %s; remove a stale .typeburn-update.lock from the install directory if the next run refuses to start)",
+			cause, applyDrainTimeoutForTest)
+	}
 }

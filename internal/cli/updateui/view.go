@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"charm.land/lipgloss/v2"
+	"github.com/charmbracelet/x/ansi"
 
 	"github.com/bavanchun/Typeburn/v2/internal/theme"
 	"github.com/bavanchun/Typeburn/v2/internal/update"
@@ -113,7 +114,7 @@ func injectTitle(box, title string) string {
 	if len(lines) == 0 {
 		return box
 	}
-	runes := []rune(stripANSI(lines[0]))
+	runes := []rune(ansi.Strip(lines[0]))
 	if len(runes) < 6 {
 		return box
 	}
@@ -122,7 +123,7 @@ func injectTitle(box, title string) string {
 	// so the top border still matches the sides.
 	const leadDashes = 2
 	dash := string(runes[1])
-	trailDashes := len(runes) - 2 - leadDashes - visLen(title)
+	trailDashes := len(runes) - 2 - leadDashes - lipgloss.Width(title)
 	if trailDashes < 1 {
 		return box
 	}

@@ -32,7 +32,7 @@
 - `selfpath.go`: `classifyInstall`, `goBinDir`, `canWrite`, `instructionFor`.
 - `lock.go`: O_EXCL `.typeburn-update.lock` serialization.
 - `progress.go`: `Stage` enum (checksums/downloading/verifying/installing) + `String()` for human labels; `Progress{Stage, Done, Total}` carries byte counts, where `Total == 0` means the server sent no `Content-Length` and the caller must render indeterminate rather than compute a ratio. Stages are declared in run order, so `current > s` means stage `s` has finished. `report`/`reportStage` safely invoke the optional callback.
-- `progress_writer.go`: `progressWriter` wraps the download's destination writer, counting bytes and emitting at most one callback per 50 ms plus a final `flush()`. It reports `len(p)` unchanged from `Write`, so the byte count `io.Copy` returns keeps the exact meaning the empty-download and size-cap guards depend on.
+- `progress_writer.go`: `progressWriter` wraps the download's destination writer, counting bytes and emitting at most one callback per 50 ms plus a final `flush()`. It is a faithful pass-through — the underlying writer's `n` and error are returned untouched — so the byte count `io.Copy` returns keeps the exact meaning the empty-download and size-cap guards depend on.
 - `download_client.go`: the redirect-restricted `http.Client` — GitHub-owned asset hosts or the same origin only, and a refusal to follow any non-HTTPS redirect (loopback exempted for test servers).
 - `replace_unix.go` / `replace_windows.go`: atomic same-dir rename; the Windows path moves the running exe aside with rollback + crash recovery (`restoreInterruptedUpdate`).
 

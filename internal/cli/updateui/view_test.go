@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"charm.land/lipgloss/v2"
+	"github.com/charmbracelet/x/ansi"
 
 	"github.com/bavanchun/Typeburn/v2/internal/theme"
 	"github.com/bavanchun/Typeburn/v2/internal/update"
@@ -50,8 +51,8 @@ func TestFrame_TitleInjectionPreservesBorderWidth(t *testing.T) {
 	if lipgloss.Width(top) != lipgloss.Width(bottom) {
 		t.Errorf("top border width %d != bottom border width %d", lipgloss.Width(top), lipgloss.Width(bottom))
 	}
-	if !strings.Contains(stripANSI(top), "typeburn update") {
-		t.Errorf("top border lost its title: %q", stripANSI(top))
+	if !strings.Contains(ansi.Strip(top), "typeburn update") {
+		t.Errorf("top border lost its title: %q", ansi.Strip(top))
 	}
 }
 
@@ -100,7 +101,7 @@ func TestFrame_GlyphProgression(t *testing.T) {
 
 	var rows []string
 	for _, ln := range lines {
-		plain := stripANSI(ln)
+		plain := ansi.Strip(ln)
 		for _, name := range []string{"checksums", "downloading", "verifying", "installing"} {
 			if strings.Contains(plain, name) {
 				rows = append(rows, plain)
@@ -121,7 +122,7 @@ func TestFrame_GlyphProgression(t *testing.T) {
 // A response with no Content-Length has no honest percentage to show.
 func TestFrame_UnknownTotalRendersIndeterminate(t *testing.T) {
 	m := modelAt(true, update.Progress{Stage: update.StageDownloading, Done: 900, Total: 0})
-	frame := stripANSI(m.Frame())
+	frame := ansi.Strip(m.Frame())
 
 	if strings.Contains(frame, "%") {
 		t.Errorf("rendered a percentage with unknown total:\n%s", frame)

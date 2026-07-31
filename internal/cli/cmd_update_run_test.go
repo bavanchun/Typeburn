@@ -2,10 +2,15 @@ package cli
 
 import (
 	"bytes"
+	"context"
+	"errors"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"testing"
+	"time"
 
+	"github.com/bavanchun/Typeburn/v2/internal/cli/updateui"
 	"github.com/bavanchun/Typeburn/v2/internal/update"
 )
 
@@ -119,5 +124,50 @@ func TestUpdate_PlainPathExactOutput(t *testing.T) {
 		"updated dev → v2.3.0. restart typeburn to use the new version.\n"
 	if got := out.String(); got != want {
 		t.Errorf("plain output =\n%q\nwant\n%q", got, want)
+	}
+}
+
+// Cancelling must not simply abandon the update: Apply holds an O_EXCL lock in
+// the install directory, and returning before its defers run leaves that lock
+// behind, which makes every later `typeburn update` refuse to start.
+func TestStopApply_WaitsForTheUpdateToUnwind(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	results := make(chan updateui.Result, 1)
+
+	var cleanedUp atomic.Bool
+	go func() {
+		defer func() {
+			cleanedUp.Store(true) // stands in for Apply's deferred lock release
+			results <- updateui.Result{Err: ctx.Err()}
+		}()
+		<-ctx.Done()
+	}()
+
+	cause := errors.New("cancelled by user")
+	if err := stopApply(cancel, results, cause); !errors.Is(err, cause) {
+		t.Errorf("stopApply returned %v, want %v", err, cause)
+	}
+	if !cleanedUp.Load() {
+		t.Error("stopApply returned before the update finished unwinding")
+	}
+}
+
+// A wedged update must not hang the command forever, and the user needs to be
+// told the lock may be stale.
+func TestStopApply_TimesOutAndNamesTheLock(t *testing.T) {
+	orig := applyDrainTimeoutForTest
+	applyDrainTimeoutForTest = 20 * time.Millisecond
+	defer func() { applyDrainTimeoutForTest = orig }()
+
+	_, cancel := context.WithCancel(context.Background())
+	results := make(chan updateui.Result) // never delivers
+
+	cause := errors.New("cancelled by user")
+	err := stopApply(cancel, results, cause)
+	if !errors.Is(err, cause) {
+		t.Errorf("timeout error lost its cause: %v", err)
+	}
+	if !strings.Contains(err.Error(), ".typeburn-update.lock") {
+		t.Errorf("timeout error should name the lock file, got: %v", err)
 	}
 }

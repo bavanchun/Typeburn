@@ -1,6 +1,7 @@
 package updateui
 
 import (
+	"github.com/charmbracelet/x/ansi"
 	"strings"
 	"testing"
 	"time"
@@ -31,13 +32,13 @@ func TestModel_FrameFollowsSnapshot(t *testing.T) {
 	m := driveable(&p, nil)
 
 	m = step(t, m)
-	if got := stripANSI(m.Frame()); !strings.Contains(got, "·  downloading") {
+	if got := ansi.Strip(m.Frame()); !strings.Contains(got, "·  downloading") {
 		t.Errorf("downloading should still be pending:\n%s", got)
 	}
 
 	p = update.Progress{Stage: update.StageVerifying, Total: 4_513_792}
 	m = step(t, m)
-	got := stripANSI(m.Frame())
+	got := ansi.Strip(m.Frame())
 	if !strings.Contains(got, "✓  checksums") || !strings.Contains(got, "✓  downloading") {
 		t.Errorf("earlier stages should be settled:\n%s", got)
 	}
@@ -84,7 +85,7 @@ func TestModel_ResultQuitsAndIsReported(t *testing.T) {
 		t.Error("model should be marked done")
 	}
 	// Every row settles once the run has finished.
-	if got := stripANSI(m.Frame()); strings.Contains(got, "·") {
+	if got := ansi.Strip(m.Frame()); strings.Contains(got, "·") {
 		t.Errorf("finished frame still shows a pending row:\n%s", got)
 	}
 }
@@ -146,5 +147,44 @@ func TestModel_UnsettledUntilTerminalState(t *testing.T) {
 	m = step(t, m)
 	if _, settled := m.Result(); settled {
 		t.Error("progress alone must not settle the model")
+	}
+}
+
+// The guard must read the live stage, not the polled copy. m.cur only refreshes
+// every pollInterval, and Apply reports StageInstalling immediately before it
+// extracts and renames — so a snapshot that has advanced to installing must be
+// honoured even when the model has not ticked since.
+func TestModel_CancelRefusedOnLiveStageBeforeNextPoll(t *testing.T) {
+	p := update.Progress{Stage: update.StageDownloading, Done: 99, Total: 100}
+	m := driveable(&p, nil)
+	m = step(t, m) // m.cur is now "downloading"
+
+	// The update advances, but no tick has happened yet.
+	p = update.Progress{Stage: update.StageInstalling}
+
+	next, cmd := m.Update(tea.KeyPressMsg{Code: 'c', Mod: tea.ModCtrl})
+	m = next.(Model)
+
+	if _, settled := m.Result(); settled {
+		t.Error("cancel accepted against a stale stage: the swap window is unguarded")
+	}
+	if cmd != nil {
+		t.Error("cancel must not quit once the update has reached installing")
+	}
+}
+
+// A cancelled run did not finish, so its final frame must not paint every row
+// as complete.
+func TestModel_CancelledFrameDoesNotClaimCompletion(t *testing.T) {
+	p := update.Progress{Stage: update.StageDownloading, Done: 10, Total: 100}
+	m := driveable(&p, nil)
+	m = step(t, m)
+
+	next, _ := m.Update(tea.KeyPressMsg{Code: 'c', Mod: tea.ModCtrl})
+	m = next.(Model)
+
+	got := ansi.Strip(m.Frame())
+	if !strings.Contains(got, "·  verifying") || !strings.Contains(got, "·  installing") {
+		t.Errorf("cancelled frame marked unreached stages as done:\n%s", got)
 	}
 }

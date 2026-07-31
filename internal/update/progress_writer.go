@@ -16,9 +16,10 @@ const progressInterval = 50 * time.Millisecond
 // updates to onBytes. It is a plain io.Writer with no goroutines: the caller's
 // io.Copy drives it, so it inherits that call's synchronisation.
 //
-// Write always reports len(p) written and never short-writes, so the byte count
-// io.Copy returns keeps its exact meaning — the empty-download and size-cap
-// guards in downloadTo depend on it.
+// Write is a faithful pass-through: it returns the underlying writer's own n
+// and error untouched, adding only the byte counting. That is what keeps the
+// count io.Copy returns exactly as meaningful as before — the empty-download
+// and size-cap guards in downloadTo are computed from it.
 type progressWriter struct {
 	w       io.Writer
 	onBytes func(done, total int64)

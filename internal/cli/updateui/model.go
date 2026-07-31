@@ -95,8 +95,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.done = true
 		m.settled = true
 		m.result = Result(msg)
-		// Settle the bar at full before leaving, so the final frame is
-		// consistent with the success message the caller prints next.
+		// Drive the bar to full so the last frame does not contradict the
+		// success message the caller prints next. SetPercent only schedules one
+		// spring frame, so this lands the target rather than animating all the
+		// way to it — the run is over, and stalling the exit for the spring to
+		// settle would be worse.
 		return m, tea.Sequence(m.bar.SetPercent(1), tea.Quit)
 
 	case progress.FrameMsg:
@@ -123,13 +126,27 @@ func (m Model) handleKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	if msg.String() != "ctrl+c" && msg.String() != "esc" {
 		return m, nil
 	}
-	if m.cur.Stage >= update.StageInstalling {
+	// Read the live stage, not m.cur. m.cur is only refreshed on the 40ms poll,
+	// and Apply reports StageInstalling immediately before extracting and
+	// renaming — a stale read would accept a cancel inside exactly the window
+	// this guard exists to close.
+	if m.liveStage() >= update.StageInstalling {
 		return m, nil
 	}
+	// Deliberately not setting done: the run did not finish, so the frame must
+	// not paint every row as complete.
 	m.result = Result{Err: ErrCancelled}
-	m.done = true
 	m.settled = true
 	return m, tea.Quit
+}
+
+// liveStage samples the update directly, falling back to the last polled value
+// if no snapshot was supplied.
+func (m Model) liveStage() update.Stage {
+	if m.snapshot == nil {
+		return m.cur.Stage
+	}
+	return m.snapshot().Stage
 }
 
 // percent is the download's completion fraction. A Total of 0 means the server

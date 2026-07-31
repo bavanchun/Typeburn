@@ -2,6 +2,7 @@ package update
 
 import (
 	"bytes"
+	"errors"
 	"io"
 	"testing"
 	"time"
@@ -29,16 +30,33 @@ func TestProgressWriter_CountsEveryByte(t *testing.T) {
 	}
 }
 
-// The size-cap and empty-download guards in downloadTo read the byte count that
-// io.Copy returns, so the decorator must never short-write or under-report.
-func TestProgressWriter_ReportsFullWriteLength(t *testing.T) {
-	pw := newProgressWriter(io.Discard, 0, nil)
+// shortWriter reports a partial write, the case a pass-through decorator can
+// silently paper over. io.Discard never short-writes, so testing against it
+// would prove nothing.
+type shortWriter struct {
+	n   int
+	err error
+}
+
+func (w shortWriter) Write(p []byte) (int, error) { return w.n, w.err }
+
+// The size-cap and empty-download guards in downloadTo are computed from the
+// byte count io.Copy returns, so the decorator has to hand back the underlying
+// writer's n and error untouched — inventing len(p) would hide a short write
+// and let a truncated download past the guards.
+func TestProgressWriter_PassesUnderlyingResultThrough(t *testing.T) {
+	sentinel := errors.New("disk full")
+	pw := newProgressWriter(shortWriter{n: 2, err: sentinel}, 0, nil)
+
 	n, err := pw.Write([]byte("hello"))
-	if err != nil {
-		t.Fatalf("write: %v", err)
+	if n != 2 {
+		t.Errorf("n = %d, want 2 (the underlying writer's count, not len(p))", n)
 	}
-	if n != 5 {
-		t.Errorf("n = %d, want 5", n)
+	if !errors.Is(err, sentinel) {
+		t.Errorf("err = %v, want %v", err, sentinel)
+	}
+	if pw.done != 2 {
+		t.Errorf("counted %d bytes, want 2 — only bytes actually written count", pw.done)
 	}
 }
 
