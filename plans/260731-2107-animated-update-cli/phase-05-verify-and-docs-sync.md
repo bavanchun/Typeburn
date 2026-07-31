@@ -71,14 +71,20 @@ roadmap entry rather than editing a closed plan.
 
 ## Success Criteria
 
-- [ ] `go test ./... -race -count=1` green
-- [ ] `go vet ./...` clean
-- [ ] `gofmt -l .` empty
-- [ ] `make size-check` passes; final size recorded in the roadmap entry
+- [x] `go test ./... -race -count=1` green
+- [x] `go vet ./...` clean
+- [x] `gofmt -l .` empty
+- [x] `make size-check` passes; final size recorded in the roadmap entry (9,002,530)
 - [ ] All four manual paths verified and their output pasted into the PR body
-- [ ] Cancellation leaves zero leftover files
-- [ ] Docs updated and every claim traced to source
-- [ ] No plan/phase identifiers in code, tests, or commit messages
+      — **OUTSTANDING.** No pty in the implementation environment; must be run
+      by hand before merge.
+- [ ] Cancellation leaves zero leftover files — **OUTSTANDING as an executed
+      check.** `stopApply` now waits for `Apply` to unwind so its `defer
+      release()` / `defer cleanup()` run, and that ordering is asserted by
+      `TestStopApply_WaitsForTheUpdateToUnwind`, but no real interrupted
+      download has been run against a real install directory.
+- [x] Docs updated and every claim traced to source
+- [x] No plan/phase identifiers in code, tests, or commit messages
 
 ## Risk Assessment
 

@@ -117,19 +117,20 @@ without altering any output.
 
 ## Success Criteria
 
-- [ ] `go test ./... -race -count=1`, `go vet ./...`, and empty `gofmt -l .` —
+- [x] `go test ./... -race -count=1`, `go vet ./...`, and empty `gofmt -l .` —
       the exact CI gate
-- [ ] `make size-check` passes
-- [ ] Colored and `NO_COLOR` frames identical in line count and per-line width;
+- [x] `make size-check` passes (9,002,530 / 10,485,760)
+- [x] Colored and `NO_COLOR` frames identical in line count and per-line width;
       `NO_COLOR` emits no color SGR
-- [ ] Plain path output matches a full-string golden, differing from `main` only
+- [x] Plain path output matches a full-string golden, differing from `main` only
       by the added `  checksums...` line
 - [ ] All four runtime paths manually verified: colored TTY, `NO_COLOR`, piped,
       narrow terminal — **outstanding**, see phase 4
-- [ ] `ctrl+c` mid-download leaves zero leftover files; cancellation refused
-      during install
-- [ ] Every touched Go file under 200 LOC
-- [ ] `docs/` updated with claims traced to source
+- [ ] `ctrl+c` mid-download leaves zero leftover files — implemented and
+      unit-asserted, not executed against a real download
+- [x] Cancellation refused during install, tested against the live stage
+- [x] Every touched Go file under 200 LOC
+- [x] `docs/` updated with claims traced to source
 
 ## Constraints
 
@@ -145,6 +146,25 @@ without altering any output.
 Supersedes item 2 of the completed `plans/20260530-update-ux-polish/` (the flat
 stage lines shipped in v2.4.0). That plan remains `completed`; the supersession
 is recorded in the roadmap entry, not by editing a closed plan.
+
+## Post-implementation notes
+
+Code review found two High findings that the plan did not anticipate, both now
+fixed and covered by regression tests that were verified to fail against the
+defective code:
+
+1. The update goroutine's context was never cancellable — `main` passes
+   `context.Background()` to fang with no signal options, so `tea.WithContext`
+   was inert and cancelling exited the process before `Apply`'s deferred lock
+   release could run, leaving an O_EXCL lock that blocks every later update.
+2. The install-stage cancel guard read the 40 ms-polled progress copy rather
+   than the live snapshot, leaving a window in which a cancel could be accepted
+   after `StageInstalling` was reported.
+
+A third, subtler consequence surfaced in review round two: cancelling is a
+request, not a guarantee — only the download takes a context — so an interrupt
+can be accepted and the install complete anyway. That case now reports
+`stopped too late … was already installed` instead of claiming nothing changed.
 
 ## Open questions
 
