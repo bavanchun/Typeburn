@@ -22,7 +22,10 @@ release section is extracted verbatim and passed to GoReleaser via
 - Interrupting with `ctrl+c` during the download stops the update and waits for
   it to unwind, so the update lock and the partial download are removed rather
   than left behind. The interrupt is deliberately refused once installing
-  begins, because the remaining work is the atomic binary swap.
+  begins, because the remaining work is the atomic binary swap. Only the
+  download is cancellable, so an interrupt arriving during verification or the
+  swap reports `stopped too late — <from> → <to> was already installed` rather
+  than falsely claiming nothing changed.
 
 ### Changed
 

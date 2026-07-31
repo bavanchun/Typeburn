@@ -95,9 +95,12 @@ executes it, and maps returned errors to process exit codes.
   installs refuse with `ExitManagedInstall`; non-tty refuses without `--yes`.
   Test seams: `setApplyFn`, `execPathFn`, `isInteractive`, `animatable`.
 - `cmd_update_run.go` owns the install half: the `animatable` gate (stdout is a
-  terminal at least `updateui.BoxWidth + 6` columns wide), the mutex-guarded
-  `tracker` that hands progress from the `Apply` goroutine to the render loop,
-  and `plainReporter` for every non-animated stream.
+  terminal at least `updateui.BoxWidth + 6` columns wide), `plainReporter` for
+  every non-animated stream, `stopApply` (cancels an in-flight update and waits
+  for its cleanup defers — the O_EXCL lock would otherwise block every later
+  run), and `reportApplyResult`, whose case order is load-bearing because a
+  drain timeout wraps its cause. `cmd_update_tracker.go` holds the mutex-guarded
+  `tracker` that hands progress from the `Apply` goroutine to the render loop.
 - `output` renders plain tables and deterministic indented JSON.
 
 **Files:** `internal/cli/*.go`, `internal/cli/output/*.go`,
@@ -136,8 +139,7 @@ omitting `WithColors` does not clear, and the fill, empty track, and percentage
 text are three independent knobs. A test asserts the absence of color SGR on the
 rendered frame rather than trusting any single knob.
 
-**Files:** `model.go`, `view.go`, `styles.go`, `ansi.go`, `errors.go`
-(+ `_test.go`).
+**Files:** `model.go`, `view.go`, `styles.go`, `errors.go` (+ `_test.go`).
 
 ---
 

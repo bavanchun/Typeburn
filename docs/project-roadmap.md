@@ -122,7 +122,11 @@ Protected merge, release publication, and public proxy validation are complete.
   behind and block every later run. The interrupt is refused from the install
   stage onward, and that check reads the live progress snapshot rather than the
   40 ms-polled copy, so it cannot be beaten by a cancel arriving just after
-  `StageInstalling` is reported.
+  `StageInstalling` is reported. Because only the download takes a context, an
+  interrupt can still be accepted and the update complete anyway; that case is
+  reported as `stopped too late … was already installed` rather than as a
+  cancellation, so the command never claims nothing changed while the binary
+  was in fact replaced.
 
 #### Code Mode (Custom Text Input)
 - **Description:** Paste arbitrary text for typing test instead of word/quote selection

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -144,7 +145,8 @@ func TestStopApply_WaitsForTheUpdateToUnwind(t *testing.T) {
 	}()
 
 	cause := errors.New("cancelled by user")
-	if err := stopApply(cancel, results, cause); !errors.Is(err, cause) {
+	_, err := stopApply(cancel, results, cause, applyDrainTimeout)
+	if !errors.Is(err, cause) {
 		t.Errorf("stopApply returned %v, want %v", err, cause)
 	}
 	if !cleanedUp.Load() {
@@ -155,19 +157,119 @@ func TestStopApply_WaitsForTheUpdateToUnwind(t *testing.T) {
 // A wedged update must not hang the command forever, and the user needs to be
 // told the lock may be stale.
 func TestStopApply_TimesOutAndNamesTheLock(t *testing.T) {
-	orig := applyDrainTimeoutForTest
-	applyDrainTimeoutForTest = 20 * time.Millisecond
-	defer func() { applyDrainTimeoutForTest = orig }()
-
 	_, cancel := context.WithCancel(context.Background())
 	results := make(chan updateui.Result) // never delivers
 
 	cause := errors.New("cancelled by user")
-	err := stopApply(cancel, results, cause)
+	_, err := stopApply(cancel, results, cause, 20*time.Millisecond)
 	if !errors.Is(err, cause) {
 		t.Errorf("timeout error lost its cause: %v", err)
 	}
+	if !errors.Is(err, errDrainTimeout) {
+		t.Errorf("timeout error must be identifiable as a drain timeout: %v", err)
+	}
 	if !strings.Contains(err.Error(), ".typeburn-update.lock") {
 		t.Errorf("timeout error should name the lock file, got: %v", err)
+	}
+}
+
+// Cancelling is a request, not a guarantee: only the download is cancellable,
+// so a stop arriving during verify/extract/rename lands after the binary has
+// already been replaced. Reporting "nothing was installed" there would be a lie
+// the user cannot detect without re-running.
+func TestStopApply_ReportsAnUpdateThatFinishedAnyway(t *testing.T) {
+	_, cancel := context.WithCancel(context.Background())
+	results := make(chan updateui.Result, 1)
+	want := update.Outcome{From: "v2.5.1", To: "v2.6.0"}
+	results <- updateui.Result{Outcome: want}
+
+	outcome, err := stopApply(cancel, results, updateui.ErrCancelled, applyDrainTimeout)
+	if !errors.Is(err, errStoppedTooLate) {
+		t.Errorf("err = %v, want errStoppedTooLate", err)
+	}
+	if errors.Is(err, updateui.ErrCancelled) {
+		t.Error("a completed update must not still report as cancelled")
+	}
+	if outcome != want {
+		t.Errorf("outcome = %+v, want %+v", outcome, want)
+	}
+}
+
+// A genuine failure must keep the interrupt as the reported cause rather than
+// being reported as a completed install.
+func TestStopApply_FailedUpdateKeepsItsCause(t *testing.T) {
+	_, cancel := context.WithCancel(context.Background())
+	results := make(chan updateui.Result, 1)
+	results <- updateui.Result{Err: errors.New("download aborted")}
+
+	outcome, err := stopApply(cancel, results, updateui.ErrCancelled, applyDrainTimeout)
+	if !errors.Is(err, updateui.ErrCancelled) {
+		t.Errorf("err = %v, want ErrCancelled", err)
+	}
+	if errors.Is(err, errStoppedTooLate) {
+		t.Error("a failed update must not report as completed")
+	}
+	if (outcome != update.Outcome{}) {
+		t.Errorf("outcome = %+v, want zero", outcome)
+	}
+}
+
+// The interrupt cases are not mutually exclusive — a drain timeout wraps its
+// cause, which on the cancel path is ErrCancelled — so the switch order in
+// reportApplyResult is load-bearing, not cosmetic.
+func TestReportApplyResult_MessageAndExitPerOutcome(t *testing.T) {
+	done := update.Outcome{From: "v2.5.1", To: "v2.6.0"}
+	timedOut := fmt.Errorf("%w: %w (remove a stale .typeburn-update.lock)", errDrainTimeout, updateui.ErrCancelled)
+
+	tests := []struct {
+		name     string
+		outcome  update.Outcome
+		err      error
+		wantOut  string
+		wantCode int
+	}{
+		{"success", done, nil, "updated v2.5.1 → v2.6.0.", ExitOK},
+		{"stopped too late", done, errStoppedTooLate, "stopped too late — v2.5.1 → v2.6.0 was already installed.", ExitOK},
+		{"cancelled in time", update.Outcome{}, updateui.ErrCancelled, "", ExitAbort},
+		{"drain timed out", update.Outcome{}, timedOut, "", ExitIO},
+		{"plain failure", update.Outcome{}, errors.New("boom"), "", ExitIO},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			var out bytes.Buffer
+			err := reportApplyResult(&out, tc.outcome, tc.err)
+
+			if got := ExitCode(err); got != tc.wantCode {
+				t.Errorf("exit code = %d, want %d (err: %v)", got, tc.wantCode, err)
+			}
+			if tc.wantOut == "" {
+				if out.Len() != 0 {
+					t.Errorf("expected no stdout, got %q", out.String())
+				}
+				return
+			}
+			if !strings.Contains(out.String(), tc.wantOut) {
+				t.Errorf("stdout = %q, want it to contain %q", out.String(), tc.wantOut)
+			}
+		})
+	}
+}
+
+// A timed-out drain means the update was still working — the case most likely
+// to have installed something — so its stale-lock guidance must survive into
+// the user-facing error rather than being replaced by "nothing was installed".
+func TestReportApplyResult_TimeoutGuidanceSurvivesCancelMatch(t *testing.T) {
+	timedOut := fmt.Errorf("%w: %w (remove a stale .typeburn-update.lock from the install directory)",
+		errDrainTimeout, updateui.ErrCancelled)
+
+	err := reportApplyResult(&bytes.Buffer{}, update.Outcome{}, timedOut)
+	if err == nil {
+		t.Fatal("expected an error")
+	}
+	if !strings.Contains(err.Error(), ".typeburn-update.lock") {
+		t.Errorf("stale-lock guidance was swallowed: %v", err)
+	}
+	if strings.Contains(err.Error(), "nothing was installed") {
+		t.Errorf("a timed-out drain must not claim nothing was installed: %v", err)
 	}
 }
