@@ -20,13 +20,13 @@ const brailleBase = 0x2800
 // row, so the two series never ambiguously overlap — including under NO_COLOR/mono
 // where roles collapse to attributes but layout is byte-identical.
 //
-// One braille cell is drawn per second (X-axis = seconds); runs longer than the
-// available `width` downsample into equal buckets (mean WPM, summed errors) so
-// long Time-mode tests never overflow the panel. `visible` (in input-sample
+// The X-axis is seconds, and the chart always fills the width it is given: runs
+// longer than the available `width` downsample into equal buckets (mean WPM,
+// summed errors) so long Time-mode tests never overflow the panel, and shorter
+// runs spread their samples across the whole plot. `visible` (in input-sample
 // units) animates a rightward draw-in: columns at/after the mapped cell blank
 // to equal-width spaces so the layout never reflows; visible==len(perSec) is
 // byte-identical to static.
-
 func RenderResultGraph(perSec []metrics.PerSecond, width, chartH, visible int, th theme.Theme) string {
 	if len(perSec) == 0 {
 		return ""
@@ -44,7 +44,7 @@ func RenderResultGraph(perSec []metrics.PerSecond, width, chartH, visible int, t
 	geo := graphGeometryFor(perSec, width, visible)
 	perSec, visible = geo.Samples, geo.Visible
 	showErrAxis, secPerCell := geo.ShowErrAxis, geo.SecPerCell
-	cols, screenCols, cellsPerSec := geo.Cols, geo.ScreenCols, geo.CellsPerSec
+	cols, screenCols := geo.Cols, geo.ScreenCols
 	cellOf := geo.CellOf
 
 	// Scales: WPM 0..maxWPM (left), Errors 0..maxErr (right).
@@ -157,7 +157,7 @@ func RenderResultGraph(perSec []metrics.PerSecond, width, chartH, visible int, t
 	if !showErrAxis {
 		tail = ""
 	}
-	b.WriteString(faint.Render(strings.Repeat(" ", leftAxisW) + " " + xAxisLabels(screenCols, secPerCell, cellsPerSec) + tail + strings.Repeat(" ", rightW)))
+	b.WriteString(faint.Render(strings.Repeat(" ", leftAxisW) + " " + xAxisLabels(screenCols, cols, secPerCell, geo.CellOf) + tail + strings.Repeat(" ", rightW)))
 	return b.String()
 }
 

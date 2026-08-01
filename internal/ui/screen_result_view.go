@@ -93,7 +93,7 @@ func (m ResultModel) renderPanel() string {
 	inner.WriteString("\n\n")
 	inner.WriteString(m.renderGraph(innerW))
 	inner.WriteString("\n\n")
-	inner.WriteString(m.renderStatsGrid(innerW))
+	inner.WriteString(m.renderStatsGrid())
 	inner.WriteString("\n\n")
 	inner.WriteString(m.renderKeyHeatmap(innerW))
 
@@ -133,10 +133,11 @@ func (m ResultModel) renderGraph(innerW int) string {
 	return header + "\n" + graph
 }
 
-// renderStatsGrid renders the 2-column stats grid: test type / raw /
-// characters on the left, consistency / time on the right. Below TierMid the
-// two columns stack vertically so 60-col terminals never overflow.
-func (m ResultModel) renderStatsGrid(innerW int) string {
+// renderStatsGrid renders the stats as one aligned column: test type,
+// characters, time. It takes no width — the rows are short and the panel is
+// capped, so there is nothing to adapt to. An ignored width parameter is what
+// let the hero drift out of the layout system, so it is not repeated here.
+func (m ResultModel) renderStatsGrid() string {
 	label := m.th.Style(theme.RoleTextMuted)
 	value := m.th.Style(theme.RoleTextPrimary).Bold(true)
 

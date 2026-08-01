@@ -19,7 +19,6 @@ type graphGeometry struct {
 	Visible     int                 // rescaled to match Samples
 	Cols        int                 // data columns
 	ScreenCols  int                 // cells the chart occupies
-	CellsPerSec int                 // cells per data column, for axis labels
 	SecPerCell  int                 // seconds per data column after bucketing
 	ShowErrAxis bool
 
@@ -59,22 +58,27 @@ func graphGeometryFor(perSec []metrics.PerSecond, width, visible int) graphGeome
 
 	// ...and stretch when there is less. Without this the chart is exactly as
 	// wide as the run was long, so a short test renders a postage stamp in a
-	// full-width panel. Each sample simply occupies more cells; the connecting
-	// segment drawSeg already draws between samples just gets more pixels, so
-	// no WPM value the test did not measure is ever drawn.
+	// full-width panel.
+	//
+	// Stretching synthesizes no samples: it widens the segment drawSeg already
+	// drew between two measured seconds. That segment is, and always was,
+	// linearly interpolated — stretching gives it more pixels, not more truth —
+	// so read the vertices, not the line between them.
+	// Samples are spread from the first cell to the last, taking the whole
+	// budget. The alternative — giving every sample an equal cells-per-sample
+	// block — leaves the final sample short of the right edge and reads as the
+	// chart stopping early.
+	//
+	// Anything that positions something against this chart (the x-axis labels,
+	// error markers) must use CellOf rather than re-deriving a ratio: a second
+	// mapping silently disagrees with this one, which is how the axis came to
+	// announce times the run never reached.
+	// A single sample has nothing to spread between, so claiming the budget
+	// would draw one dot at the far left under a full-width baseline.
 	screenCols := cols
-	cellsPerSec := 1
-	if cols > 0 && cols < budget {
-		// Take the whole budget rather than cols*(budget/cols): integer
-		// division would leave up to cols-1 cells unused at the right edge.
+	if cols > 1 && cols < budget {
 		screenCols = budget
-		cellsPerSec = budget / cols
 	}
-
-	// Map sample index to screen cell. Samples are spread from the first cell
-	// to the last so the line reaches both edges; multiplying by cellsPerSec
-	// instead would leave the final sample cellsPerSec-1 cells short of the
-	// right edge, which reads as the chart stopping early.
 	cellOf := func(i int) int {
 		if cols < 2 {
 			return 0
@@ -84,7 +88,7 @@ func graphGeometryFor(perSec []metrics.PerSecond, width, visible int) graphGeome
 
 	return graphGeometry{
 		Samples: perSec, Visible: visible,
-		Cols: cols, ScreenCols: screenCols, CellsPerSec: cellsPerSec,
+		Cols: cols, ScreenCols: screenCols,
 		SecPerCell: secPerCell, ShowErrAxis: showErrAxis, CellOf: cellOf,
 	}
 }

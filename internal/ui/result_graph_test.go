@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"strconv"
 	"strings"
 	"testing"
 
@@ -83,13 +84,75 @@ func TestRenderResultGraph_DualAxisLabels(t *testing.T) {
 	}
 }
 
+// The axis must describe the run that happened. Asserting that "0" and "4"
+// appear somewhere passed happily while a 60-second run was labelled out to 80
+// seconds, so this checks the last tick against the last measured second.
 func TestRenderResultGraph_XAxisSeconds(t *testing.T) {
-	out := stripANSI(renderSettled(graphSamples()))
-	lines := strings.Split(out, "\n")
-	xrow := lines[len(lines)-1]
-	if !strings.Contains(xrow, "0") || !strings.Contains(xrow, "4") {
-		t.Errorf("x-axis row missing second markers:\n%q", xrow)
+	for _, n := range []int{2, 8, 15, 30, 60, 120} {
+		ps := make([]metrics.PerSecond, n)
+		for i := range ps {
+			ps[i] = metrics.PerSecond{Sec: i, RawWPM: float64(60 + i%20)}
+		}
+		out := stripANSI(RenderResultGraph(ps, 84, 5, n, theme.Default()))
+		lines := strings.Split(out, "\n")
+		axis := lines[len(lines)-1]
+
+		var ticks []int
+		for _, f := range strings.Fields(axis) {
+			v, err := strconv.Atoi(f)
+			if err != nil {
+				t.Fatalf("n=%d: non-numeric tick %q in %q", n, f, axis)
+			}
+			ticks = append(ticks, v)
+		}
+		if len(ticks) < 2 {
+			t.Fatalf("n=%d: expected at least two ticks, got %v", n, ticks)
+		}
+		if ticks[0] != 0 {
+			t.Errorf("n=%d: first tick %d, want 0", n, ticks[0])
+		}
+		// No tick may claim a second the run never reached.
+		for _, v := range ticks {
+			if v > n-1 {
+				t.Errorf("n=%d: tick %d exceeds the last measured second %d\naxis: %q",
+					n, v, n-1, axis)
+			}
+		}
+		// Ticks ascend.
+		for i := 1; i < len(ticks); i++ {
+			if ticks[i] <= ticks[i-1] {
+				t.Errorf("n=%d: ticks not ascending: %v", n, ticks)
+				break
+			}
+		}
 	}
+}
+
+// A tick must sit above the sample it names, not merely be in range.
+func TestRenderResultGraph_XAxisTicksAlignToSamples(t *testing.T) {
+	const n, width = 30, 84
+	ps := make([]metrics.PerSecond, n)
+	for i := range ps {
+		ps[i] = metrics.PerSecond{Sec: i, RawWPM: 80}
+	}
+	geo := graphGeometryFor(ps, width, n)
+	axis := stripANSI(RenderResultGraph(ps, width, 5, n, theme.Default()))
+	lines := strings.Split(axis, "\n")
+	row := []rune(lines[len(lines)-1])
+
+	// The label row is offset by the left axis gutter plus one space.
+	const offset = leftAxisW + 1
+	for sec := 0; sec < n; sec++ {
+		want := strconv.Itoa(sec)
+		at := offset + geo.CellOf(sec)
+		if at+len(want) > len(row) {
+			continue
+		}
+		if string(row[at:at+len(want)]) == want {
+			return // found at least one tick sitting exactly over its sample
+		}
+	}
+	t.Errorf("no tick aligned with its sample's cell\naxis: %q", lines[len(lines)-1])
 }
 
 func TestRenderResultGraph_SettledByteStable(t *testing.T) {

@@ -75,10 +75,18 @@ redesign, reviewed at ~80 columns, did not catch it.
 reading as one object — the eye travels too far between related values. Capping
 content and centring the panel is why option A was chosen over per-tier layouts.
 
-**Integer cell repetition, not interpolation, for the graph.** Smoothing between
-samples would look better and would draw WPM values the test never produced. For
-a typing tester whose entire value is honest measurement, that trade is not
-available.
+**No synthesized samples in the graph.** Inventing intermediate WPM values would
+look smoother and would report measurements that never happened; for a typing
+tester whose entire value is honest measurement, that trade is not available.
+
+*Revised during implementation.* This decision was originally written as
+"integer cell repetition", which turned out to leave the last sample short of
+the right edge. Implementation switched to spreading samples evenly from the
+first cell to the last. That still synthesizes no samples — but the reversal was
+not noticed at the time, and the x-axis labels were left computing positions
+from the abandoned repetition ratio. The result was an axis that announced times
+the run never reached (a 60-second test labelled out to 80 seconds), caught in
+review. Labels now derive from the same mapping the plot uses.
 
 **De-duplicate toward the hero.** `raw` and `consistency` stay where the eye
 lands and read as headline stats; they leave the grid, which drops from five
@@ -138,6 +146,17 @@ v2.7.0 was the version being installed.
 
 ## Decisions taken during implementation
 
+- **The x-axis regression.** Switching to the spread mapping without updating
+  the label positions produced an axis that overstated the run's length on every
+  stretched chart — the exact dishonesty this plan cited to reject interpolation.
+  Fixed by deriving label positions from `CellOf`; `CellsPerSec` was removed
+  since it only had meaning under the abandoned mapping.
+- **The interpolation claim was overstated.** `drawSeg` linearly interpolates the
+  line between two measured seconds, and always did; stretching widens that
+  segment. The code comment, `codebase-summary.md`, and the CHANGELOG all
+  claimed no interpolated values are drawn. Corrected to say what is actually
+  true: no samples are synthesized, and the line between vertices is
+  interpolated as before.
 - **`resultMaxContentW` stayed at 88.** Checked against renders at 60/80/120/200;
   the resulting 94-column panel reads as one object and leaves balanced margins.
 - **One stats column, not two.** With three items a second column left `time`

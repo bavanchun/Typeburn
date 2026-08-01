@@ -19,8 +19,8 @@ release section is extracted verbatim and passed to GoReleaser via
 - The WPM chart fills its panel. It previously took its width from the data, so
   an eight-second test drew an eight-cell chart no matter how much room it had.
   Short runs now stretch across the full plot; long runs still downsample. No
-  interpolated WPM values are introduced — the line simply gets more pixels
-  between the seconds that were actually measured.
+  additional samples are synthesized; the connecting line between two measured
+  seconds simply gets more pixels than it had.
 - The chart's right-hand error axis is omitted when the run had no errors,
   instead of drawing a column of zeroes beside a clean result.
 - `raw` and `consistency` are no longer printed twice. They stay in the hero as

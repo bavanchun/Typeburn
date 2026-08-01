@@ -43,6 +43,19 @@ func shortRunResult() ResultMsg {
 	}
 }
 
+// erroringRun exercises the wider of the two chart shapes: errors mean the
+// right-hand axis is drawn, costing columns the clean run does not spend.
+func erroringRun() []metrics.PerSecond {
+	ps := make([]metrics.PerSecond, 12)
+	for i := range ps {
+		ps[i] = metrics.PerSecond{Sec: i, RawWPM: float64(55 + i*3)}
+		if i%3 == 0 {
+			ps[i].Errors = i%4 + 1
+		}
+	}
+	return ps
+}
+
 // settledPanel renders the panel with the reveal fully complete, so snapshots
 // capture the static frame rather than an animation step.
 func settledPanel(t *testing.T, msg ResultMsg, termW int, noColor bool) string {
@@ -141,12 +154,19 @@ func TestLayoutFor_MatchesRenderedWidth(t *testing.T) {
 		// InnerW must be the space a section can actually fill. If it
 		// over-reports, a section that uses all of it wraps and breaks the
 		// border — which is exactly what an under-counted inset caused.
-		graph := RenderResultGraph(shortRunResult().Result.PerSecond, lay.InnerW, 5,
-			len(shortRunResult().Result.PerSecond), theme.Load("default", true))
-		for i, line := range strings.Split(graph, "\n") {
-			if got := lipgloss.Width(line); got > lay.InnerW {
-				t.Errorf("termW=%d graph line %d: width %d exceeds InnerW %d",
-					w, i, got, lay.InnerW)
+		//
+		// Both error states matter: a run with errors draws a right-hand axis
+		// the clean run does not, so it is the wider of the two.
+		for name, ps := range map[string][]metrics.PerSecond{
+			"clean":  shortRunResult().Result.PerSecond,
+			"errors": erroringRun(),
+		} {
+			graph := RenderResultGraph(ps, lay.InnerW, 5, len(ps), theme.Load("default", true))
+			for i, line := range strings.Split(graph, "\n") {
+				if got := lipgloss.Width(line); got > lay.InnerW {
+					t.Errorf("termW=%d %s graph line %d: width %d exceeds InnerW %d",
+						w, name, i, got, lay.InnerW)
+				}
 			}
 		}
 	}
