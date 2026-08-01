@@ -4,7 +4,7 @@
 
 ## Current Release State
 
-**Public stable:** `v2.8.0` (2026-08-01). The Result screen now adapts to the
+**Public stable:** `v2.8.1` (2026-08-01). The Result screen adapts to the
 terminal it is drawn in; the self-updater renders an animated progress block
 driven by real download bytes and stops cleanly when interrupted.
 
@@ -305,6 +305,12 @@ driven by real download bytes and stops cleanly when interrupted.
 - ✅ **v2.3.0 (Self-Update):** stdlib-only atomic self-updater via `typeburn update`, preflight managed-install check, redirect allowlist, O_EXCL locks, archive path-traversal safety, Windows move-aside rollback. Ship date: 2026-05-30.
 - ✅ **v2.4.0 (Update UX):** In-app hint directs to self-updater; download progress reporting. Ship date: 2026-05-30.
 - ✅ **v2.4.1 (UI Animations):** stdlib-only terminal motion layer (blink/fade caret, stats reveal count-up, sparkle personal best celebration, Typing→Result transition) with NO_COLOR adaptation and hot-path token cache. Ship date: 2026-06-20.
+- ✅ **v2.8.1 (Centring Fix):** corrects a v2.8.0 regression that centred the
+  Result panel twice — the width policy padded horizontally while the root was
+  already placing the frame, so the panel drifted right. The guarding test had
+  asserted the layout helper's own arithmetic rather than the rendered screen,
+  and passed throughout; it now measures the margins either side of the
+  rendered panel border. Ship date: 2026-08-01.
 - ✅ **v2.8.0 (Result Responsive Layout):** the Result panel is capped and
   centred instead of stretching with the terminal, the WPM chart fills its panel
   rather than matching the run's length, the error axis is dropped on clean
