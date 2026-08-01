@@ -1,28 +1,25 @@
-## [2.7.0] - 2026-08-01 — Animated Update CLI
-
-### Added
-
-- **`typeburn update` now animates.** On a terminal at least 56 columns wide,
-  the update renders a bordered checklist — checksums, downloading, verifying,
-  installing — with a spring-smoothed gradient progress bar driven by the real
-  byte count of the release archive. Built on `charm.land/bubbles/v2`.
-- The checksums fetch, which the updater always performed, is now reported as
-  its own step instead of happening invisibly.
-- Interrupting with `ctrl+c` during the download stops the update and waits for
-  it to unwind, so the update lock and the partial download are removed rather
-  than left behind. The interrupt is deliberately refused once installing
-  begins, because the remaining work is the atomic binary swap. Only the
-  download is cancellable, so an interrupt arriving during verification or the
-  swap reports `stopped too late — <from> → <to> was already installed` rather
-  than falsely claiming nothing changed.
+## [2.8.0] - 2026-08-01 — Result Responsive Layout
 
 ### Changed
 
-- Plain `typeburn update` output — used for pipes, redirects, CI, and terminals
-  too narrow for the frame — is unchanged apart from the new `checksums...`
-  line, and is now pinned by an exact-output test.
+- **Result screen now uses the width it has.** The panel is capped and centred
+  instead of stretching to fill the terminal, so a wide screen no longer shows a
+  near-empty box with everything crammed into the top-left corner.
+- The WPM chart fills its panel. It previously took its width from the data, so
+  an eight-second test drew an eight-cell chart no matter how much room it had.
+  Short runs now stretch across the full plot; long runs still downsample. No
+  additional samples are synthesized; the connecting line between two measured
+  seconds simply gets more pixels than it had.
+- The chart's right-hand error axis is omitted when the run had no errors,
+  instead of drawing a column of zeroes beside a clean result.
+- `raw` and `consistency` are no longer printed twice. They stay in the hero as
+  headline stats; the stats grid keeps `test type`, `characters`, and `time`,
+  now as one aligned column.
 
-No config, storage, or release-archive contract changes. The plain
-`typeburn update` output used by pipes, redirects, and CI is unchanged apart
-from the new `checksums...` line. Existing history and settings files are fully
-compatible.
+### Fixed
+
+- The Result panel under-counted its own border by two columns, which limited
+  how much width any section could safely use.
+
+No CLI, config, storage, or release-archive contract changes. Existing history
+and settings files are fully compatible.
