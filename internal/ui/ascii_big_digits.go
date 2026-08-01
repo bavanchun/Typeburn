@@ -6,17 +6,23 @@ import (
 	"github.com/bavanchun/Typeburn/v2/internal/theme"
 )
 
-// digitGlyphs maps each decimal digit 0-9 to a 5-row ASCII block-art glyph.
-// Each glyph is 6 characters wide (including trailing space) for uniform column
-// joining. The technique mirrors ascii-logo.go: render per-row, join columns.
+// digitGlyphs maps each decimal digit 0-9 to a numRows-row block-art glyph in
+// the ANSI Shadow style, matching ascii-logo.go.
+//
+// The contract is per-digit rectangularity, not a shared width: every row of
+// one glyph is the same number of display cells, so the block a caller
+// positions against never changes shape between rows. Widths do differ between
+// digits — 1 is 4 cells, most are 8, 0 and 6 are 9 — which is why callers must
+// measure rather than assume. The technique mirrors ascii-logo.go: render
+// per-row, join columns.
 var digitGlyphs = [10][]string{
 	{ // 0
-		"██████╗ ",
-		"╚════██╗",
-		" █████╔╝",
-		"██╔═══╝ ",
-		"███████╗",
-		"╚══════╝",
+		" ██████╗ ",
+		"██╔═████╗",
+		"██║██╔██║",
+		"████╔╝██║",
+		"╚██████╔╝",
+		" ╚═════╝ ",
 	},
 	{ // 1
 		" ██╗",
@@ -38,7 +44,7 @@ var digitGlyphs = [10][]string{
 		"██████╗ ",
 		"╚════██╗",
 		" █████╔╝",
-		" ╚════██╗",
+		" ╚═══██╗",
 		"██████╔╝",
 		"╚═════╝ ",
 	},
@@ -59,9 +65,9 @@ var digitGlyphs = [10][]string{
 		"╚══════╝",
 	},
 	{ // 6
-		" ██████╗",
-		"██╔════╝",
-		"███████╗",
+		" ██████╗ ",
+		"██╔════╝ ",
+		"███████╗ ",
 		"██╔═══██╗",
 		"╚██████╔╝",
 		" ╚═════╝ ",
@@ -86,7 +92,7 @@ var digitGlyphs = [10][]string{
 		" █████╗ ",
 		"██╔══██╗",
 		"╚██████║",
-		" ╚════██║",
+		" ╚═══██║",
 		" █████╔╝",
 		" ╚════╝ ",
 	},
