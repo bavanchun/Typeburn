@@ -111,6 +111,13 @@ Spacing/rhythm: one blank line between logical groups; two blank lines around th
   - `72 ≤ termW < 88` → content width `termW - 8`.
   - `60 ≤ termW < 72` → content width `termW - 4`, footer keybinds collapse to short forms (`tab restart` → `↹`).
   - `termW < 60` or `termH < 20` → **degraded mode** (see 4.3).
+- **Result panel** applies the same principle with its own hard cap: content is
+  limited to `resultMaxContentW` (88 cells, `internal/ui/result_layout.go`) and
+  the bordered panel is centred in whatever space remains. `layoutFor` is the
+  single source of that policy — the panel, hero, graph, and stats grid all size
+  themselves from it. Before this rule the panel tracked the terminal without
+  bound, so a 200-column screen rendered a 192-wide box holding roughly 35
+  columns of content.
 - Vertical rhythm: the typing screen emits a **compact** block (header → blank
   → focal block → blank → footer) and the root `Place(Center, Center)` centers
   it; the footer is not pinned to the last terminal row.

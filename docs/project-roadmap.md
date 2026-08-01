@@ -128,6 +128,28 @@ interrupted instead of leaking its update lock.
   cancellation, so the command never claims nothing changed while the binary
   was in fact replaced.
 
+#### Result Responsive Layout — ✅ SHIPPED
+- **Description:** the Result screen used the width it was given rather than the
+  width its content happened to want. The panel is capped at
+  `resultMaxContentW` and centred; the WPM chart fills its cell budget instead
+  of being as wide as the run was long; the right-hand error axis is omitted on
+  clean runs; and `raw`/`consistency`, previously rendered both in the hero and
+  in the stats grid, now appear once.
+- **Root cause:** four independent width policies that never adapted — the panel
+  grew unbounded, the hero discarded its `innerW` parameter, the chart took
+  `cols` from `len(perSec)`, and the stats gutter was half the panel. At 200
+  columns that produced a 192-wide panel holding about 35 columns of content.
+  The v2.6.0 redesign missed it because it was reviewed at ~80 columns, where
+  the same defect is only mildly visible.
+- **Design:** `internal/ui/result_layout.go` holds the single width policy
+  (`layoutFor`); chart geometry moved to `result_graph_geometry.go`. Chart
+  stretching spreads samples edge to edge and gives the connecting segment more
+  pixels rather than interpolating new WPM values — a typing tester must not
+  plot measurements it never took. Golden snapshots at 60/80/120/200 columns in
+  both color modes make layout diffs reviewable.
+- **Also fixed:** the panel under-counted its own border by two columns, latent
+  until a section tried to use its full width.
+
 #### Code Mode (Custom Text Input)
 - **Description:** Paste arbitrary text for typing test instead of word/quote selection
 - **Effort:** ~3 days
