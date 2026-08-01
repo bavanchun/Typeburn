@@ -172,18 +172,3 @@ func TestRouting_AllScreensRender(t *testing.T) {
 		}
 	}
 }
-
-// stripANSI removes CSI sequences so substring assertions are color-agnostic.
-func stripANSI(s string) string {
-	var b strings.Builder
-	for i := 0; i < len(s); i++ {
-		if s[i] == 0x1b {
-			for i < len(s) && s[i] != 'm' {
-				i++
-			}
-			continue
-		}
-		b.WriteByte(s[i])
-	}
-	return b.String()
-}
