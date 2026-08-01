@@ -83,12 +83,10 @@ func (m ResultModel) renderUpdateHint() string {
 
 // renderPanel builds the rounded-border result panel with all content sections.
 func (m ResultModel) renderPanel() string {
-	// Panel content width: terminal width minus outer margins and border chars.
-	panelW := m.w - 8
-	if panelW < 40 {
-		panelW = 40
-	}
-	innerW := panelW - 4 // account for "│  " left and "  │" right padding
+	// Geometry comes from layoutFor so the panel, hero, graph, and stats grid
+	// cannot disagree about how much room they have.
+	lay := layoutFor(m.w)
+	panelW, innerW := lay.PanelW, lay.InnerW
 
 	var inner strings.Builder
 	inner.WriteString(m.renderHero(innerW))
