@@ -67,11 +67,11 @@ func TestBigDigitsFixed_ConstantWidth(t *testing.T) {
 func TestResultReveal_StaticUsesOriginalBigDigits(t *testing.T) {
 	m := newTestResult()
 	final := int(math.Round(m.res.NetWPM))
-	assertHeroBigDigitsPrefix(t, m.renderHero(80), BigDigits(final, m.th))
+	assertHeroBigDigitsPrefix(t, m.renderHero(), BigDigits(final, m.th))
 
 	revealed := m.WithRevealStart(1000)
 	revealed.nowMs = 1000 + resultRevealTotalMs()
-	assertHeroBigDigitsPrefix(t, revealed.renderHero(80), BigDigits(final, m.th))
+	assertHeroBigDigitsPrefix(t, revealed.renderHero(), BigDigits(final, m.th))
 }
 
 func TestResultReveal_SettledMatchesStatic(t *testing.T) {

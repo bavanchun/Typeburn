@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"charm.land/lipgloss/v2"
+
 	"strings"
 	"testing"
 
@@ -152,17 +154,24 @@ func TestResultView_ContainsStatsGrid(t *testing.T) {
 	if !strings.Contains(view, "30s") {
 		t.Errorf("expected duration '30s' in time entry:\n%s", view)
 	}
-	// Grid is 2-col at the default 80-col terminal: test type and consistency
-	// share a row.
-	twoCol := false
+	// The grid is one aligned column. raw and consistency live in the hero and
+	// must not be repeated here — the same number printed twice on one screen
+	// is what this replaced.
 	for _, line := range strings.Split(view, "\n") {
 		if strings.Contains(line, "test type") && strings.Contains(line, "consistency") {
-			twoCol = true
-			break
+			t.Errorf("consistency must not appear in the stats grid:\n%s", view)
 		}
 	}
-	if !twoCol {
-		t.Errorf("test type and consistency should share a grid row at 80 cols:\n%s", view)
+}
+
+// raw and consistency are headline stats in the hero. Printing them again in
+// the grid was pure duplication; this pins that they appear exactly once.
+func TestResultView_NoDuplicatedStats(t *testing.T) {
+	view := stripANSI(newTestResult().View())
+	for _, label := range []string{"raw", "consistency"} {
+		if n := strings.Count(view, label); n != 1 {
+			t.Errorf("%q appears %d times, want exactly 1:\n%s", label, n, view)
+		}
 	}
 }
 
@@ -372,7 +381,7 @@ func TestAccColorRole(t *testing.T) {
 // plus a prominent acc block, with raw/consistency as a secondary card row.
 func TestResultHero_TwoBigNumbers(t *testing.T) {
 	m := newTestResult()
-	hero := stripANSI(m.renderHero(68))
+	hero := stripANSI(m.renderHero())
 	if !strings.Contains(hero, "97%") {
 		t.Errorf("hero missing acc value 97%%:\n%s", hero)
 	}
@@ -409,19 +418,28 @@ func TestResultHero_TwoBigNumbers(t *testing.T) {
 	}
 }
 
-// TestResultStatsGrid_NeverWrapsInsideColumn guards the 2-col/stacked
-// threshold: the longest left line ("test type  words 100 · english") must
-// never wrap inside its column block at any panel width.
-func TestResultStatsGrid_NeverWrapsInsideColumn(t *testing.T) {
+// The longest grid entry ("test type  words 100 · english") must fit inside the
+// panel at every terminal width. This previously guarded a two-column wrap
+// threshold; the grid is one column now, but the underlying risk — an entry
+// wider than the space it is given — is the same.
+func TestResultStatsGrid_FitsThePanelAtEveryWidth(t *testing.T) {
 	res := metrics.Result{RawWPM: 108, Consistency: 95, CorrectChars: 142,
 		IncorrectChars: 4, ExtraChars: 1, DurationMs: 30000}
 	msg := ResultMsg{Result: res, Mode: config.ModeWords, Length: 100}
 	m := NewResult(msg, theme.Default(), config.DefaultKeymap())
-	for innerW := 36; innerW <= 100; innerW++ {
-		grid := stripANSI(m.renderStatsGrid(innerW))
+
+	grid := stripANSI(m.renderStatsGrid())
+	for _, line := range strings.Split(grid, "\n") {
+		if strings.HasPrefix(strings.TrimSpace(line), "english") {
+			t.Fatalf("entry wrapped mid-value:\n%s", grid)
+		}
+	}
+	for termW := 60; termW <= 220; termW++ {
+		innerW := layoutFor(termW).InnerW
 		for _, line := range strings.Split(grid, "\n") {
-			if strings.HasPrefix(strings.TrimSpace(line), "english") {
-				t.Fatalf("innerW=%d: left column wrapped mid-entry:\n%s", innerW, grid)
+			if n := lipgloss.Width(line); n > innerW {
+				t.Fatalf("termW=%d: grid line width %d exceeds InnerW %d:\n%s",
+					termW, n, innerW, grid)
 			}
 		}
 	}
