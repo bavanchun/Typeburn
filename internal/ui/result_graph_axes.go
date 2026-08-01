@@ -97,21 +97,26 @@ func minMax(vals []float64) (min, max float64) {
 // intervals of 4 (every cell for short charts) and print the cell's starting
 // second (cell index × secPerCell, 1 when the chart is not downsampled).
 // Returns a plain string; the caller applies styling.
-func xAxisLabels(n, secPerCell int) string {
+func xAxisLabels(n, secPerCell, cellsPerSec int) string {
 	if n == 0 {
 		return ""
 	}
 	if secPerCell < 1 {
 		secPerCell = 1
 	}
-	step := 4
-	if n <= 4 {
-		step = 1
+	if cellsPerSec < 1 {
+		cellsPerSec = 1
+	}
+	// Space ticks by seconds rather than by cells, so a stretched chart does
+	// not label every repeated cell of the same second.
+	step := 4 * cellsPerSec
+	if n <= 4*cellsPerSec {
+		step = cellsPerSec
 	}
 	var parts []string
 	lastEnd := 0
 	for i := 0; i < n; i += step {
-		label := fmt.Sprintf("%d", i*secPerCell)
+		label := fmt.Sprintf("%d", i*secPerCell/cellsPerSec)
 		if i+len(label) <= n {
 			for lastEnd < i {
 				parts = append(parts, " ")

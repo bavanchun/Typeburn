@@ -10,10 +10,14 @@ package ui
 // the cap is switched on.
 const resultMaxContentW = 88
 
-// resultPanelChrome is the horizontal space the panel spends on things that are
-// not content: the outer margin, the two border columns, and the two padding
-// columns on each side.
+// resultPanelChrome is the outer margin the panel leaves around itself.
 const resultPanelChrome = 8
+
+// resultPanelInset is what the panel itself consumes inside PanelW: two border
+// columns plus two padding columns on each side. The previous arithmetic used
+// 4 here, which under-counted the borders; nothing noticed because no section
+// ever tried to use its full width.
+const resultPanelInset = 6
 
 // resultMinPanelW is the narrowest panel worth drawing. Below the degraded gate
 // (60×20) the Result screen is replaced entirely, so this floor only guards
@@ -37,7 +41,7 @@ func layoutFor(termW int) resultLayout {
 		panelW = resultMinPanelW
 	}
 
-	innerW := panelW - 4
+	innerW := panelW - resultPanelInset
 	if innerW < 1 {
 		innerW = 1
 	}

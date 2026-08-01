@@ -132,5 +132,16 @@ func TestLayoutFor_MatchesRenderedWidth(t *testing.T) {
 					w, i, got, lay.PanelW)
 			}
 		}
+		// InnerW must be the space a section can actually fill. If it
+		// over-reports, a section that uses all of it wraps and breaks the
+		// border — which is exactly what an under-counted inset caused.
+		graph := RenderResultGraph(shortRunResult().Result.PerSecond, lay.InnerW, 5,
+			len(shortRunResult().Result.PerSecond), theme.Load("default", true))
+		for i, line := range strings.Split(graph, "\n") {
+			if got := lipgloss.Width(line); got > lay.InnerW {
+				t.Errorf("termW=%d graph line %d: width %d exceeds InnerW %d",
+					w, i, got, lay.InnerW)
+			}
+		}
 	}
 }
