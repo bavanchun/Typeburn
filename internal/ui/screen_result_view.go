@@ -89,7 +89,7 @@ func (m ResultModel) renderPanel() string {
 	panelW, innerW := lay.PanelW, lay.InnerW
 
 	var inner strings.Builder
-	inner.WriteString(m.renderHero(innerW))
+	inner.WriteString(m.renderHero())
 	inner.WriteString("\n\n")
 	inner.WriteString(m.renderGraph(innerW))
 	inner.WriteString("\n\n")
@@ -107,7 +107,17 @@ func (m ResultModel) renderPanel() string {
 
 	panel := borderStyle.Render(inner.String())
 	titleStyled := m.th.Style(theme.RoleTextMuted).Render(" result ")
-	return injectBorderTitle(panel, titleStyled)
+	panel = injectBorderTitle(panel, titleStyled)
+
+	if lay.LeftPad > 0 {
+		pad := strings.Repeat(" ", lay.LeftPad)
+		lines := strings.Split(panel, "\n")
+		for i, ln := range lines {
+			lines[i] = pad + ln
+		}
+		panel = strings.Join(lines, "\n")
+	}
+	return panel
 }
 
 // renderGraph renders the "wpm over time" dual-axis line graph section. The
@@ -138,24 +148,35 @@ func (m ResultModel) renderStatsGrid(innerW int) string {
 		label.Render("/") + incVal +
 		label.Render("/") + value.Render(fmt.Sprintf("%d", m.res.ExtraChars))
 
-	left := []string{
-		label.Render("test type") + "  " + value.Render(displayModeLabel(string(m.mode), m.length)+" · english"),
-		label.Render("raw") + "        " + value.Render(fmt.Sprintf("%.0f wpm", m.res.RawWPM)),
-		label.Render("characters") + " " + chars,
-	}
-	right := []string{
-		label.Render("consistency") + " " + value.Render(fmt.Sprintf("%.0f%%", m.res.Consistency)),
-		label.Render("time") + "        " + value.Render(fmt.Sprintf("%.0fs", float64(m.res.DurationMs)/1000.0)),
+	// raw and consistency are deliberately absent: the hero already shows both
+	// as headline stats, and repeating them here printed the same number twice
+	// on one screen.
+	//
+	// One aligned column, not two. With three items a second column left `time`
+	// stranded on its own beside two rows of whitespace; a single column also
+	// removes the proportional gutter that flung the right-hand values halfway
+	// across a wide panel.
+	rows := [][2]string{
+		{"test type", displayModeLabel(string(m.mode), m.length) + " · english"},
+		{"characters", ""},
+		{"time", fmt.Sprintf("%.0fs", float64(m.res.DurationMs)/1000.0)},
 	}
 
-	leftCol := strings.Join(left, "\n")
-	rightCol := strings.Join(right, "\n")
-	// Two columns need colW ≥ 30 so the longest left line ("test type
-	// words 100 · english", 30 chars) never wraps inside its column block.
-	if innerW < 60 {
-		return leftCol + "\n" + rightCol
+	labelW := 0
+	for _, r := range rows {
+		if n := lipgloss.Width(r[0]); n > labelW {
+			labelW = n
+		}
 	}
-	colW := innerW / 2
-	leftBlock := lipgloss.NewStyle().Width(colW).Render(leftCol)
-	return lipgloss.JoinHorizontal(lipgloss.Top, leftBlock, rightCol)
+
+	lines := make([]string, len(rows))
+	for i, r := range rows {
+		pad := strings.Repeat(" ", labelW-lipgloss.Width(r[0])+1)
+		v := value.Render(r[1])
+		if r[0] == "characters" {
+			v = chars // pre-styled: the incorrect count carries its own role
+		}
+		lines[i] = label.Render(r[0]) + pad + v
+	}
+	return strings.Join(lines, "\n")
 }

@@ -5,9 +5,6 @@ package ui
 // to travel too far between related values, and the panel becomes a mostly
 // empty box. Beyond the cap the panel is centred in the remaining space rather
 // than stretched to fill it.
-//
-// Provisional: validated against real renders at 60/80/120/200 columns before
-// the cap is switched on.
 const resultMaxContentW = 88
 
 // resultPanelChrome is the outer margin the panel leaves around itself.
@@ -42,8 +39,20 @@ func layoutFor(termW int) resultLayout {
 	}
 
 	innerW := panelW - resultPanelInset
+	if innerW > resultMaxContentW {
+		innerW = resultMaxContentW
+		panelW = innerW + resultPanelInset
+	}
 	if innerW < 1 {
 		innerW = 1
 	}
-	return resultLayout{PanelW: panelW, InnerW: innerW}
+
+	// Centre whatever the panel did not take. Without this a capped panel would
+	// simply sit against the left edge with the surplus trailing off to the
+	// right, which looks more broken than the uncapped version it replaces.
+	leftPad := (termW - panelW) / 2
+	if leftPad < 0 {
+		leftPad = 0
+	}
+	return resultLayout{PanelW: panelW, InnerW: innerW, LeftPad: leftPad}
 }

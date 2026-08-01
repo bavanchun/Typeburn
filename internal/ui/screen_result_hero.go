@@ -18,8 +18,11 @@ const heroBlockGap = "     "
 // secondary card row underneath. During the reveal the WPM counts up in a
 // fixed-width digit slot (no jitter), the acc block and secondary cards
 // stagger-fade in; once settled it is byte-identical to the static hero.
-func (m ResultModel) renderHero(innerW int) string {
-	_ = innerW
+// The hero takes no width: the panel is capped (see resultMaxContentW), so the
+// hero's fixed-width blocks always fit. It previously accepted an innerW it
+// discarded, which is how it drifted out of the layout system in the first
+// place — if it ever needs to adapt, take the width then and use it.
+func (m ResultModel) renderHero() string {
 	finalWPM := int(math.Round(m.res.NetWPM))
 	displayWPM := countUpValue(finalWPM, m.revealStartMs, m.nowMs)
 	bigWPM := BigDigits(finalWPM, m.th)
