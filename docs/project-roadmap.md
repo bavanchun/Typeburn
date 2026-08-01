@@ -4,9 +4,9 @@
 
 ## Current Release State
 
-**Public stable:** `v2.7.0` (2026-08-01). The self-updater now renders an
-animated progress block driven by real download bytes, and stops cleanly when
-interrupted instead of leaking its update lock.
+**Public stable:** `v2.8.0` (2026-08-01). The Result screen now adapts to the
+terminal it is drawn in; the self-updater renders an animated progress block
+driven by real download bytes and stops cleanly when interrupted.
 
 ---
 
@@ -128,7 +128,7 @@ interrupted instead of leaking its update lock.
   cancellation, so the command never claims nothing changed while the binary
   was in fact replaced.
 
-#### Result Responsive Layout — ✅ SHIPPED
+#### Result Responsive Layout — ✅ SHIPPED in v2.8.0 (2026-08-01)
 - **Description:** the Result screen used the width it was given rather than the
   width its content happened to want. The panel is capped at
   `resultMaxContentW` and centred; the WPM chart fills its cell budget instead
@@ -305,6 +305,11 @@ interrupted instead of leaking its update lock.
 - ✅ **v2.3.0 (Self-Update):** stdlib-only atomic self-updater via `typeburn update`, preflight managed-install check, redirect allowlist, O_EXCL locks, archive path-traversal safety, Windows move-aside rollback. Ship date: 2026-05-30.
 - ✅ **v2.4.0 (Update UX):** In-app hint directs to self-updater; download progress reporting. Ship date: 2026-05-30.
 - ✅ **v2.4.1 (UI Animations):** stdlib-only terminal motion layer (blink/fade caret, stats reveal count-up, sparkle personal best celebration, Typing→Result transition) with NO_COLOR adaptation and hot-path token cache. Ship date: 2026-06-20.
+- ✅ **v2.8.0 (Result Responsive Layout):** the Result panel is capped and
+  centred instead of stretching with the terminal, the WPM chart fills its panel
+  rather than matching the run's length, the error axis is dropped on clean
+  runs, and `raw`/`consistency` are no longer printed twice. Ship date:
+  2026-08-01.
 - ✅ **v2.7.0 (Animated Update CLI):** `typeburn update` renders a bordered
   checklist with a spring-smoothed gradient bar driven by real byte-level
   download progress; plain output preserved for pipes/CI/narrow terminals;

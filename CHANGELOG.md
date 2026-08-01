@@ -11,6 +11,8 @@ release section is extracted verbatim and passed to GoReleaser via
 
 ## [Unreleased]
 
+## [2.8.0] - 2026-08-01
+
 ### Changed
 
 - **Result screen now uses the width it has.** The panel is capped and centred
