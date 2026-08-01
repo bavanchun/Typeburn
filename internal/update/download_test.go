@@ -95,7 +95,7 @@ func TestDownloadTo_SizeCap(t *testing.T) {
 	}))
 	defer srv.Close()
 	dir := t.TempDir()
-	err := downloadTo(context.Background(), newDownloadClient(), srv.URL+"/big", dir+"/out", 10)
+	err := downloadTo(context.Background(), newDownloadClient(), srv.URL+"/big", dir+"/out", 10, nil)
 	if err == nil || !strings.Contains(err.Error(), "cap") {
 		t.Errorf("expected size-cap error, got %v", err)
 	}
@@ -108,7 +108,7 @@ func TestDownloadTo_EmptyBody(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
 	defer srv.Close()
 	dir := t.TempDir()
-	if err := downloadTo(context.Background(), newDownloadClient(), srv.URL, dir+"/out", 1000); err == nil {
+	if err := downloadTo(context.Background(), newDownloadClient(), srv.URL, dir+"/out", 1000, nil); err == nil {
 		t.Error("expected empty-body error, got nil")
 	}
 }
@@ -119,7 +119,7 @@ func TestDownloadTo_Non200(t *testing.T) {
 	}))
 	defer srv.Close()
 	dir := t.TempDir()
-	if err := downloadTo(context.Background(), newDownloadClient(), srv.URL, dir+"/out", 1000); err == nil {
+	if err := downloadTo(context.Background(), newDownloadClient(), srv.URL, dir+"/out", 1000, nil); err == nil {
 		t.Error("expected non-200 error, got nil")
 	}
 }
@@ -136,7 +136,7 @@ func TestDownloadClient_RefusesNonGithubRedirect(t *testing.T) {
 	defer origin.Close()
 
 	dir := t.TempDir()
-	err := downloadTo(context.Background(), newDownloadClient(), origin.URL+"/asset", dir+"/out", 1000)
+	err := downloadTo(context.Background(), newDownloadClient(), origin.URL+"/asset", dir+"/out", 1000, nil)
 	if err == nil {
 		t.Error("expected refusal of redirect to non-github host, got nil")
 	}
@@ -155,7 +155,7 @@ func TestDownloadClient_AllowsSameHostRedirect(t *testing.T) {
 	defer srv.Close()
 
 	dir := t.TempDir()
-	if err := downloadTo(context.Background(), newDownloadClient(), srv.URL+"/asset", dir+"/out", 1000); err != nil {
+	if err := downloadTo(context.Background(), newDownloadClient(), srv.URL+"/asset", dir+"/out", 1000, nil); err != nil {
 		t.Errorf("same-host redirect should succeed, got %v", err)
 	}
 }

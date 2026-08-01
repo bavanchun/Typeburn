@@ -100,6 +100,34 @@ Protected merge, release publication, and public proxy validation are complete.
 - **Deferred follow-ups:** code signing (cosign/Sigstore), delta updates,
   rollback-to-previous, `--version <tag>` pinned downgrade.
 
+#### Animated Update CLI — ✅ SHIPPED
+- **Description:** `typeburn update` renders a bordered checklist with a
+  spring-smoothed gradient bar driven by the real byte count of the release
+  archive, replacing the flat stage lines from v2.4.0. Supersedes the
+  "download progress reporting" item of that release.
+- **Design:** A short-lived, inline Bubble Tea program in
+  `internal/cli/updateui`, independent of `app.Model`. `update.Apply` runs on a
+  goroutine and publishes a mutex-guarded `Progress` snapshot that the render
+  loop samples at 40 ms — progress is state, not an event stream, so sampling
+  cannot drop a stage transition and a slow render cannot stall the download.
+  Colors resolve through `internal/theme` Roles; `NO_COLOR` renders
+  layout-identical with zero color SGR. Non-terminal streams and terminals
+  narrower than 56 columns keep the exact plain output, pinned by a golden test.
+- **Dependency:** adds `charm.land/bubbles/v2` (progress + spinner), which
+  required `bubbletea` 2.0.7 and `lipgloss` 2.0.4. Binary grew from 8,934,370 to
+  9,002,498 bytes against the 10,485,760 cap.
+- **Safety:** `ctrl+c` during download cancels the update's context and waits
+  (bounded) for `Apply` to unwind, so its deferred lock release and temp-file
+  cleanup actually run — returning early would leave the O_EXCL update lock
+  behind and block every later run. The interrupt is refused from the install
+  stage onward, and that check reads the live progress snapshot rather than the
+  40 ms-polled copy, so it cannot be beaten by a cancel arriving just after
+  `StageInstalling` is reported. Because only the download takes a context, an
+  interrupt can still be accepted and the update complete anyway; that case is
+  reported as `stopped too late … was already installed` rather than as a
+  cancellation, so the command never claims nothing changed while the binary
+  was in fact replaced.
+
 #### Code Mode (Custom Text Input)
 - **Description:** Paste arbitrary text for typing test instead of word/quote selection
 - **Effort:** ~3 days

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"runtime"
 	"strings"
 	"sync"
 
@@ -24,13 +23,13 @@ var (
 	applyFn   = update.Apply
 )
 
-func getApplyFn() func(context.Context, string, string, string, string, string, func(update.Stage)) (update.Outcome, error) {
+func getApplyFn() func(context.Context, string, string, string, string, string, func(update.Progress)) (update.Outcome, error) {
 	applyFnMu.Lock()
 	defer applyFnMu.Unlock()
 	return applyFn
 }
 
-func setApplyFn(fn func(context.Context, string, string, string, string, string, func(update.Stage)) (update.Outcome, error)) {
+func setApplyFn(fn func(context.Context, string, string, string, string, string, func(update.Progress)) (update.Outcome, error)) {
 	applyFnMu.Lock()
 	defer applyFnMu.Unlock()
 	applyFn = fn
@@ -122,15 +121,7 @@ func runUpdate(cmd *cobra.Command, yes, check bool) error {
 		}
 	}
 
-	out := cmd.OutOrStdout()
-	fmt.Fprintf(out, "updating %s → %s ...\n", ver, result.Latest)
-	progress := func(s update.Stage) { fmt.Fprintf(out, "  %s...\n", s) }
-	outcome, err := getApplyFn()(cmd.Context(), ver, result.Latest, execPath, runtime.GOOS, runtime.GOARCH, progress)
-	if err != nil {
-		return ioError("update failed: %v", err)
-	}
-	fmt.Fprintf(out, "updated %s → %s. restart typeburn to use the new version.\n", outcome.From, outcome.To)
-	return nil
+	return runApply(cmd, ver, result.Latest, execPath)
 }
 
 // reportCheck handles `update --check`: detect-only, always exit 0 (mirrors

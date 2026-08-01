@@ -43,7 +43,11 @@ func TestApply_SwapsBinary(t *testing.T) {
 
 	var stages []Stage
 	out, err := Apply(context.Background(), "2.2.0", "v2.3.0", exec, "linux", "amd64",
-		func(s Stage) { stages = append(stages, s) })
+		func(p Progress) {
+			if len(stages) == 0 || stages[len(stages)-1] != p.Stage {
+				stages = append(stages, p.Stage)
+			}
+		})
 	if err != nil {
 		t.Fatalf("Apply: %v", err)
 	}
@@ -51,7 +55,7 @@ func TestApply_SwapsBinary(t *testing.T) {
 		t.Errorf("outcome = %+v, want 2.2.0 → v2.3.0", out)
 	}
 	// The reporter must see each stage, in order, on a successful update.
-	want := []Stage{StageDownloading, StageVerifying, StageInstalling}
+	want := []Stage{StageChecksums, StageDownloading, StageVerifying, StageInstalling}
 	if len(stages) != len(want) {
 		t.Fatalf("stages = %v, want %v", stages, want)
 	}

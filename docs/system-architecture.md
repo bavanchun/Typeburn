@@ -18,6 +18,15 @@ Root `app.Model` implements Bubble Tea's `tea.Model` interface (Init/Update/View
 indented JSON. `run --no-tui` uses `internal/cli/notui` and `golang.org/x/term`
 raw mode; it never calls `os.Exit` inside the raw-mode package.
 
+**Second Bubble Tea program:** `typeburn update` runs its own short-lived
+program (`internal/cli/updateui`) for the duration of the download. It is
+independent of `app.Model` — no shared state, no screen enum — and renders
+*inline* rather than in the alternate screen, so the surrounding command output
+is preserved. It exists because the update is a blocking pipeline with progress
+worth showing, not because the updater is part of the TUI. On a non-terminal
+stream or a terminal narrower than `updateui.BoxWidth + 6`, no program starts
+and the command prints plain lines instead.
+
 ---
 
 ## Routing & State Machine
