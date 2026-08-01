@@ -1,7 +1,7 @@
 ---
 phase: 2
 title: "Graph Fills Its Width"
-status: pending
+status: completed
 priority: P1
 effort: "4h"
 dependencies: [1]
@@ -102,12 +102,12 @@ carrying 2 errors, so gating on `maxErr > 0` leaves it green; it needs no edit.
 
 ## Success Criteria
 
-- [ ] `go test ./internal/ui/ -race -count=1` green with no existing assertion
+- [x] `go test ./internal/ui/ -race -count=1` green with no existing assertion
       weakened
-- [ ] A short run's chart fills its budget; a long run still downsamples
-- [ ] Zero-error runs render no right axis
-- [ ] Reveal-width invariant passes for stretched charts
-- [ ] `result_graph.go` and `result_graph_axes.go` stay under 200 LOC
+- [x] A short run's chart fills its budget; a long run still downsamples
+- [x] Zero-error runs render no right axis
+- [x] Reveal-width invariant passes for stretched charts
+- [x] `result_graph.go` and `result_graph_axes.go` stay under 200 LOC
 
 ## Risk Assessment
 

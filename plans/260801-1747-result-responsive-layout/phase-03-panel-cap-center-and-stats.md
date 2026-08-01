@@ -1,7 +1,7 @@
 ---
 phase: 3
 title: "Panel Cap, Centring, And Stats"
-status: pending
+status: completed
 priority: P1
 effort: "4h"
 dependencies: [2]
@@ -99,12 +99,12 @@ rendered output in step 4, not from this document.
 
 ## Success Criteria
 
-- [ ] `go test ./... -race -count=1` green
-- [ ] Panel capped and centred; verified at 60/80/120/200
-- [ ] `raw` and `consistency` appear exactly once each
-- [ ] `NO_COLOR` layout-identical
-- [ ] Baseline diffs reviewed by a human, not auto-accepted
-- [ ] Every touched file under 200 LOC
+- [x] `go test ./... -race -count=1` green
+- [x] Panel capped and centred; verified at 60/80/120/200
+- [x] `raw` and `consistency` appear exactly once each
+- [x] `NO_COLOR` layout-identical
+- [x] Baseline diffs reviewed by a human, not auto-accepted
+- [x] Every touched file under 200 LOC
 
 ## Risk Assessment
 

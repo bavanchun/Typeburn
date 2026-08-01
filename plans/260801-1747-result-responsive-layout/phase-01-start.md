@@ -1,7 +1,7 @@
 ---
 phase: 1
 title: "Width Contract And Baseline Snapshots"
-status: pending
+status: completed
 priority: P1
 effort: "2h"
 dependencies: []
@@ -82,10 +82,14 @@ the plan records the final number.
 
 ## Success Criteria
 
-- [ ] `layoutFor` is the only place a width policy is decided
-- [ ] Baselines recorded for 4 widths × 2 color modes
-- [ ] Rendered output byte-identical to `main` at every recorded width
-- [ ] `go test ./internal/ui/ -race -count=1` green
+- [x] `layoutFor` is the only place a width policy is decided
+- [x] Baselines recorded for 4 widths × 2 color modes
+- [x] Rendered output byte-identical to `main` at every recorded width
+- [x] `go test ./internal/ui/ -race -count=1` green
+
+**Discovered here:** `innerW` was `panelW - 4`, but border (2) + padding (4) is
+6. Latent because no section had ever used its full width; phase 2 exposed it
+the moment the chart tried to.
 
 ## Risk Assessment
 

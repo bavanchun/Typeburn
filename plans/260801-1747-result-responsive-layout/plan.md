@@ -4,7 +4,7 @@ description: >-
   Make the Result screen use the width it has: cap and centre the panel, stretch
   the WPM graph, bound the stats gutter, drop the duplicated raw/consistency
   pair, and hide the error axis on clean runs. No new visual language.
-status: pending
+status: in-progress
 priority: P2
 effort: "1.5d"
 branch: feat/result-responsive-layout
@@ -91,10 +91,10 @@ renders at four widths and the plan records the final number.
 
 | # | Phase | Status | Depends on |
 |---|-------|--------|------------|
-| 1 | [Width Contract And Baseline Snapshots](./phase-01-start.md) | Pending | — |
-| 2 | [Graph Fills Its Width](./phase-02-graph-fills-its-width.md) | Pending | 1 |
-| 3 | [Panel Cap, Centring, And Stats](./phase-03-panel-cap-center-and-stats.md) | Pending | 2 |
-| 4 | [Verify, Docs, And Release](./phase-04-verify-docs-and-release.md) | Pending | 3 |
+| 1 | [Width Contract And Baseline Snapshots](./phase-01-start.md) | Completed | — |
+| 2 | [Graph Fills Its Width](./phase-02-graph-fills-its-width.md) | Completed | 1 |
+| 3 | [Panel Cap, Centring, And Stats](./phase-03-panel-cap-center-and-stats.md) | Completed | 2 |
+| 4 | [Verify, Docs, And Release](./phase-04-verify-docs-and-release.md) | In progress | 3 |
 
 Phase 1 changes nothing visible — it establishes the shared width contract and
 records baselines so phases 2 and 3 produce reviewable diffs instead of
@@ -136,8 +136,21 @@ updater from `plans/260731-2107-animated-update-cli/` — a self-updater always
 runs the *old* binary's update code, so v2.7.0's animation was unobservable when
 v2.7.0 was the version being installed.
 
+## Decisions taken during implementation
+
+- **`resultMaxContentW` stayed at 88.** Checked against renders at 60/80/120/200;
+  the resulting 94-column panel reads as one object and leaves balanced margins.
+- **One stats column, not two.** With three items a second column left `time`
+  stranded beside two rows of whitespace. One aligned column also removed the
+  proportional-gutter branch entirely.
+- **Centring applies at every width, not only past the cap.** The plan assumed
+  narrow terminals would not move. They do, by 4 columns — the 8-column margin
+  always existed and was simply all on the right. Splitting it is more balanced
+  and keeps one rule instead of two. A test asserting the original assumption
+  failed and the assumption, not the code, was wrong.
+- **Panel inset corrected from 4 to 6.** A latent off-by-two in the border
+  arithmetic, exposed the moment the chart tried to use its full width.
+
 ## Open questions
 
-None blocking. Two values are deliberately deferred to be decided from rendered
-output rather than guessed here: the final `resultMaxContentW`, and whether the
-three remaining stats items read better in one column or two.
+None.
