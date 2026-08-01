@@ -107,17 +107,7 @@ func (m ResultModel) renderPanel() string {
 
 	panel := borderStyle.Render(inner.String())
 	titleStyled := m.th.Style(theme.RoleTextMuted).Render(" result ")
-	panel = injectBorderTitle(panel, titleStyled)
-
-	if lay.LeftPad > 0 {
-		pad := strings.Repeat(" ", lay.LeftPad)
-		lines := strings.Split(panel, "\n")
-		for i, ln := range lines {
-			lines[i] = pad + ln
-		}
-		panel = strings.Join(lines, "\n")
-	}
-	return panel
+	return injectBorderTitle(panel, titleStyled)
 }
 
 // renderGraph renders the "wpm over time" dual-axis line graph section. The

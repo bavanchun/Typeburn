@@ -11,6 +11,12 @@ release section is extracted verbatim and passed to GoReleaser via
 
 ## [Unreleased]
 
+### Fixed
+
+- The Result panel is centred again. v2.8.0 added horizontal padding to the
+  panel while the frame was already being centred, so the panel drifted right —
+  at 200 columns it sat 79 columns from the left edge and 27 from the right.
+
 ## [2.8.0] - 2026-08-01
 
 ### Changed

@@ -26,10 +26,16 @@ const resultMinPanelW = 40
 // they cannot disagree about how much room they have — four independent width
 // policies is what left a 192-column panel holding 35 columns of content.
 type resultLayout struct {
-	PanelW  int // bordered panel width, including border columns
-	InnerW  int // content width inside the border and padding
-	LeftPad int // columns of margin that centre the panel
+	PanelW int // bordered panel width, including border columns
+	InnerW int // content width inside the border and padding
 }
+
+// Horizontal centring is deliberately absent. ResultModel.View already places
+// the whole frame with lipgloss.Place(Center, Center); a layout that also padded
+// would centre the panel twice and push it right. Capping the width is the
+// entire job here — the panel looked left-hugging before because it was nearly
+// as wide as the terminal with its content crammed inside, not because it was
+// misplaced.
 
 // layoutFor resolves the geometry for a terminal width.
 func layoutFor(termW int) resultLayout {
@@ -47,12 +53,5 @@ func layoutFor(termW int) resultLayout {
 		innerW = 1
 	}
 
-	// Centre whatever the panel did not take. Without this a capped panel would
-	// simply sit against the left edge with the surplus trailing off to the
-	// right, which looks more broken than the uncapped version it replaces.
-	leftPad := (termW - panelW) / 2
-	if leftPad < 0 {
-		leftPad = 0
-	}
-	return resultLayout{PanelW: panelW, InnerW: innerW, LeftPad: leftPad}
+	return resultLayout{PanelW: panelW, InnerW: innerW}
 }
