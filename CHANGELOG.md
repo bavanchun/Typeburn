@@ -11,6 +11,8 @@ release section is extracted verbatim and passed to GoReleaser via
 
 ## [Unreleased]
 
+## [2.8.1] - 2026-08-01
+
 ### Fixed
 
 - The Result panel is centred again. v2.8.0 added horizontal padding to the

@@ -1,25 +1,10 @@
-## [2.8.0] - 2026-08-01 — Result Responsive Layout
-
-### Changed
-
-- **Result screen now uses the width it has.** The panel is capped and centred
-  instead of stretching to fill the terminal, so a wide screen no longer shows a
-  near-empty box with everything crammed into the top-left corner.
-- The WPM chart fills its panel. It previously took its width from the data, so
-  an eight-second test drew an eight-cell chart no matter how much room it had.
-  Short runs now stretch across the full plot; long runs still downsample. No
-  additional samples are synthesized; the connecting line between two measured
-  seconds simply gets more pixels than it had.
-- The chart's right-hand error axis is omitted when the run had no errors,
-  instead of drawing a column of zeroes beside a clean result.
-- `raw` and `consistency` are no longer printed twice. They stay in the hero as
-  headline stats; the stats grid keeps `test type`, `characters`, and `time`,
-  now as one aligned column.
+## [2.8.1] - 2026-08-01 — Centring Fix
 
 ### Fixed
 
-- The Result panel under-counted its own border by two columns, which limited
-  how much width any section could safely use.
+- The Result panel is centred again. v2.8.0 added horizontal padding to the
+  panel while the frame was already being centred, so the panel drifted right —
+  at 200 columns it sat 79 columns from the left edge and 27 from the right.
 
-No CLI, config, storage, or release-archive contract changes. Existing history
-and settings files are fully compatible.
+A regression fix for v2.8.0 only. No CLI, config, storage, or release-archive
+contract changes.
