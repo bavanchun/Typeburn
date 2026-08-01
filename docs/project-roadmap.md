@@ -4,9 +4,9 @@
 
 ## Current Release State
 
-**Public stable:** `v2.5.1` (2026-07-11). The corrective release migrated the
-Go module to its required `/v2` path and restored proxy-only `go install`.
-Protected merge, release publication, and public proxy validation are complete.
+**Public stable:** `v2.7.0` (2026-08-01). The self-updater now renders an
+animated progress block driven by real download bytes, and stops cleanly when
+interrupted instead of leaking its update lock.
 
 ---
 
@@ -100,7 +100,7 @@ Protected merge, release publication, and public proxy validation are complete.
 - **Deferred follow-ups:** code signing (cosign/Sigstore), delta updates,
   rollback-to-previous, `--version <tag>` pinned downgrade.
 
-#### Animated Update CLI — ✅ SHIPPED
+#### Animated Update CLI — ✅ SHIPPED in v2.7.0 (2026-08-01)
 - **Description:** `typeburn update` renders a bordered checklist with a
   spring-smoothed gradient bar driven by the real byte count of the release
   archive, replacing the flat stage lines from v2.4.0. Supersedes the
@@ -283,6 +283,11 @@ Protected merge, release publication, and public proxy validation are complete.
 - ✅ **v2.3.0 (Self-Update):** stdlib-only atomic self-updater via `typeburn update`, preflight managed-install check, redirect allowlist, O_EXCL locks, archive path-traversal safety, Windows move-aside rollback. Ship date: 2026-05-30.
 - ✅ **v2.4.0 (Update UX):** In-app hint directs to self-updater; download progress reporting. Ship date: 2026-05-30.
 - ✅ **v2.4.1 (UI Animations):** stdlib-only terminal motion layer (blink/fade caret, stats reveal count-up, sparkle personal best celebration, Typing→Result transition) with NO_COLOR adaptation and hot-path token cache. Ship date: 2026-06-20.
+- ✅ **v2.7.0 (Animated Update CLI):** `typeburn update` renders a bordered
+  checklist with a spring-smoothed gradient bar driven by real byte-level
+  download progress; plain output preserved for pipes/CI/narrow terminals;
+  interrupt now unwinds the update so the O_EXCL lock is released rather than
+  leaked. Ship date: 2026-08-01.
 - ✅ **v2.5.0 (Strict + Punctuation/Numbers):** Letter-strict typing blocks
   wrong forward keypresses and records them for keystroke-level accuracy;
   Strict runs are excluded from personal bests. Punctuation and Numbers

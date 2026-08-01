@@ -1,20 +1,28 @@
-## [2.6.0] - 2026-07-31 — Result Screen Redesign
+## [2.7.0] - 2026-08-01 — Animated Update CLI
+
+### Added
+
+- **`typeburn update` now animates.** On a terminal at least 56 columns wide,
+  the update renders a bordered checklist — checksums, downloading, verifying,
+  installing — with a spring-smoothed gradient progress bar driven by the real
+  byte count of the release archive. Built on `charm.land/bubbles/v2`.
+- The checksums fetch, which the updater always performed, is now reported as
+  its own step instead of happening invisibly.
+- Interrupting with `ctrl+c` during the download stops the update and waits for
+  it to unwind, so the update lock and the partial download are removed rather
+  than left behind. The interrupt is deliberately refused once installing
+  begins, because the remaining work is the atomic binary swap. Only the
+  download is cancellable, so an interrupt arriving during verification or the
+  swap reports `stopped too late — <from> → <to> was already installed` rather
+  than falsely claiming nothing changed.
 
 ### Changed
 
-- **Result screen redesigned (Monkeytype-style)**:
-  - Hero shows two big numbers — ASCII big-digit WPM beside a prominent
-    accuracy block; `raw` and `consistency` move to a secondary card row.
-    The `★ new best` badge stays on WPM.
-  - The bar sparkline is replaced by a dual-axis line graph: a braille
-    sub-cell WPM line (left Y-axis) with red `x` per-second error markers
-    (right Y-axis, consuming previously unused per-second error data);
-    long runs downsample so the chart always fits the panel.
-  - Character counts and test metadata merge into a two-column stats grid
-    (test type / raw / characters | consistency / time) that stacks
-    vertically on narrow terminals.
-  - The most-missed-keys heatmap is unchanged. Reveal animation and
-    `NO_COLOR`/mono layout invariants are preserved.
+- Plain `typeburn update` output — used for pipes, redirects, CI, and terminals
+  too narrow for the frame — is unchanged apart from the new `checksums...`
+  line, and is now pinned by an exact-output test.
 
-No CLI, config, storage, or release-archive contract changes. Existing
-history and settings files are fully compatible.
+No config, storage, or release-archive contract changes. The plain
+`typeburn update` output used by pipes, redirects, and CI is unchanged apart
+from the new `checksums...` line. Existing history and settings files are fully
+compatible.

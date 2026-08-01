@@ -11,6 +11,8 @@ release section is extracted verbatim and passed to GoReleaser via
 
 ## [Unreleased]
 
+## [2.7.0] - 2026-08-01
+
 ### Added
 
 - **`typeburn update` now animates.** On a terminal at least 56 columns wide,
