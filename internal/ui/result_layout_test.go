@@ -115,9 +115,6 @@ func TestLayoutFor_NeverDegenerate(t *testing.T) {
 		if lay.PanelW < resultMinPanelW {
 			t.Fatalf("termW=%d: PanelW=%d, want >= %d", w, lay.PanelW, resultMinPanelW)
 		}
-		if lay.LeftPad < 0 {
-			t.Fatalf("termW=%d: LeftPad=%d, want >= 0", w, lay.LeftPad)
-		}
 	}
 }
 
@@ -139,17 +136,15 @@ func TestLayoutFor_MatchesRenderedWidth(t *testing.T) {
 	for _, w := range baselineWidths {
 		lay := layoutFor(w)
 		panel := settledPanel(t, shortRunResult(), w, true)
-		// Every rendered line is the centring margin plus the panel itself.
-		wantW := lay.LeftPad + lay.PanelW
 		for i, line := range strings.Split(panel, "\n") {
-			if got := lipgloss.Width(line); got != wantW {
-				t.Errorf("termW=%d line %d: rendered width %d, want LeftPad+PanelW=%d",
-					w, i, got, wantW)
+			if got := lipgloss.Width(line); got != lay.PanelW {
+				t.Errorf("termW=%d line %d: rendered width %d, want PanelW=%d",
+					w, i, got, lay.PanelW)
 			}
 		}
 		// And it must never spill past the terminal.
-		if wantW > w && w >= resultMinPanelW+resultPanelChrome {
-			t.Errorf("termW=%d: rendered width %d exceeds the terminal", w, wantW)
+		if lay.PanelW > w && w >= resultMinPanelW+resultPanelChrome {
+			t.Errorf("termW=%d: panel width %d exceeds the terminal", w, lay.PanelW)
 		}
 		// InnerW must be the space a section can actually fill. If it
 		// over-reports, a section that uses all of it wraps and breaks the
@@ -182,33 +177,6 @@ func TestLayoutFor_CapsContentWidth(t *testing.T) {
 	}
 }
 
-// Once capped, the surplus is split evenly — otherwise the panel sits against
-// the left edge with the extra space trailing off to the right.
-func TestLayoutFor_CentresOnceCapped(t *testing.T) {
-	for _, w := range []int{120, 160, 200, 300} {
-		lay := layoutFor(w)
-		right := w - lay.LeftPad - lay.PanelW
-		if diff := lay.LeftPad - right; diff > 1 || diff < -1 {
-			t.Errorf("termW=%d: left margin %d vs right %d — not centred",
-				w, lay.LeftPad, right)
-		}
-	}
-}
-
-// Centring applies below the cap too. The 8-column margin always existed; it
-// was simply all on the right because the panel was rendered flush left.
-// Splitting it is strictly more balanced, and keeps one rule instead of two.
-func TestLayoutFor_CentredBelowTheCapToo(t *testing.T) {
-	for _, w := range []int{60, 80, 94} {
-		lay := layoutFor(w)
-		right := w - lay.LeftPad - lay.PanelW
-		if diff := lay.LeftPad - right; diff > 1 || diff < -1 {
-			t.Errorf("termW=%d: left margin %d vs right %d — not centred",
-				w, lay.LeftPad, right)
-		}
-	}
-}
-
 // NO_COLOR may change attributes, never geometry.
 func TestResultPanel_NoColorLayoutIdentical(t *testing.T) {
 	for _, w := range baselineWidths {
@@ -221,6 +189,37 @@ func TestResultPanel_NoColorLayoutIdentical(t *testing.T) {
 			if a, b := lipgloss.Width(color[i]), lipgloss.Width(mono[i]); a != b {
 				t.Errorf("termW=%d line %d: color width %d != no-color %d", w, i, a, b)
 			}
+		}
+	}
+}
+
+// The panel must be centred in the terminal the user actually sees. This
+// asserts against the rendered View, not against layoutFor: the root already
+// centres the frame with lipgloss.Place, so a layout that also pads is centred
+// twice and drifts right. A test that only checked layoutFor's own arithmetic
+// passed while the panel sat visibly off-centre.
+func TestResultView_PanelIsCentredOnScreen(t *testing.T) {
+	for _, w := range []int{80, 120, 160, 200, 300} {
+		m := NewResult(shortRunResult(), theme.Load("default", true), config.DefaultKeymap()).SetSize(w, 45)
+		m.revealStartMs, m.nowMs = 0, 1<<40
+
+		var top string
+		for _, ln := range strings.Split(m.View(), "\n") {
+			if plain := stripANSI(ln); strings.Contains(plain, "╭") {
+				top = plain
+				break
+			}
+		}
+		if top == "" {
+			t.Fatalf("termW=%d: no panel border found in the rendered view", w)
+		}
+
+		left := lipgloss.Width(top) - lipgloss.Width(strings.TrimLeft(top, " "))
+		panelW := lipgloss.Width(strings.TrimSpace(top))
+		right := w - left - panelW
+		if diff := left - right; diff > 1 || diff < -1 {
+			t.Errorf("termW=%d: left margin %d vs right %d (panel %d) — not centred on screen",
+				w, left, right, panelW)
 		}
 	}
 }

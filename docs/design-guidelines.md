@@ -113,7 +113,8 @@ Spacing/rhythm: one blank line between logical groups; two blank lines around th
   - `termW < 60` or `termH < 20` → **degraded mode** (see 4.3).
 - **Result panel** applies the same principle with its own hard cap: content is
   limited to `resultMaxContentW` (88 cells, `internal/ui/result_layout.go`) and
-  the bordered panel is centred in whatever space remains. `layoutFor` is the
+  the root `Place(Center, Center)` centres the result. The width policy must not
+  add horizontal padding of its own — doing so centres the panel twice. `layoutFor` is the
   single source of that policy. The panel, graph, and key heatmap size
   themselves from it; the hero and stats grid take no width because their
   content is short enough that the cap alone guarantees it fits. Before this rule the panel tracked the terminal without
