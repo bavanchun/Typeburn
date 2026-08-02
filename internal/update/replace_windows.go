@@ -9,8 +9,14 @@ import (
 
 // replaceBinary swaps a running Windows executable. A running .exe cannot be
 // overwritten in place, so the running binary is moved aside, the new one is
-// moved in, and the old copy is best-effort removed (it may stay locked while
-// the process runs — restoreInterruptedUpdate cleans it up on the next launch).
+// moved in, and the old copy is best-effort removed. That removal can fail
+// while the process still holds the file open; the leftover is cleared by the
+// first os.Remove below on the next update, and nothing clears it before then.
+//
+// There is deliberately no startup recovery pass for a crash between the two
+// renames. Such a crash leaves target missing, and a recovery that only runs
+// when typeburn is launched from target can never execute in that state — the
+// user has to reinstall. Do not add one back without that changing.
 //
 // If the second rename fails after the first succeeded, the original is rolled
 // back so target is never left missing. newBin must reside in target's
@@ -31,17 +37,4 @@ func replaceBinary(target, newBin string) error {
 	}
 	_ = os.Remove(old) // best-effort; may be locked by the running process
 	return nil
-}
-
-// restoreInterruptedUpdate recovers from a crash between the two renames: if
-// target is missing but target+".old" exists, the running exe was moved aside
-// but the new one never landed — restore the original. Safe to call at startup.
-func restoreInterruptedUpdate(target string) {
-	if _, err := os.Stat(target); err == nil {
-		return // target present, nothing to recover
-	}
-	old := target + ".old"
-	if _, err := os.Stat(old); err == nil {
-		_ = os.Rename(old, target)
-	}
 }
