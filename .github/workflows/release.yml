@@ -90,7 +90,13 @@ jobs:
       # tags are immutable, so there is no fixing it afterwards. Assert the tag
       # appears in the file's first heading before anything is published.
       # ref_name is read via env, never interpolated into the script body.
+      # Skipped for prerelease tags. The assertion exists to stop the previous
+      # release's notes being published under a new, immutable STABLE tag. The
+      # disposable dry-run tag (v0.0.0-rc.test) is deliberately a version no
+      # curated heading will ever name, so applying it there would make the
+      # documented dry-run impossible to run.
       - name: Verify release notes match the tag
+        if: ${{ !contains(github.ref_name, '-') }}
         env:
           TAG: ${{ github.ref_name }}
         run: |
