@@ -36,13 +36,9 @@ func (m HistoryModel) View() string {
 		for i, r := range m.rows {
 			sparkVals[i] = float64(r.WPM)
 		}
-		sparkLabel := m.th.Style(theme.RoleTextMuted).Render(
-			"trend  " + sparklineInline(sparkVals, m.th) +
-				"  last " + histItoa(n) + " tests",
-		)
-		body.WriteString(sparkLabel)
+		body.WriteString(trendLine(sparkVals, n, m.w, m.th))
 		body.WriteString("\n\n")
-		body.WriteString(renderHistoryHeader(m.th))
+		body.WriteString(renderHistoryHeader(m.th, historyRuleW(m.w)))
 		body.WriteString("\n")
 
 		// Windowed rows.
@@ -66,10 +62,10 @@ func (m HistoryModel) View() string {
 		}
 
 		// Bottom border rule.
-		sep := m.th.Style(theme.RoleBorder).Render(strings.Repeat("─", 62))
+		sep := m.th.Style(theme.RoleBorder).Render(strings.Repeat("─", historyRuleW(m.w)))
 		body.WriteString(sep)
 		body.WriteString("\n")
-		body.WriteString(renderHistoryMeta(m.top, m.sel, n, m.th))
+		body.WriteString(renderHistoryMeta(m.top, end, n, m.th))
 	}
 
 	content := body.String()
@@ -91,61 +87,4 @@ func (m HistoryModel) View() string {
 		return lipgloss.Place(m.w, m.h, lipgloss.Center, lipgloss.Center, full.String())
 	}
 	return full.String()
-}
-
-// sparkBars are the 8 unicode block elements from lowest to highest, used by
-// the inline History trend sparkline (the Result screen draws a braille line
-// graph instead — see result_graph.go).
-var sparkBars = []rune{'▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'}
-
-// sparklineInline renders a compact single-row sparkline string for the trend
-// label. It uses only the bar characters (no axis) for inline display.
-func sparklineInline(vals []float64, th theme.Theme) string {
-	if len(vals) == 0 {
-		return ""
-	}
-	minV, maxV := vals[0], vals[0]
-	for _, v := range vals[1:] {
-		if v < minV {
-			minV = v
-		}
-		if v > maxV {
-			maxV = v
-		}
-	}
-	if maxV == minV {
-		minV = 0
-		if maxV == 0 {
-			maxV = 1
-		}
-	}
-	bars := make([]rune, len(vals))
-	for i, v := range vals {
-		ratio := (v - minV) / (maxV - minV)
-		idx := int(ratio*float64(len(sparkBars)-1) + 0.5)
-		if idx < 0 {
-			idx = 0
-		}
-		if idx >= len(sparkBars) {
-			idx = len(sparkBars) - 1
-		}
-		bars[i] = sparkBars[idx]
-	}
-	return th.Style(theme.RoleAccent).Render(string(bars))
-}
-
-// itoa is re-declared in the ui package for use in screen_history_view.go.
-// It converts a non-negative int to a decimal string without importing fmt.
-func histItoa(n int) string {
-	if n == 0 {
-		return "0"
-	}
-	buf := [20]byte{}
-	pos := len(buf)
-	for n > 0 {
-		pos--
-		buf[pos] = byte('0' + n%10)
-		n /= 10
-	}
-	return string(buf[pos:])
 }

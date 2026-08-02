@@ -44,11 +44,11 @@ func BenchmarkWordStreamAnimCached(b *testing.B) {
 	cache := &streamTokenCache{}
 	ca := caretAnim{nowMs: 100000, lastKeyMs: 100000, blinkOn: true, cursorIdx: indexOfCurrent(states)}
 
-	_ = renderWordStreamAnim(states, target, typed, 100, th, ca, cache) // warm cache
+	_ = renderWordStreamAnim(states, target, typed, 100, 0, th, ca, cache) // warm cache
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = renderWordStreamAnim(states, target, typed, 100, th, ca, cache)
+		_ = renderWordStreamAnim(states, target, typed, 100, 0, th, ca, cache)
 	}
 }
 
@@ -63,8 +63,8 @@ func TestPrefixCacheBoundedStyleRuns(t *testing.T) {
 	ca := caretAnim{nowMs: 100000, lastKeyMs: 100000, blinkOn: false, cursorIdx: indexOfCurrent(states)}
 
 	// Warm, then render an animated frame and the static frame.
-	_ = renderWordStreamAnim(states, target, typed, 100, th, ca, cache)
-	anim := renderWordStreamAnim(states, target, typed, 100, th, ca, cache)
+	_ = renderWordStreamAnim(states, target, typed, 100, 0, th, ca, cache)
+	anim := renderWordStreamAnim(states, target, typed, 100, 0, th, ca, cache)
 	static := RenderWordStream(states, target, typed, 100, th)
 
 	// Both must carry the same visible content (settled cells identical; only the

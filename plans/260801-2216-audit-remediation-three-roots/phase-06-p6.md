@@ -46,6 +46,37 @@ A 100 wpm run needs 22; **100% accuracy — routine on a `words 10` run** — ne
 `TestLayoutFor_MatchesRenderedWidth` (`result_layout_test.go:135`) asserts every
 panel line equals `lay.PanelW` exactly, so this is a hard test failure.
 
+#### Gate 0 pre-measurement — re-measured after the glyph fix
+
+The widths above predate Phase 1's glyph-table correction and are now **too
+small**. Re-measured against `lipgloss.Width(BigDigits(n, th))` on current `main`:
+
+```
+BigDigits(87)=17  (96)=18  (100)=24  (106)=24  (120)=23  (200)=28
+layoutFor(60)  InnerW=46      layoutFor(80)  InnerW=66
+layoutFor(88)  InnerW=74      layoutFor(120) InnerW=88 (capped, =200)
+```
+
+So the worst realistic case is `100 wpm @ 100%`: `wpmW=24`, `accW=24+2=26`.
+
+| width | InnerW | rail left after `24 + g + 26 + g` |
+|---|---|---|
+| 120/200 | 88 | g=6 → **26**; g=4 → **30** |
+| 88 | 74 | g=6 → **12** |
+| 80 | 66 | g=6 → **4** |
+| 60 | 46 | negative |
+
+Against `railMinW = 40`, **rung 1 (gutters→4) is never sufficient at any width.**
+Rung 2 (accuracy demoted to text, ~8 cells) yields 48 at InnerW=88 — the first
+rung that clears 40 — and only 26 at InnerW=66, so 80 columns lands on rung 3.
+
+**Consequence for implementation:** the fallback ladder is the *normal* path for
+any three-digit WPM or 100% accuracy, not an edge case. Two big-digit zones do not
+coexist with a 40-cell rail at any supported width. Design the ladder as the
+primary layout decision, and treat "both zones big" as the exception that only a
+two-digit/two-digit run reaches. The success criterion "every fallback rung has a
+test that reaches it" is satisfied by ordinary runs, not contrived ones.
+
 **This is the same methodological error that produced the glyph bug** — the
 v2.8.0 screenshot showed 74 wpm, so the zero defect looked fine. Do not repeat it
 a third time.

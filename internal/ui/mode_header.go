@@ -16,7 +16,11 @@ const progressBarWidth = 5
 // Layout per design §5.4 / mockups §2:
 //   - Time mode:  "WPM   elapsed / total"     (e.g. "87 wpm   0:23 / 0:30")
 //   - Words mode: "WPM   done / total"         (e.g. "87 wpm   12 / 25")
-//   - Quote mode: "WPM   pct% ▰▰▰▱▱"          (e.g. "87 wpm   42% ▰▰▰▱▱")
+//   - Quote/Code: "WPM   pct% ▰▰▰▱▱"          (e.g. "87 wpm   42% ▰▰▰▱▱")
+//
+// done and total come from Engine.Progress and are in the same unit as each
+// other: words for Words mode, runes for Quote and Code. Time mode reports its
+// own progress against the clock and ignores them.
 //
 // WPM number is accent+bold; "wpm" and remainder are text-muted.
 // No border; left-aligned.
@@ -44,7 +48,7 @@ func ModeHeader(
 	case config.ModeWords:
 		right = muted.Render(fmt.Sprintf("%d / %d", done, total))
 
-	case config.ModeQuote:
+	case config.ModeQuote, config.ModeCode:
 		var pct float64
 		if total > 0 {
 			pct = float64(done) / float64(total) * 100

@@ -48,7 +48,7 @@ func TestRenderWordStreamAnim_DisabledMatchesStatic(t *testing.T) {
 	states := statesTyped(5, len(target))
 
 	static := RenderWordStream(states, target, typed, 40, th)
-	anim := renderWordStreamAnim(states, target, typed, 40, th, disabledCaret(), &streamTokenCache{})
+	anim := renderWordStreamAnim(states, target, typed, 40, 0, th, disabledCaret(), &streamTokenCache{})
 	if static != anim {
 		t.Errorf("disabled caret differs from static render:\nstatic=%q\nanim  =%q", static, anim)
 	}
@@ -67,7 +67,7 @@ func TestRenderWordStreamAnim_SettledMatchesStatic(t *testing.T) {
 		t.Fatal("precondition: fade should be inactive after 1s")
 	}
 	static := RenderWordStream(states, target, typed, 40, th)
-	anim := renderWordStreamAnim(states, target, typed, 40, th, ca, &streamTokenCache{})
+	anim := renderWordStreamAnim(states, target, typed, 40, 0, th, ca, &streamTokenCache{})
 	if static != anim {
 		t.Errorf("settled caret differs from static render")
 	}
@@ -83,7 +83,7 @@ func TestRenderWordStreamAnim_FadeChangesStyleOnly(t *testing.T) {
 
 	ca := caretAnim{nowMs: 100000, lastKeyMs: 100000, blinkOn: true, cursorIdx: 5}
 	static := RenderWordStream(states, target, typed, 40, th)
-	anim := renderWordStreamAnim(states, target, typed, 40, th, ca, &streamTokenCache{})
+	anim := renderWordStreamAnim(states, target, typed, 40, 0, th, ca, &streamTokenCache{})
 
 	if static == anim {
 		t.Error("fade-active caret should differ from static (new-cell fade not applied)")
@@ -104,7 +104,7 @@ func TestRenderWordStreamAnim_NoColorLayoutIdentical(t *testing.T) {
 	static := RenderWordStream(states, target, typed, 40, th)
 	// blink off + fade active = the most overrides under NO_COLOR.
 	ca := caretAnim{nowMs: 100000, lastKeyMs: 100000, blinkOn: false, cursorIdx: 5}
-	anim := renderWordStreamAnim(states, target, typed, 40, th, ca, &streamTokenCache{})
+	anim := renderWordStreamAnim(states, target, typed, 40, 0, th, ca, &streamTokenCache{})
 
 	if strip(static) != strip(anim) {
 		t.Errorf("NO_COLOR caret not layout-identical:\nstatic=%q\nanim=%q", strip(static), strip(anim))
@@ -152,13 +152,13 @@ func TestPrefixCacheReuse(t *testing.T) {
 	ca := caretAnim{nowMs: 100000, lastKeyMs: 100000, blinkOn: true, cursorIdx: 5}
 	cache := &streamTokenCache{}
 
-	_ = renderWordStreamAnim(states, target, typed, 40, th, ca, cache)
+	_ = renderWordStreamAnim(states, target, typed, 40, 0, th, ca, cache)
 	if !cache.valid {
 		t.Fatal("cache should be valid after first render")
 	}
 	firstArr := &cache.base[0]
 
-	_ = renderWordStreamAnim(states, target, typed, 40, th, ca, cache)
+	_ = renderWordStreamAnim(states, target, typed, 40, 0, th, ca, cache)
 	if &cache.base[0] != firstArr {
 		t.Error("cache base rebuilt on a no-change frame (not reused)")
 	}
@@ -167,7 +167,7 @@ func TestPrefixCacheReuse(t *testing.T) {
 	if cache.valid {
 		t.Error("invalidate did not clear valid")
 	}
-	_ = renderWordStreamAnim(states, target, typed, 40, th, ca, cache)
+	_ = renderWordStreamAnim(states, target, typed, 40, 0, th, ca, cache)
 	if !cache.valid {
 		t.Error("cache not rebuilt after invalidation")
 	}

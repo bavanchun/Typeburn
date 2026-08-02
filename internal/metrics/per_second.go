@@ -14,6 +14,11 @@ type PerSecond struct {
 	TotalChars   int     // all forward (non-backspace) keystrokes in this interval
 }
 
+// maxBuckets is the largest per-second slice bucketPerSecond will allocate:
+// one day of typing. No real run comes close, so the cap only ever fires on a
+// log whose timestamps are wrong or hostile.
+const maxBuckets = 24 * 60 * 60
+
 // bucketPerSecond groups non-backspace keystrokes into half-open one-second
 // intervals [Ns, (N+1)s) relative to startMs (the first keystroke timestamp).
 //
@@ -39,7 +44,19 @@ func bucketPerSecond(log []typing.Keystroke, startMs int64) []PerSecond {
 		}
 	}
 
-	numBuckets := int(maxOffsetMs/1000) + 1
+	// The bucket count comes straight out of a timestamp, and a keystroke log
+	// is untrusted on the replay path: two events a day apart would size this
+	// slice in gigabytes. Callers validate their own input; this cap is the
+	// backstop for the one that forgets. Events past it fold into the last
+	// bucket via the index clamp below.
+	//
+	// Computed in int64 first: on a 32-bit build the conversion of a large
+	// offset would wrap to a negative length and panic in make.
+	nb := maxOffsetMs/1000 + 1
+	if nb > maxBuckets {
+		nb = maxBuckets
+	}
+	numBuckets := int(nb)
 	buckets := make([]PerSecond, numBuckets)
 	for i := range buckets {
 		buckets[i].Sec = i
@@ -72,4 +89,32 @@ func bucketPerSecond(log []typing.Keystroke, startMs int64) []PerSecond {
 	}
 
 	return buckets
+}
+
+// consistencySamples returns the per-second raw-WPM values that describe a rate
+// the user actually sustained for a second.
+//
+// Only the last bucket can be short, and it is scaled to a full second like
+// every other one: a run ending 200 ms into its final second reports that
+// second at a fifth of its real speed. Fed to a variance measure, that lone
+// invented dip is indistinguishable from erratic typing — a perfectly even
+// typist scores far below the formula's maximum purely because their run did
+// not end on a second boundary. The graph still shows the partial bucket; only
+// the score refuses to treat it as a sample.
+//
+// A run shorter than one full second yields no samples, and Consistency reports
+// 0 for "no data" rather than inventing a score from a single partial bucket.
+func consistencySamples(buckets []PerSecond, durationMs int64) []float64 {
+	complete := len(buckets)
+	if durationMs < int64(complete)*1000 {
+		complete--
+	}
+	if complete < 0 {
+		complete = 0
+	}
+	out := make([]float64, complete)
+	for i := range out {
+		out[i] = buckets[i].RawWPM
+	}
+	return out
 }

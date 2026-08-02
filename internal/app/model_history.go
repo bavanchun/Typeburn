@@ -38,21 +38,78 @@ func buildRecord(msg ui.ResultMsg) storage.Record {
 	}
 }
 
+// afkNotice tells the user why a run they finished is missing from history.
+// Dropping it silently would look like the app lost the run, which is a worse
+// failure than the impossible score the withholding exists to keep out.
+const afkNotice = "paused mid-test — not saved to history"
+
+// resultOutcome is what a completed run does to stored history: whether it is
+// written, whether it ranks, and what the user is told. Deciding it separately
+// from applying it keeps the rule assertable without a disk write standing in
+// for it.
+type resultOutcome struct {
+	record storage.Record
+	store  bool
+	isBest bool
+	notice string
+	ctx    ui.ResultContext
+}
+
+// decideOutcome resolves a finished run against the history already on disk.
+//
+// A run whose clock was cut back by trailing inactivity is shown but never
+// written, and never ranked. Its rates describe the burst the user typed before
+// they walked away, not a test they took, so a stored record of it would stand
+// as a personal best nobody could beat by typing. The comparison figures are
+// still resolved for it — the personal best and recent average are facts about
+// the history, not about this run — but its standing is withheld along with the
+// record, or the screen would report a place the run never earned.
+func decideOutcome(msg ui.ResultMsg, hist []storage.Record) resultOutcome {
+	rec := buildRecord(msg)
+	out := resultOutcome{record: rec, ctx: ui.ResultContextFor(hist, rec)}
+	if msg.Result.AFKTrimmed {
+		out.notice = afkNotice
+		out.record = storage.Record{}
+		out.ctx = out.ctx.Unranked()
+		return out
+	}
+	out.store = true
+	out.isBest = storage.IsNewBest(hist, rec)
+	return out
+}
+
 // handleResultMsg processes a completed test: persists the record, detects
 // new-best, and builds the ResultModel with isBest set appropriately.
 // It mutates the model in place and returns it ready for ScreenResult.
+//
+// This is the only place results are persisted, so it is the only place the
+// eligibility rules have to hold.
 func (m Model) handleResultMsg(msg ui.ResultMsg) Model {
-	rec := buildRecord(msg)
-	hist := storage.LoadHistory()
-	isBest := storage.IsNewBest(hist, rec)
-	// Persist regardless of IsNewBest result. A write failure is non-fatal to
-	// the session but must not be silent — surface a dismissible notice.
-	if _, err := storage.AppendHistory(rec); err != nil {
-		m.persistErr = "Couldn't save result to disk"
+	out := decideOutcome(msg, storage.LoadHistory())
+	if out.notice != "" {
+		m.persistErr = out.notice
+	}
+	if out.store {
+		// Persist regardless of the new-best result. A write failure is non-fatal
+		// to the session but must not be silent — surface a dismissible notice.
+		//
+		// A notice without an error means the record reached disk but something
+		// about how it got there is worth saying: the previous file was corrupt
+		// and has been set aside, or the write went ahead without the
+		// cross-process lock. Both leave the result saved, so neither is an
+		// error, and both are things the user would rather know than not.
+		_, notice, err := storage.AppendHistoryWithNotice(out.record)
+		switch {
+		case err != nil:
+			m.persistErr = "Couldn't save result to disk"
+		case !notice.IsZero():
+			m.persistErr = notice.Message
+		}
 	}
 
 	m.result = ui.NewResult(msg, m.theme, m.keys).
-		WithBest(isBest).
+		WithBest(out.isBest).
+		WithContext(out.ctx).
 		WithUpdateHint(m.updateHint).
 		WithRevealStart(nowUTC().UnixMilli()).
 		SetSize(m.w, m.h)

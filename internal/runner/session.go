@@ -46,10 +46,15 @@ func NewCodeSession(snippet string, strict bool) Session {
 
 // RebuildEngine returns a fresh engine for an existing target.
 func RebuildEngine(target string, m mode.Mode, length int, strict bool) *typing.Engine {
-	return typing.NewStrict(target, m, wordTarget(m, length), strict)
+	return typing.NewStrict(target, m, engineLimit(m, length), strict)
 }
 
-func wordTarget(m mode.Mode, length int) int {
+// engineLimit converts a mode's user-facing length into the engine's limit,
+// whose unit is the mode's own: seconds become milliseconds for a timed run,
+// and a word count passes through unchanged. The conversion is the reason the
+// limit is not a progress denominator — a 30-second run's limit is 30000, which
+// is a deadline, not thirty thousand words.
+func engineLimit(m mode.Mode, length int) int {
 	if m == mode.ModeTime {
 		return length * 1000
 	}

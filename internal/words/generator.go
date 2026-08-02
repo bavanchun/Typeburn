@@ -51,11 +51,25 @@ func NewGenerator(seed int64) *Generator {
 	return &Generator{rng: rand.New(src)}
 }
 
+// MaxWords is the largest word count Words will generate. It matches the
+// codetext rune cap so both input boundaries carry the same number, and it is
+// far past any test a person finishes.
+//
+// Callers that take a count from the user should reject anything larger with a
+// message rather than relying on the clamp below — being handed 10 000 words
+// after asking for two billion is not a result anyone wanted.
+const MaxWords = 10000
+
 // Words returns n space-separated words drawn at random from the embedded
-// word list. When n <= 0 an empty string is returned.
+// word list. When n <= 0 an empty string is returned; n above MaxWords is
+// clamped, because this is where the allocation happens and an allocation
+// sized by an unvalidated number is how the process dies.
 func (g *Generator) Words(n int) string {
 	if n <= 0 || len(wordList) == 0 {
 		return ""
+	}
+	if n > MaxWords {
+		n = MaxWords
 	}
 	tokens := make([]string, n)
 	for i := range tokens {

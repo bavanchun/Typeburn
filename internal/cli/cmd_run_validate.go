@@ -87,6 +87,11 @@ func runLengthForMode(mode config.Mode, f runFlags, s config.Settings, durationC
 			if f.words <= 0 {
 				return 0, usageError("--words must be positive")
 			}
+			// The generator clamps, but a clamp here would silently start a
+			// 10 000-word test for someone who typed a much larger number.
+			if f.words > words.MaxWords {
+				return 0, usageError("--words must be at most %d", words.MaxWords)
+			}
 			return f.words, nil
 		}
 	}

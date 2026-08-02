@@ -75,6 +75,28 @@ a leftover means that phase did not finish.
 | `README.md:237`, `:219-224` | Understates `ci.yml` by five steps; data-paths table omits `$XDG_STATE_HOME`. |
 | `internal/ui/screen_result.go:14` | Still describes "a WPM-over-time sparkline" for a screen that has drawn a braille dual-axis chart since v2.6.0. |
 
+#### Doc claims re-verified against source before writing
+
+Checked on current `main`, so step 8 corrects from evidence rather than prose:
+
+```
+internal/metrics/compute.go:43   func Compute(log []typing.Keystroke, mode mode.Mode, endMs int64) Result
+internal/metrics/afk_trim.go:21  func TrimAFK(log []typing.Keystroke, m mode.Mode, endMs int64) ([]typing.Keystroke, int64)
+go list -deps ./internal/storage | grep -c charm   -> 9
+go list -f '{{join .Imports " "}}' ./internal/storage
+    -> encoding/json fmt .../internal/config os path/filepath sort strconv time
+.goreleaser.yaml:95              homebrew_casks:      (LIVE block, not a TODO)
+internal/words/quotes.go:16-20   QuoteShort | QuoteMedium | QuoteLong   (no "Epic")
+```
+
+All four corrections in the table above are confirmed. The `internal/config`
+import is the single edge carrying bubbletea into `internal/storage` — the
+layering sentence must be rewritten to say so, not merely softened.
+
+The Homebrew row is the highest-risk one: `homebrew_casks:` is live release
+infrastructure with an existing tap and an injected token. Correct that sentence
+early, independently of the rest of the docs sweep, so no future agent deletes it.
+
 Plus the user-visible behaviour changes this plan introduces:
 - **Consistency scores change for everyone** (partial-final-second correction) —
   document as an intentional correction with a worked before/after; stored history

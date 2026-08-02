@@ -26,6 +26,56 @@ func TestCheck_DevSkip(t *testing.T) {
 	}
 }
 
+// The tag is interpolated into the download URL and into the asset filename
+// that Apply then joins onto the install directory, so it has to be a version
+// and nothing else. Today only versions reach here, but that is a side effect
+// of how the comparison happens to parse — this pins it.
+func TestCheck_RejectsATagThatIsNotAVersion(t *testing.T) {
+	tags := []string{
+		"v../../../../tmp/evil",
+		"v1.2.3/../../etc",
+		`v1.2.3\..\..\evil`,
+		"latest",
+		"",
+	}
+	for _, tag := range tags {
+		t.Run(tag, func(t *testing.T) {
+			defer withTempCache(t)()
+			srv := stubServer(t, Release{TagName: tag})
+			defer srv.Close()
+			origURL := getFetchURL()
+			setFetchURL(srv.URL)
+			defer setFetchURL(origURL)
+
+			r, err := Check(context.Background(), "v2.0.0", true)
+			if err == nil {
+				t.Fatalf("Check accepted tag %q (result %+v)", tag, r)
+			}
+			if r != nil {
+				t.Errorf("Check returned a result alongside the error: %+v", r)
+			}
+		})
+	}
+}
+
+// Rejecting bad tags must not reject the shapes the project actually publishes.
+func TestCheck_AcceptsPublishedTagShapes(t *testing.T) {
+	for _, tag := range []string{"v2.9.0", "2.9.0", "v2.9.0-rc.1", "v2.8.1-3-gabc1234"} {
+		t.Run(tag, func(t *testing.T) {
+			defer withTempCache(t)()
+			srv := stubServer(t, Release{TagName: tag})
+			defer srv.Close()
+			origURL := getFetchURL()
+			setFetchURL(srv.URL)
+			defer setFetchURL(origURL)
+
+			if _, err := Check(context.Background(), "v2.0.0", true); err != nil {
+				t.Errorf("Check rejected a published tag shape %q: %v", tag, err)
+			}
+		})
+	}
+}
+
 func TestCheck_UpgradeAvailable(t *testing.T) {
 	defer withTempCache(t)()
 	srv := stubServer(t, Release{TagName: "v2.1.0", HTMLURL: "https://github.com/bavanchun/Typeburn/releases/tag/v2.1.0"})

@@ -68,6 +68,21 @@ func newTestResult() ResultModel {
 	return NewResult(msg, theme.Default(), config.DefaultKeymap()).SetSize(80, 24)
 }
 
+// sampleContext is a populated comparison rail: a run that placed second in a
+// bucket it did not win.
+func sampleContext() ResultContext {
+	return ResultContext{HasHistory: true, PB: 99, Avg10: 88, Rank: 2, Total: 6}
+}
+
+// newTestResultAt is newTestResult with a chosen WPM, which is what decides how
+// many columns the hero's left zone takes and therefore which rung of the
+// fallback ladder the band lands on.
+func newTestResultAt(netWPM float64) ResultModel {
+	m := newTestResult()
+	m.res.NetWPM = netWPM
+	return m.WithContext(sampleContext())
+}
+
 // TestNewResult_FieldsPopulated checks constructor sets all fields correctly.
 func TestNewResult_FieldsPopulated(t *testing.T) {
 	m := newTestResult()
@@ -111,11 +126,25 @@ func TestResultView_ContainsWPMLabel(t *testing.T) {
 	}
 }
 
-// TestResultView_ContainsAccuracy checks that accuracy is rendered.
-func TestResultView_ContainsAccuracy(t *testing.T) {
-	view := newTestResult().View()
-	if !strings.Contains(view, "97%") {
-		t.Errorf("expected '97%%' in view:\n%s", view)
+// Accuracy is rendered in whichever form the width budget allowed. Both forms
+// have to be asserted: the block-art form has no "97%" substring at all, so a
+// test that only looked for the text would have passed on a screen showing no
+// accuracy while the ladder was on its top rung.
+func TestResultView_ShowsAccuracyInBothForms(t *testing.T) {
+	big := stripANSI(newTestResult().View())
+	topRow := stripANSI(strings.Split(BigDigits(97, theme.Default()), "\n")[0])
+	if !strings.Contains(big, topRow) {
+		t.Errorf("expected block-art accuracy in view:\n%s", big)
+	}
+	if !strings.Contains(big, "acc") {
+		t.Errorf("expected the acc label in view:\n%s", big)
+	}
+
+	// With history to show, the rail claims the columns and accuracy demotes to
+	// its text form.
+	text := stripANSI(newTestResultAt(106).View())
+	if !strings.Contains(text, "97%") {
+		t.Errorf("expected text accuracy '97%%' in view:\n%s", text)
 	}
 }
 
@@ -135,37 +164,33 @@ func TestResultView_ContainsConsistency(t *testing.T) {
 	}
 }
 
-// TestResultView_ContainsStatsGrid checks the 2-col stats grid: characters
-// 3-tuple, test type, and time entries.
-func TestResultView_ContainsStatsGrid(t *testing.T) {
+// Every number in the character triple carries its own word. The middle figure
+// used to be identifiable only by its colour, which the mono theme renders
+// almost identically to primary text and NO_COLOR removes entirely.
+func TestResultView_CharBreakdownIsLabelled(t *testing.T) {
 	view := stripANSI(newTestResult().View())
-	if !strings.Contains(view, "characters") {
-		t.Errorf("expected 'characters' label in view:\n%s", view)
+	for _, want := range []string{"142 correct", "4 wrong", "1 extra"} {
+		if !strings.Contains(view, want) {
+			t.Errorf("expected %q in view:\n%s", want, view)
+		}
 	}
-	if !strings.Contains(view, "142/4/1") {
-		t.Errorf("expected characters tuple '142/4/1' in view:\n%s", view)
+	if strings.Contains(view, "142/4/1") {
+		t.Errorf("the unlabelled triple must be gone:\n%s", view)
 	}
-	if !strings.Contains(view, "english") {
-		t.Errorf("expected 'english' in test-type entry:\n%s", view)
-	}
-	if !strings.Contains(view, "time 30") {
-		t.Errorf("expected 'time 30' in test-type entry:\n%s", view)
-	}
-	if !strings.Contains(view, "30s") {
-		t.Errorf("expected duration '30s' in time entry:\n%s", view)
-	}
-	// The grid is one aligned column. raw and consistency live in the hero and
-	// must not be repeated here — the same number printed twice on one screen
-	// is what this replaced.
-	for _, line := range strings.Split(view, "\n") {
-		if strings.Contains(line, "test type") && strings.Contains(line, "consistency") {
-			t.Errorf("consistency must not appear in the stats grid:\n%s", view)
+}
+
+// The run's identity stays on screen: which test, which language, how long.
+func TestResultView_ShowsModeMeta(t *testing.T) {
+	view := stripANSI(newTestResult().View())
+	for _, want := range []string{"time 30", "english", "30s"} {
+		if !strings.Contains(view, want) {
+			t.Errorf("expected %q in view:\n%s", want, view)
 		}
 	}
 }
 
-// raw and consistency are headline stats in the hero. Printing them again in
-// the grid was pure duplication; this pins that they appear exactly once.
+// raw and consistency belong to the comparison rail. Printing them anywhere
+// else is the duplication this layout removed.
 func TestResultView_NoDuplicatedStats(t *testing.T) {
 	view := stripANSI(newTestResult().View())
 	for _, label := range []string{"raw", "consistency"} {
@@ -377,69 +402,60 @@ func TestAccColorRole(t *testing.T) {
 	}
 }
 
-// TestResultHero_TwoBigNumbers checks the redesigned hero: WPM big-digit block
-// plus a prominent acc block, with raw/consistency as a secondary card row.
-func TestResultHero_TwoBigNumbers(t *testing.T) {
-	m := newTestResult()
-	hero := stripANSI(m.renderHero())
-	if !strings.Contains(hero, "97%") {
-		t.Errorf("hero missing acc value 97%%:\n%s", hero)
+// The hero band is one label row over six rows of block art, with accuracy and
+// the comparison rail sharing those rows. Every line is exactly InnerW wide, so
+// nothing downstream has to guess where a column ends.
+func TestResultHeroBand_ShapeAndZones(t *testing.T) {
+	m := newTestResultAt(106)
+	lay := layoutFor(m.w, m.h)
+	band := m.heroBand(lay)
+
+	if len(band) != numRows+1 {
+		t.Fatalf("band has %d lines, want %d", len(band), numRows+1)
 	}
-	if !strings.Contains(hero, "acc") {
-		t.Errorf("hero missing acc label:\n%s", hero)
-	}
-	if !strings.Contains(hero, "wpm") {
-		t.Errorf("hero missing wpm label:\n%s", hero)
-	}
-	if !strings.Contains(hero, "raw") || !strings.Contains(hero, "consistency") {
-		t.Errorf("hero missing raw/consistency secondary cards:\n%s", hero)
-	}
-	// Acc value must share a line with big-digit block content (side-by-side),
-	// not sit on its own row below the digits.
-	sideBySide := false
-	for _, line := range strings.Split(hero, "\n") {
-		if strings.Contains(line, "97%") && strings.ContainsRune(line, '█') {
-			sideBySide = true
-			break
+	for i, line := range band {
+		if got := lipgloss.Width(line); got != lay.InnerW {
+			t.Errorf("band line %d width %d, want InnerW %d", i, got, lay.InnerW)
 		}
 	}
-	if !sideBySide {
-		t.Errorf("acc value should render beside the WPM digits:\n%s", hero)
+
+	joined := stripANSI(strings.Join(band, "\n"))
+	for _, want := range []string{"wpm", "acc", "97%", "raw", "consistency"} {
+		if !strings.Contains(joined, want) {
+			t.Errorf("band missing %q:\n%s", want, joined)
+		}
 	}
-	// raw + consistency form a secondary row BELOW the big blocks — never
-	// beside the ASCII digits (that was the old 3-card side column).
-	for i, line := range strings.Split(hero, "\n") {
+	// The rail shares the digit rows; it never sits below them, which is what
+	// made the old layout two-thirds empty on its right-hand side.
+	beside := false
+	for _, line := range strings.Split(joined, "\n") {
 		if strings.Contains(line, "raw") && strings.ContainsRune(line, '█') {
-			t.Errorf("raw card must sit below the digits, found beside them on line %d:\n%s", i, hero)
+			beside = true
 		}
-		if strings.Contains(line, "raw") && !strings.Contains(line, "consistency") {
-			t.Errorf("raw and consistency should share the secondary row:\n%s", hero)
-		}
+	}
+	if !beside {
+		t.Errorf("the rail should render beside the WPM digits:\n%s", joined)
 	}
 }
 
-// The longest grid entry ("test type  words 100 · english") must fit inside the
-// panel at every terminal width. This previously guarded a two-column wrap
-// threshold; the grid is one column now, but the underlying risk — an entry
-// wider than the space it is given — is the same.
-func TestResultStatsGrid_FitsThePanelAtEveryWidth(t *testing.T) {
-	res := metrics.Result{RawWPM: 108, Consistency: 95, CorrectChars: 142,
-		IncorrectChars: 4, ExtraChars: 1, DurationMs: 30000}
+// The rail must survive every terminal width the product supports: whichever
+// rung the ladder lands on, its lines are exactly the column they were given.
+func TestResultHeroBand_FitsEveryWidth(t *testing.T) {
+	res := metrics.Result{NetWPM: 106, RawWPM: 112, Accuracy: 100, Consistency: 95,
+		CorrectChars: 142, IncorrectChars: 4, ExtraChars: 1, DurationMs: 30000}
 	msg := ResultMsg{Result: res, Mode: config.ModeWords, Length: 100}
-	m := NewResult(msg, theme.Default(), config.DefaultKeymap())
 
-	grid := stripANSI(m.renderStatsGrid())
-	for _, line := range strings.Split(grid, "\n") {
-		if strings.HasPrefix(strings.TrimSpace(line), "english") {
-			t.Fatalf("entry wrapped mid-value:\n%s", grid)
-		}
-	}
 	for termW := 60; termW <= 220; termW++ {
-		innerW := layoutFor(termW).InnerW
-		for _, line := range strings.Split(grid, "\n") {
-			if n := lipgloss.Width(line); n > innerW {
-				t.Fatalf("termW=%d: grid line width %d exceeds InnerW %d:\n%s",
-					termW, n, innerW, grid)
+		for _, termH := range []int{20, 24, 50} {
+			m := NewResult(msg, theme.Default(), config.DefaultKeymap()).
+				WithContext(ResultContext{HasHistory: true, PB: 111, Avg10: 98, Rank: 3, Total: 47}).
+				SetSize(termW, termH)
+			lay := layoutFor(termW, termH)
+			for i, line := range m.heroBand(lay) {
+				if n := lipgloss.Width(line); n != lay.InnerW {
+					t.Fatalf("termW=%d h=%d: band line %d width %d, want %d",
+						termW, termH, i, n, lay.InnerW)
+				}
 			}
 		}
 	}
