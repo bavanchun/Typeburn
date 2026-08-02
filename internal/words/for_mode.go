@@ -14,6 +14,8 @@ import (
 //   - ModeWords: length is the word count (10/25/50/100); returns exactly that
 //     many space-separated words.
 //   - ModeQuote: ql selects the desired quote bucket; length is ignored.
+//   - ModeCode:  returns "" — the target comes from the user's file, not from
+//     this package. runner.NewCodeSession supplies it directly.
 //
 // punctuation/numbers apply only to ModeWords and ModeTime (and the default
 // fallback for unknown modes) via Generator.ApplyOptions — ModeQuote already
@@ -24,6 +26,12 @@ func ForMode(g *Generator, m mode.Mode, length int, ql QuoteLen, punctuation, nu
 		return g.ApplyOptions(g.Words(length), punctuation, numbers)
 	case mode.ModeQuote:
 		return g.Quote(ql).Text
+	case mode.ModeCode:
+		// A Code target is the user's own snippet, loaded by codetext; there is
+		// nothing for a word generator to produce. Falling through to the
+		// default would hand back random English prose in the one mode that
+		// promised the file the user chose.
+		return ""
 	default: // ModeTime and any future modes default to a time buffer
 		return g.ApplyOptions(g.TimeBuffer(), punctuation, numbers)
 	}

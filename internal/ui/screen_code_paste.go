@@ -68,6 +68,8 @@ func pasteErrReason(err error) string {
 		return "paste is too large (max 10000 runes / 500 lines)"
 	case errors.Is(err, codetext.ErrBinary):
 		return "paste is not valid text"
+	case errors.Is(err, codetext.ErrControl):
+		return "paste contains control characters that cannot be typed"
 	default:
 		return "could not read the pasted text"
 	}
