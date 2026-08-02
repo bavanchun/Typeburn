@@ -47,6 +47,14 @@ type TypingModel struct {
 	frameLoopArmed bool
 	nowFn          func() int64
 	wordCache      *streamTokenCache
+
+	// tickLoopEnded records that the 100ms timer chain has stopped. The root
+	// starts one chain with InitCmd as soon as it builds the model and every
+	// tickMsg re-arms it, so a fresh model always has exactly one running —
+	// hence the zero value means "running". Restart paths consult this instead
+	// of starting another chain: tea.Tick chains never merge, so a second start
+	// leaves two loops ticking forever and both racing to end the same test.
+	tickLoopEnded bool
 }
 
 // AbortMsg is emitted when the user presses esc on the typing screen.
@@ -127,27 +135,6 @@ func (m TypingModel) Update(msg tea.Msg) (TypingModel, tea.Cmd) {
 	return m, nil
 }
 
-// handleTick processes wall-clock ticks: recomputes WPM and checks time-mode
-// completion.
-func (m TypingModel) handleTick(msg tickMsg) (TypingModel, tea.Cmd) {
-	m.nowMs = msg.t.UnixMilli()
-	elapsed := elapsedMs(m.startMs, msg.t)
-
-	// Recompute live WPM at ~250ms cadence to limit style recomputation.
-	if m.nowMs-m.lastPaintMs >= 250 {
-		m.headerWPM = liveWPMFromCount(m.eng.ForwardKeystrokes(), elapsed)
-		m.lastPaintMs = m.nowMs
-	}
-
-	// Time-mode completion: when elapsed ≥ limit, end the test.
-	if m.mode == config.ModeTime && m.startMs > 0 {
-		if elapsed >= limitMs(m.length) {
-			return m, m.completeCmd(limitMs(m.length) + m.startMs)
-		}
-	}
-	return m, tickCmd()
-}
-
 // handleKey dispatches a key event to the appropriate action.
 func (m TypingModel) handleKey(k tea.Key) (TypingModel, tea.Cmd) {
 	switch {
@@ -156,12 +143,14 @@ func (m TypingModel) handleKey(k tea.Key) (TypingModel, tea.Cmd) {
 	case m.keys.Back.Matches(k):
 		return m, func() tea.Msg { return AbortMsg{} }
 	case m.keys.RestartSame.Matches(k):
-		// Re-arm the tick so the Time-mode header/timer stays live after a
-		// restart; the loop idles harmlessly until the first keystroke sets
-		// startMs (elapsedMs/ completion are guarded on startMs).
-		return m.restartSame(), tickCmd()
+		// Keep the Time-mode header/timer live across a restart. The running
+		// chain already does that — it idles harmlessly until the first
+		// keystroke sets startMs (elapsedMs/completion are guarded on startMs).
+		return m.restartSame().armTickLoop()
 	case m.keys.NewTest.Matches(k):
-		return m.newTest(), tickCmd()
+		fresh := m.newTest()
+		fresh.tickLoopEnded = m.tickLoopEnded // a new target, the same chain
+		return fresh.armTickLoop()
 	}
 
 	// Backspace — no-op before test starts.
@@ -180,8 +169,9 @@ func (m TypingModel) handleKey(k tea.Key) (TypingModel, tea.Cmd) {
 	return m, nil
 }
 
-// Keystroke application (applyText) and the caret clock seam live in
-// screen_typing_input.go; caret animation hooks (HasActiveAnim, InitCmd,
-// caretAnimState) in screen_typing_caret.go; test lifecycle actions
-// (restartSame, newTest, completeCmd) in screen_typing_actions.go — keeping this
-// file focused on Update/message routing and key dispatch.
+// The 100ms timer chain (handleTick, armTickLoop) lives in
+// screen_typing_tick.go; keystroke application (applyText) and the caret clock
+// seam live in screen_typing_input.go; caret animation hooks (HasActiveAnim,
+// InitCmd, caretAnimState) in screen_typing_caret.go; test lifecycle actions
+// (restartSame, newTest, completeCmd) in screen_typing_actions.go — keeping
+// this file focused on Update/message routing and key dispatch.

@@ -39,7 +39,7 @@ func TestNoColorInvariant_WordStreamCaret(t *testing.T) {
 	static := RenderWordStream(states, target, typed, 40, th)
 	for _, off := range []int64{0, 40, 80, 120, 160, 300, 600} {
 		ca := caretAnim{nowMs: 100000 + off, lastKeyMs: 100000, blinkOn: off%80 < 40, cursorIdx: 15}
-		got := renderWordStreamAnim(states, target, typed, 40, th, ca, &streamTokenCache{})
+		got := renderWordStreamAnim(states, target, typed, 40, 0, th, ca, &streamTokenCache{})
 		assertLayoutIdentical(t, "caret@"+itoa(off), static, got)
 	}
 }

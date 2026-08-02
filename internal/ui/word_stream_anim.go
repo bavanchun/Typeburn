@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"strings"
+
 	"github.com/bavanchun/Typeburn/v2/internal/theme"
 	"github.com/bavanchun/Typeburn/v2/internal/typing"
 )
@@ -26,13 +28,19 @@ func (c *streamTokenCache) invalidate() {
 
 // renderWordStreamAnim renders the word-stream with caret animation applied. It
 // reuses cached base tokens (rebuilding only on content/theme change) and
-// re-Renders only the ≤3 animated cells around the cursor, then wraps. With a
-// disabled caret (cursorIdx < 0) the output equals RenderWordStream exactly.
+// re-Renders only the ≤3 animated cells around the cursor, then wraps and
+// windows the rows to height. With a disabled caret (cursorIdx < 0) and no
+// height limit the output equals RenderWordStream exactly.
+//
+// height ≤ 0 means "every row", which is what callers that are measuring rather
+// than displaying want. Anything else keeps at most that many rows, scrolled so
+// the caret's row stays on screen — a stream taller than the terminal is
+// silently clipped by the cell buffer, and the user would be typing blind.
 func renderWordStreamAnim(
 	states []typing.CharState,
 	target []rune,
 	typed []rune,
-	width int,
+	width, height int,
 	th theme.Theme,
 	ca caretAnim,
 	cache *streamTokenCache,
@@ -58,7 +66,11 @@ func renderWordStreamAnim(
 		copy(tokens, base)
 		applyCaretOverrides(tokens, states, target, typed, ca, th)
 	}
-	return wrapTokens(tokens, states, target, typed, width)
+	rows, caretRow := wrapTokens(tokens, states, target, typed, width)
+	if height < 1 || len(rows) <= height {
+		return strings.Join(rows, "\n")
+	}
+	return joinViewport(rows, caretRow, height)
 }
 
 // applyCaretOverrides re-Renders the cursor cell and the ≤2 cells behind it with

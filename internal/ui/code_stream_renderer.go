@@ -121,7 +121,11 @@ func renderCodeStreamAnim(
 			continue
 		}
 
-		cellW := 1
+		// Width in terminal cells, not runes: --text is where arbitrary pasted
+		// text arrives, so a row of CJK would otherwise be accounted at half its
+		// real width and run off the screen, and a control character would take
+		// a cell it never draws.
+		cellW := cellWidth(r)
 		text := string(r)
 		if r == '\t' {
 			cellW = tabVisualWidth
