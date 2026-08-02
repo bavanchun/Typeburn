@@ -14,6 +14,11 @@ type PerSecond struct {
 	TotalChars   int     // all forward (non-backspace) keystrokes in this interval
 }
 
+// maxBuckets is the largest per-second slice bucketPerSecond will allocate:
+// one day of typing. No real run comes close, so the cap only ever fires on a
+// log whose timestamps are wrong or hostile.
+const maxBuckets = 24 * 60 * 60
+
 // bucketPerSecond groups non-backspace keystrokes into half-open one-second
 // intervals [Ns, (N+1)s) relative to startMs (the first keystroke timestamp).
 //
@@ -39,7 +44,19 @@ func bucketPerSecond(log []typing.Keystroke, startMs int64) []PerSecond {
 		}
 	}
 
-	numBuckets := int(maxOffsetMs/1000) + 1
+	// The bucket count comes straight out of a timestamp, and a keystroke log
+	// is untrusted on the replay path: two events a day apart would size this
+	// slice in gigabytes. Callers validate their own input; this cap is the
+	// backstop for the one that forgets. Events past it fold into the last
+	// bucket via the index clamp below.
+	//
+	// Computed in int64 first: on a 32-bit build the conversion of a large
+	// offset would wrap to a negative length and panic in make.
+	nb := maxOffsetMs/1000 + 1
+	if nb > maxBuckets {
+		nb = maxBuckets
+	}
+	numBuckets := int(nb)
 	buckets := make([]PerSecond, numBuckets)
 	for i := range buckets {
 		buckets[i].Sec = i

@@ -59,7 +59,7 @@ func (m Model) View() tea.View {
 	// Transient notice (a failed write, or a run withheld from history).
 	// Cleared on the next keypress.
 	if m.persistErr != "" && m.w > 0 && m.h > 0 {
-		out = overlayNotice(out, ui.PersistenceNotice(m.persistErr, m.theme), m.w, m.h)
+		out = overlayNotice(out, ui.PersistenceNotice(m.persistErr, m.w, m.theme), m.w, m.h)
 	}
 
 	return altView(out)
