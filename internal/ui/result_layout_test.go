@@ -26,6 +26,11 @@ var baselineWidths = []int{60, 80, 120, 200}
 // shortRunResult is an 8-second run with no errors — the case from the report,
 // where the chart has far fewer points than the panel has room for and the
 // error axis has nothing to show.
+//
+// NetWPM is 106 deliberately. The baselines are the only recording of the hero
+// block, and at the previous value of 74 they contained no 0 and none of the
+// digits whose glyphs were ragged — so they recorded a hero that rendered the
+// wrong number as correct, and a fix would have produced an empty diff.
 func shortRunResult() ResultMsg {
 	per := make([]metrics.PerSecond, 8)
 	for i := range per {
@@ -35,7 +40,7 @@ func shortRunResult() ResultMsg {
 	}
 	return ResultMsg{
 		Result: metrics.Result{
-			NetWPM: 74, RawWPM: 74, Accuracy: 100, Consistency: 59,
+			NetWPM: 106, RawWPM: 106, Accuracy: 100, Consistency: 59,
 			CorrectChars: 52, DurationMs: 8000, PerSecond: per,
 		},
 		Mode:   config.ModeWords,
