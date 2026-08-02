@@ -34,8 +34,14 @@ func codeStreamHeight(termH int) int {
 // and Quote generate far more text than any terminal can show, so without a
 // budget the stream renders every row it has and the cell buffer drops the
 // overflow — footer first, and eventually the caret itself.
+//
+// The divisor is what makes the window actually track the terminal: a 24-row
+// terminal gets 3 rows, the same as Monkeytype, and a 50-row one gets 7. A
+// larger share of the height would pin every supported terminal to the upper
+// clamp and the window would never adapt at all. The upper bound is 7 because
+// past that the eye stops tracking which line the caret is on.
 func wordStreamHeight(termH int) int {
-	rows := (termH - fixedOverhead) / 2
+	rows := (termH - fixedOverhead) / 6
 	if rows < minWordStreamRows {
 		return minWordStreamRows
 	}

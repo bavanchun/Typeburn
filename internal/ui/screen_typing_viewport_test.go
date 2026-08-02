@@ -226,3 +226,28 @@ func TestTypingView_WindowIsAFunctionOfTheRunSoFar(t *testing.T) {
 		}
 	}
 }
+
+// The window tracks the terminal instead of pinning to one size: a laptop-sized
+// terminal reads like Monkeytype's three lines, a tall one uses the room it has.
+// The bounds matter as much as the slope — too small and there is no read-ahead,
+// too large and the eye loses which line the caret is on.
+//
+// A divisor that saturates the upper clamp at every supported height would pass
+// any test that only checked the bounds, so the intermediate heights are what
+// this asserts.
+func TestWordStreamHeight_TracksTerminalHeight(t *testing.T) {
+	for _, tc := range []struct {
+		termH, want int
+	}{
+		{20, 3}, // the degraded-mode floor: minimum window
+		{24, 3}, // the common laptop terminal
+		{30, 4},
+		{40, 6},
+		{50, 7},  // tall terminal: maximum window
+		{120, 7}, // far beyond it: still capped
+	} {
+		if got := wordStreamHeight(tc.termH); got != tc.want {
+			t.Errorf("wordStreamHeight(%d) = %d, want %d", tc.termH, got, tc.want)
+		}
+	}
+}

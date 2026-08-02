@@ -124,11 +124,23 @@ work; fix it here.
 // The window grows with the terminal instead of pinning to Monkeytype's 3
 // lines, so a tall terminal is used rather than padded. Clamped at 7 because
 // beyond that the eye stops tracking the caret's line.
-rows := clamp(3, (h-4)/2, 7)
+rows := clamp(3, (h-4)/6, 7)
 ```
 
 80×24 → 3 lines; 120×50 → 7. Scroll by one line when the caret enters the last
 visible line.
+
+**Divisor corrected during execution.** This section originally read `(h-4)/2`,
+which contradicts both worked examples directly above it: at h=24 it yields 10,
+and the upper clamp turns that into 7, not 3. `(h-4)/2` only drops to 3 at
+h ≤ 10 — far below the h=20 degraded-mode floor — so the window would have been
+**7 rows at every supported height**, never adapting, and the stated trade-off
+below would have been bought without ever being paid for.
+
+`/6` is the divisor that satisfies the two examples as written: h=24 → 3,
+h=50 → 7. Confirmed with the user during execution. The mapping is asserted at
+intermediate heights, since a test that only checks the clamp bounds passes
+against the saturating version too.
 
 Accepted trade-off: **the reading rhythm differs between machines** — the same
 user gets 3 lines on a laptop and 7 on an external monitor. That is the cost of
