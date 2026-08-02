@@ -1,6 +1,9 @@
 package cli
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 const (
 	ExitOK             = 0
@@ -45,11 +48,15 @@ func abortError(format string, args ...any) error {
 }
 
 // ExitCode maps an error returned by Execute into a process exit code.
+// errors.As rather than a type assertion: ExitAbort and ExitManagedInstall are
+// script-facing contracts, and a bare assertion silently downgrades them to
+// ExitUsage as soon as any caller wraps the error with %w.
 func ExitCode(err error) int {
 	if err == nil {
 		return ExitOK
 	}
-	if e, ok := err.(*ExitError); ok {
+	var e *ExitError
+	if errors.As(err, &e) {
 		return e.Code
 	}
 	return ExitUsage

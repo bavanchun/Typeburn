@@ -2,6 +2,7 @@ package update
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"time"
 )
@@ -27,6 +28,16 @@ func Check(ctx context.Context, currentVer string, force bool) (*Result, error) 
 	rel, err := FetchLatest(ctx, currentVer)
 	if err != nil {
 		return nil, err
+	}
+
+	// The tag reaches Apply, where it is interpolated into a download URL and
+	// into the asset filename that is then joined onto the install directory.
+	// Nothing between here and there constrains its shape, and the same guard
+	// already runs on the cache-read path — apply it to the live result too so
+	// the "a tag is always v1.2.3" invariant is stated rather than inferred
+	// from parseSemver happening to reject everything else.
+	if !validSemverRe.MatchString(rel.TagName) {
+		return nil, fmt.Errorf("update: release tag %q is not a version", rel.TagName)
 	}
 
 	// Treat draft/prerelease as "no stable upgrade available".

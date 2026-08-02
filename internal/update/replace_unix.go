@@ -31,8 +31,3 @@ func replaceBinary(target, newBin string) error {
 	}
 	return nil
 }
-
-// restoreInterruptedUpdate is a no-op on unix: the single atomic rename leaves
-// no half-applied state to recover. It exists so callers can invoke it
-// unconditionally across platforms (see replace_windows.go).
-func restoreInterruptedUpdate(string) {}
