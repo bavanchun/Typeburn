@@ -43,6 +43,65 @@ jobs:
       - name: Binary size check
         run: make size-check
 
+  vuln:
+    name: govulncheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: "1.25.x"
+          cache: true
+
+      # Pinned so a scanner release cannot change the verdict on an unrelated
+      # PR. The advisory database is still queried live — that is the point.
+      - name: Install govulncheck
+        run: go install golang.org/x/vuln/cmd/govulncheck@v1.1.4
+
+      # Policy: fail on findings outside the standard library; report stdlib
+      # findings as a job-summary warning without failing. A stdlib advisory is
+      # fixed by bumping the toolchain, which this workflow controls — failing
+      # the build of whoever happens to open the next PR is noise, and noise is
+      # what gets a gate switched off. Rationale is recorded in CONTRIBUTING.md.
+      - name: Scan
+        run: |
+          set -euo pipefail
+          # Exits 3 when it finds something reachable; the verdict is ours to make.
+          govulncheck -json ./... > vulns.json || true
+
+          # A finding whose first trace frame names a function is one the build
+          # actually reaches. A module-only frame means "present, never called".
+          # -json is parsed rather than the text output, which is not a contract.
+          jq -r 'select(has("finding")) | .finding
+                 | select(.trace[0].function != null)
+                 | [.trace[0].module, .osv] | @tsv' vulns.json | sort -u > called.tsv
+
+          external=$(grep -cv '^stdlib' called.tsv || true)
+          stdlib=$(grep -c '^stdlib' called.tsv || true)
+
+          if [ "$stdlib" -gt 0 ]; then
+            {
+              echo "### govulncheck: $stdlib standard-library advisory/advisories"
+              echo
+              echo "Not failing the build — these are fixed by a toolchain bump."
+              echo "If this list is non-empty, bump \`go-version\` deliberately."
+              echo
+              echo '```'
+              grep '^stdlib' called.tsv
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+          if [ "$external" -gt 0 ]; then
+            echo "::error::govulncheck found reachable vulnerabilities outside the standard library"
+            grep -v '^stdlib' called.tsv
+            exit 1
+          fi
+          echo "No reachable non-stdlib vulnerabilities."
+
   installer:
     name: install.sh & release config
     runs-on: ubuntu-latest
