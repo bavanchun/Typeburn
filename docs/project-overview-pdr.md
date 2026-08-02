@@ -17,11 +17,17 @@ and a scriptable v2 CLI.
 
 ## Current Product State
 
-**Public stable release:** `v2.5.1` (2026-07-11). This corrective release
-migrated the module to `github.com/bavanchun/Typeburn/v2` and restored
-proxy-only `go install`. Protected merge, release publication, and public proxy
-validation completed successfully. The published `v2.5.0` tag remains
-immutable; its broken Go-module channel was fixed forward by `v2.5.1`.
+**Public stable release:** `v2.8.1`. The module lives at
+`github.com/bavanchun/Typeburn/v2`; `v2.5.0`'s broken Go-module channel was
+fixed forward by `v2.5.1` and the published tag remains immutable, as every
+published tag does.
+
+Since then: the Result screen was reworked (`v2.6.0`), self-update shipped, and
+`v2.8.x` corrected its layout centring. An audit-remediation cycle is complete
+on `main` and unreleased — it corrects the block-digit glyph table, gives the
+word stream a viewport, bounds every untrusted input, makes history writes
+safe across processes, hardens `typeburn update` against Ctrl-C, and rebuilds
+the Result screen around a comparison rail.
 
 - **Themes:** `default`, `mono`, `solarized-dark`, `solarized-light`,
   `dracula`, `nord`, `gruvbox-dark`, `gruvbox-light`. `mono` is a grayscale
@@ -49,7 +55,7 @@ immutable; its broken Go-module channel was fixed forward by `v2.5.1`.
 ### Modes & Durations
 - **Time:** 15, 30, 60, 120 seconds (timer counts down; test ends when time expires)
 - **Words:** 10, 25, 50, 100 words (test ends when word count typed)
-- **Quote:** Short/Medium/Long/Epic from embedded pack (test ends when quote complete)
+- **Quote:** Short/Medium/Long from embedded pack (test ends when quote complete)
 - **Later addition — Code:** User text via `--text`, in-app paste, or
   `run --mode code --text` (exact whitespace match)
 
@@ -82,7 +88,7 @@ immutable; its broken Go-module channel was fixed forward by `v2.5.1`.
 - **Keybindings:** Centralized, per design spec (Home/Typing/Result/Settings/History each have distinct binds)
 - **Resize handling:** Graceful degradation notice if <60 cols or <20 rows; auto-resume when resized
 - **Paste support:** Ctrl+V pastes entire clipboard into typing; each char logged
-- **CLI:** `run`, `history`, `version`, `config`, and `replay` subcommands with
+- **CLI:** `run`, `history`, `version`, `config`, `replay`, and `update` subcommands with
   JSON output where useful
 
 ---
@@ -128,8 +134,8 @@ immutable; its broken Go-module channel was fixed forward by `v2.5.1`.
 ## Stack
 
 - **Language:** Go 1.25+
-- **UI Framework:** Bubble Tea v2.0.6 (Elm-style state machine, Cursed Renderer)
-- **Styling:** Lip Gloss v2.0.3 (ANSI color + attributes)
+- **UI Framework:** Bubble Tea v2.0.7 (Elm-style state machine, Cursed Renderer)
+- **Styling:** Lip Gloss v2.0.4 (ANSI color + attributes)
 - **Storage:** atomic JSON (XDG-compliant, gofmt-checked)
 - **Testing:** go test + teatest (golden-file rendering)
 - **CI/CD:** GitHub Actions (ubuntu-latest, macos-latest)
@@ -138,8 +144,11 @@ immutable; its broken Go-module channel was fixed forward by `v2.5.1`.
 
 ## Development Status
 
-`v2.5.1` is the publicly released stable version. Strict typing and the
-punctuation/numbers toggles shipped in `v2.5.0`; the immutable release's broken
-Go-module channel was fixed forward in `v2.5.1`. The `/v2` module path,
+`v2.8.1` is the publicly released stable version. The `/v2` module path,
 lowercase `typeburn` command, protected merge, release gates, and public proxy
-verification are complete.
+verification are complete, as are self-update and the Homebrew cask.
+
+The audit-remediation work described above is merged to `main` and awaiting a
+release. Two of its changes are user-visible beyond the redesign: consistency
+scores rise slightly for everyone (the final partial second was being scaled as
+a whole one), and a run abandoned mid-test is no longer written to history.

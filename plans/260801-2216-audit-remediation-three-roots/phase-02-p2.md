@@ -1,7 +1,7 @@
 ---
 phase: 2
 title: "Typing Viewport, Wrapping, Display Width"
-status: pending
+status: done
 priority: P1
 effort: "1d"
 dependencies: [1]

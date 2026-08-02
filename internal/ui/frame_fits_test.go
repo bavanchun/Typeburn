@@ -29,9 +29,6 @@ type overflow struct{ Lines, Width int }
 
 func (o overflow) fits() bool { return o.Lines == 0 && o.Width == 0 }
 
-// knownOverflow lives in frame_fits_known_overflow_test.go so the debt list can
-// shrink without touching the assertions that police it.
-
 func fitKey(name string, w, h int) string { return fmt.Sprintf("%s@%dx%d", name, w, h) }
 
 // measureFrame returns how far a frame exceeds w×h. Width is measured with
@@ -58,7 +55,6 @@ func measureFrame(lines []string, w, h int) overflow {
 // not read a green run as proof that the four self-placing screens have room
 // for their content — it proves only that they do not spill sideways.
 func TestFrameFits(t *testing.T) {
-	seen := map[string]bool{}
 	measured := map[string]overflow{}
 
 	for _, sc := range screenCases() {
@@ -68,29 +64,9 @@ func TestFrameFits(t *testing.T) {
 				got := measureFrame(renderScreen(t, sc, w, h), w, h)
 				if !got.fits() {
 					measured[key] = got
-				}
-				want, listed := knownOverflow[key]
-				if listed {
-					seen[key] = true
-				}
-
-				switch {
-				case !listed && !got.fits():
-					t.Errorf("%s overflows %dx%d: %+v (unlisted — fix it, or record it in knownOverflow)",
-						key, w, h, got)
-				case listed && got.fits():
-					t.Errorf("%s now fits %dx%d — delete its knownOverflow entry", key, w, h)
-				case listed && got != want:
-					t.Errorf("%s overflow changed: measured %+v, recorded %+v — update the entry",
-						key, got, want)
+					t.Errorf("%s overflows %dx%d: %+v", key, w, h, got)
 				}
 			}
-		}
-	}
-
-	for key := range knownOverflow {
-		if !seen[key] {
-			t.Errorf("knownOverflow has %q, which no screen×size case produces — stale entry", key)
 		}
 	}
 
@@ -101,8 +77,8 @@ func TestFrameFits(t *testing.T) {
 	}
 }
 
-// overflowLiteral renders measurements as the Go map literal knownOverflow
-// expects, so a deliberate update is a paste rather than a transcription.
+// overflowLiteral renders measurements as a Go map literal, so a regression is
+// reported in a form that can be read at a glance instead of transcribed.
 func overflowLiteral(m map[string]overflow) string {
 	keys := make([]string, 0, len(m))
 	for k := range m {
@@ -111,7 +87,7 @@ func overflowLiteral(m map[string]overflow) string {
 	sort.Strings(keys)
 
 	var sb strings.Builder
-	sb.WriteString("var knownOverflow = map[string]overflow{\n")
+	sb.WriteString("map[string]overflow{\n")
 	for _, k := range keys {
 		fmt.Fprintf(&sb, "\t%q: {Lines: %d, Width: %d},\n", k, m[k].Lines, m[k].Width)
 	}

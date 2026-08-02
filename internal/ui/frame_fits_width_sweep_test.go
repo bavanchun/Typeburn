@@ -16,8 +16,8 @@ import (
 // constant 62 that only 60 and 61 could not hold. A sampled matrix walks
 // straight past both.
 //
-// Width only. Height debt is recorded in knownOverflow and is not this test's
-// business.
+// Width only, at a single height. Heights are TestFrameFits's business; this
+// test exists for the off-by-one a sampled width matrix cannot see.
 func TestFrameFits_WidthSweep(t *testing.T) {
 	const h = 24
 

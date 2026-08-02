@@ -216,12 +216,15 @@ too small the app shows a resize prompt and resumes automatically once you resiz
 
 Settings and history follow the [XDG Base Directory Specification](https://specifications.freedesktop.org/basedir-spec/latest/).
 
-| File | Default path (macOS / Linux) |
-|---|---|
-| Settings | `~/.config/typeburn/settings.json` |
-| History | `~/.local/share/typeburn/history.json` |
+| File | Default path (macOS / Linux) | Override |
+|---|---|---|
+| Settings | `~/.config/typeburn/settings.json` | `$XDG_CONFIG_HOME` |
+| History | `~/.local/share/typeburn/history.json` | `$XDG_DATA_HOME` |
+| Update-check cache | `~/.local/state/typeburn/update-check.json` | `$XDG_STATE_HOME` |
 
-Override with `$XDG_CONFIG_HOME` and `$XDG_DATA_HOME` respectively.
+A history file that cannot be parsed is never overwritten: it is renamed to
+`history.json.corrupt-<timestamp>` beside the original and the app says so, so
+the records stay recoverable by hand.
 
 ## Development
 

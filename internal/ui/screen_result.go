@@ -10,9 +10,11 @@ import (
 	"github.com/bavanchun/Typeburn/v2/internal/words"
 )
 
-// ResultModel is the sub-model for the post-test result screen. It renders
-// big-digit WPM, accuracy/raw/consistency stats, a WPM-over-time sparkline,
-// char counts, and test metadata — all from a completed metrics.Result.
+// ResultModel is the sub-model for the post-test result screen. It renders a
+// three-zone hero band (big-digit WPM, accuracy, and a comparison rail placing
+// the run against history), a braille dual-axis WPM-over-time chart, a labelled
+// character breakdown, and test metadata — from a completed metrics.Result plus
+// the pre-computed comparison values the root model hands it.
 type ResultModel struct {
 	res      metrics.Result
 	mode     config.Mode

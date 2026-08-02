@@ -1,7 +1,7 @@
 ---
 phase: 7
 title: "CLI And Update Hardening"
-status: pending
+status: done
 priority: P1
 effort: "1d"
 dependencies: []
