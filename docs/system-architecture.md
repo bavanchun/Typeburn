@@ -128,8 +128,14 @@ Each sub-model has `SetSize(w, h)` to handle WindowSizeMsg; root calls it on res
   quoteLen, seed, strict, punctuation, numbers)` builds non-Code sessions;
   `NewCodeSession(snippet, strict)` builds supplied-snippet sessions.
 - **`internal/anim`:** Easing, color/value interpolation, tween, clock. Pure functions of time; no UI/Bubble Tea.
-- **`internal/storage`:** JSON persistence (atomic write, XDG paths). No UI/Bubble Tea.
-- **`internal/theme`:** Role-based color mapping. No UI/Bubble Tea.
+- **`internal/storage`:** JSON persistence (atomic write, XDG paths, advisory
+  cross-process lock). Its own code is UI-free, but it is **not** dependency-free:
+  it imports `internal/config` for path resolution, which transitively pulls in
+  Bubble Tea (`go list -deps ./internal/storage | grep -c charm` → 9). Known debt,
+  recorded here rather than asserted away.
+- **`internal/theme`:** Role-based color mapping. Depends on Lip Gloss **by
+  design** — it returns styles, so it is the sanctioned seam between pure logic
+  and the TUI, not a pure-logic package.
 
 ### Configuration Boundary
 

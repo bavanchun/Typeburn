@@ -4,7 +4,7 @@ description: >-
   Make the Result screen use the width it has: cap and centre the panel, stretch
   the WPM graph, bound the stats gutter, drop the duplicated raw/consistency
   pair, and hide the error axis on clean runs. No new visual language.
-status: in-progress
+status: superseded
 priority: P2
 effort: "1.5d"
 branch: feat/result-responsive-layout
@@ -15,6 +15,21 @@ created: 2026-08-01
 ---
 
 # Result Responsive Layout
+
+> **Superseded — closed 2026-08-02.** The shipped part of this plan (capping and
+> centring the panel) went out in v2.8.0 and its double-centring regression was
+> fixed in v2.8.1. The remainder — stretching the graph, bounding the stats
+> gutter, dropping the duplicated raw/consistency pair, hiding the error axis on
+> clean runs — was subsumed by the Result redesign in
+> `plans/260801-2216-audit-remediation-three-roots/phase-06-p6.md`.
+>
+> Why it was superseded rather than finished: this plan's Option A treated the
+> problem as *width distribution*, and it was measured to be **ink density**.
+> Centring a panel whose ink sits 11 columns left of its own geometric centre
+> makes the emptiness tidier, not smaller. The redesign fills the space with a
+> comparison rail instead, taking fill from 13.9% to 34.2% and the panel from 28
+> rows to 20. The graph stretch and the error-axis fix landed there; the stats
+> gutter and the duplicated pair were removed outright with `renderStatsGrid`.
 
 ## Overview
 

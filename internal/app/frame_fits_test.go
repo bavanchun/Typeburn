@@ -24,9 +24,6 @@ type appOverflow struct{ Lines, Width int }
 
 func (o appOverflow) fits() bool { return o.Lines == 0 && o.Width == 0 }
 
-// knownAppOverflow lives in frame_fits_known_overflow_test.go so the debt list
-// can shrink without touching the assertions that police it.
-
 func appFitKey(name string, w, h int) string { return fmt.Sprintf("%s@%dx%d", name, w, h) }
 
 func measureAppFrame(frame string, w, h int) appOverflow {
@@ -47,11 +44,9 @@ func measureAppFrame(frame string, w, h int) appOverflow {
 // supported size, and below the degraded gate as well — DegradedNotice is the
 // one thing that must never itself overflow.
 //
-// Sizes at or above 60×20 that are absent from knownAppOverflow are asserted to
-// fit outright. Below the gate every case renders the same notice, so those
-// cells prove the notice, not the screen.
+// Below the gate every case renders the same notice, so those cells prove the
+// notice, not the screen.
 func TestAppFrameFits(t *testing.T) {
-	seen := map[string]bool{}
 	measured := map[string]appOverflow{}
 
 	for _, ac := range appCases() {
@@ -61,27 +56,9 @@ func TestAppFrameFits(t *testing.T) {
 				got := measureAppFrame(ac.build(w, h).View().Content, w, h)
 				if !got.fits() {
 					measured[key] = got
-				}
-				want, listed := knownAppOverflow[key]
-				if listed {
-					seen[key] = true
-				}
-
-				switch {
-				case !listed && !got.fits():
-					t.Errorf("%s overflows %dx%d: %+v (unlisted)", key, w, h, got)
-				case listed && got.fits():
-					t.Errorf("%s now fits %dx%d — delete its knownAppOverflow entry", key, w, h)
-				case listed && got != want:
-					t.Errorf("%s overflow changed: measured %+v, recorded %+v", key, got, want)
+					t.Errorf("%s overflows %dx%d: %+v", key, w, h, got)
 				}
 			}
-		}
-	}
-
-	for key := range knownAppOverflow {
-		if !seen[key] {
-			t.Errorf("knownAppOverflow has %q, which no case produces — stale entry", key)
 		}
 	}
 
@@ -92,7 +69,7 @@ func TestAppFrameFits(t *testing.T) {
 		}
 		sort.Strings(keys)
 		var sb strings.Builder
-		sb.WriteString("\nvar knownAppOverflow = map[string]appOverflow{\n")
+		sb.WriteString("\nmeasured overflows:\nmap[string]appOverflow{\n")
 		for _, k := range keys {
 			fmt.Fprintf(&sb, "\t%q: {Lines: %d, Width: %d},\n", k, measured[k].Lines, measured[k].Width)
 		}

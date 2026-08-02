@@ -1,7 +1,7 @@
 ---
 phase: 6
 title: "Result A2 Redesign"
-status: pending
+status: done
 priority: P2
 effort: "2d"
 dependencies: [1, 3]

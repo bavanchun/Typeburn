@@ -105,11 +105,6 @@ type plausibilityCase struct {
 	endMs int64
 }
 
-// knownImplausible lists cases whose Result is not yet believable. A listed
-// case that becomes plausible fails until its entry is deleted, and an entry no
-// case produces fails as stale, so the debt cannot quietly become permanent.
-var knownImplausible = map[string]bool{}
-
 func plausibilityCases() []plausibilityCase {
 	return []plausibilityCase{
 		{"time/steady", keystrokes(1000, 200, 150), mode.ModeTime, 1000 + 30_000},
@@ -124,24 +119,8 @@ func plausibilityCases() []plausibilityCase {
 // TestCompute_NeverReportsAnImpossibleResult asserts that every metric Compute
 // hands to the UI and to storage is a value a human run could have produced.
 func TestCompute_NeverReportsAnImpossibleResult(t *testing.T) {
-	seen := map[string]bool{}
 	for _, tc := range plausibilityCases() {
-		r := Compute(tc.log, tc.mode, tc.endMs)
-
-		if knownImplausible[tc.name] {
-			seen[tc.name] = true
-			if len(implausibilities(r)) == 0 {
-				t.Errorf("%s is listed in knownImplausible but now passes — delete its entry", tc.name)
-			}
-			continue
-		}
-		assertPlausible(t, tc.name, r)
-	}
-
-	for name := range knownImplausible {
-		if !seen[name] {
-			t.Errorf("knownImplausible has %q, which no case produces — stale entry", name)
-		}
+		assertPlausible(t, tc.name, Compute(tc.log, tc.mode, tc.endMs))
 	}
 }
 
