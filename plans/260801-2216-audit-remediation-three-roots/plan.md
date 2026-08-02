@@ -132,7 +132,7 @@ assigned in the ownership table below.
 | # | Phase | Status | Depends on | Group |
 |---|-------|--------|------------|-------|
 | 1 | [Correctness Harness And Glyph Fix](./phase-01-start.md) | Done | — | A |
-| 8 | [Supply Chain And CI Gates](./phase-08-p8.md) | Pending | — | A |
+| 8 | [Supply Chain And CI Gates](./phase-08-p8.md) | Done | — | A |
 | 2 | [Typing Viewport, Wrapping, Display Width](./phase-02-p2.md) | Pending | 1 | B |
 | 3 | [Metrics And Typing Correctness](./phase-03-p3.md) | Pending | 1 | B |
 | 4 | [Input Bounds And Layout Overflows](./phase-04-p4.md) | Pending | 1 | C |
@@ -222,17 +222,28 @@ shipped as v2.8.0 and did not solve the emptiness). Close it when Phase 6 merges
   surfaced as a visible job-summary warning. A stdlib advisory is fixed by a
   toolchain bump, not by the author of an unrelated PR. Phase 8.
 
-## Open questions
+## Open questions — resolved
 
-1. **Windows:** add `windows-latest` CI, or drop the Windows targets? `install.sh`
-   already refuses Windows, so those two zips have no documented install path.
-2. **Strict-mode `Errors`:** keystroke-level or final-state? `model_history.go:25-27`
-   answers it for `Accuracy` only.
-3. **`--words` upper bound** — Phase 4 proposes 10 000; confirm.
-4. **Rank scoping in the A2 rail** — bucket-scoped shows `#2 of 6` early. Accept?
+All four blocking questions are answered. Recorded here because each one binds a
+later phase's implementation.
+
+1. **Windows: leave as-is.** No `windows-latest` job, no change to the published
+   targets. The mismatch — `install.sh` refuses Windows while two Windows zips
+   ship — stays a known, deliberate gap rather than being closed by guesswork in
+   a supply-chain phase. Phase 8 shipped without touching it.
+2. **Strict-mode `Errors`: keystroke-level.** Every wrong key counts, including
+   ones the user corrected. Consistent with `KeystrokeAccuracy`, which strict
+   runs already use, and it is what "strict" means. Note the user-visible
+   consequence: a strict run now reports a *higher* `Errors` than the same run
+   would today, because final-state counting is near-zero under strict — the
+   cursor is blocked on a wrong key, so few errors survive to the final state.
+   Phase 3.
+3. **`--words` upper bound: 10 000.** Matches `codetext`'s existing 10 000-rune
+   cap, so both input boundaries carry the same number. Phase 4.
+4. **Rank in the A2 rail: bucket-scoped**, comparing within the same
+   mode+length. `#2 of 6` on a fresh profile is accepted — a rank across
+   incomparable buckets (time-15 against a quote run) would be worse than a
+   small honest one. Phase 6.
 5. **If A2's budget cannot absorb the update-hint row**, does the hint move, or
-   does Result get a dedicated height change? Phase 6's Gate 0 decides — this one
-   resolves itself during execution and needs no answer now.
-
-None of these blocks starting. 1–4 are needed by phases 8, 3, 4 and 6
-respectively, and can be answered when those phases begin.
+   does Result get a dedicated height change? Phase 6's Gate 0 decides during
+   execution; no answer needed up front.

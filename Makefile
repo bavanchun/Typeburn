@@ -46,8 +46,11 @@ clean:
 version: build
 	@$(BIN_DIR)/$(BINARY) --version
 
-# v2 CLI measurement after cobra/fang/x/term: 5,302,642 bytes on darwin/arm64.
-# v2.1 adds net/http for update-check (~260 KB): cap raised to 10 MiB.
+# Headroom against SIZE_LIMIT (10 MiB), measured on darwin/arm64:
+#   v2.0  5,302,642 B  after cobra/fang/x/term
+#   v2.8  9,002,530 B  85.9% of the cap
+# The older figure was three and a half megabytes stale, which read as far more
+# room than there is. Re-measure with `make size-check` when adding a dependency.
 size-check: build
 	@actual=$$(stat -f%z $(BIN_DIR)/$(BINARY) 2>/dev/null || stat -c%s $(BIN_DIR)/$(BINARY)); \
 	if [ $$actual -gt $(SIZE_LIMIT) ]; then \

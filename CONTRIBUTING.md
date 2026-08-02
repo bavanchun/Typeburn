@@ -45,6 +45,30 @@ Anything else needs explicit user approval and a short rationale in the PR.
 Pinned CLI deps as of v2.0.0: cobra `v1.10.2`, fang `v1.0.0`,
 `golang.org/x/term v0.43.0`. Bump them deliberately, not with `@latest`.
 
+Dependabot opens grouped weekly PRs for `gomod` and `github-actions`
+(`.github/dependabot.yml`). Review them like any other change; the allowed-family
+rule above still applies.
+
+### Vulnerability scanning policy
+
+`ci.yml` runs `govulncheck` (pinned to `v1.1.4`; the advisory database is queried
+live). The gate is deliberately asymmetric:
+
+- **Findings outside the standard library fail the job.** These are ours to fix,
+  by bumping the dependency.
+- **Standard-library findings are reported in the job summary and do not fail
+  the job.** A stdlib advisory is fixed by bumping the Go toolchain, which this
+  workflow controls — not by the author of an unrelated PR. Failing their build
+  would be noise, and a noisy gate is a gate someone eventually disables.
+
+This is a decision, not an oversight. If you see a stdlib advisory pass CI, the
+correct response is to bump `go-version` in the workflows in its own PR.
+
+Only findings the build can actually reach count. `govulncheck -json` is parsed
+rather than its human-readable output, which is not a stable contract; a finding
+counts when its first trace frame names a function, meaning the vulnerable symbol
+is reachable rather than merely present in the module graph.
+
 ## Keystroke schema versioning
 
 `typeburn replay` accepts `schema_version: 1` logs using
