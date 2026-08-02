@@ -82,8 +82,18 @@ func (m Model) handleResultMsg(msg ui.ResultMsg) Model {
 	if out.store {
 		// Persist regardless of the new-best result. A write failure is non-fatal
 		// to the session but must not be silent — surface a dismissible notice.
-		if _, err := storage.AppendHistory(out.record); err != nil {
+		//
+		// A notice without an error means the record reached disk but something
+		// about how it got there is worth saying: the previous file was corrupt
+		// and has been set aside, or the write went ahead without the
+		// cross-process lock. Both leave the result saved, so neither is an
+		// error, and both are things the user would rather know than not.
+		_, notice, err := storage.AppendHistoryWithNotice(out.record)
+		switch {
+		case err != nil:
 			m.persistErr = "Couldn't save result to disk"
+		case !notice.IsZero():
+			m.persistErr = notice.Message
 		}
 	}
 
