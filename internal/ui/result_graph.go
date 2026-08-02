@@ -47,7 +47,7 @@ func RenderResultGraph(perSec []metrics.PerSecond, width, chartH, visible int, t
 	cols, screenCols := geo.Cols, geo.ScreenCols
 	cellOf := geo.CellOf
 
-	// Scales: WPM 0..maxWPM (left), Errors 0..maxErr (right).
+	// Scales: WPM over the observed range (left), Errors 0..maxErr (right).
 	wpmVals := make([]float64, cols)
 	maxErr := 0
 	for i, ps := range perSec {
@@ -56,16 +56,14 @@ func RenderResultGraph(perSec []metrics.PerSecond, width, chartH, visible int, t
 			maxErr = ps.Errors
 		}
 	}
-	_, maxWPM := minMax(wpmVals)
-	if maxWPM <= 0 {
-		maxWPM = 1 // avoid divide-by-zero; flat line parks at the bottom
-	}
+	loWPM, hiWPM := wpmAxisRange(minMax(wpmVals))
+	maxErr = errAxisCeiling(maxErr)
 
 	gridH := chartH * 4
 	gridW := screenCols * 2 // 2 dot-columns per cell let the line interpolate smoothly
 
 	wpmY := func(wpm float64) int {
-		return clampInt(int(math.Round((1-wpm/maxWPM)*float64(gridH-1))), 0, gridH-1)
+		return clampInt(int(math.Round((1-(wpm-loWPM)/(hiWPM-loWPM))*float64(gridH-1))), 0, gridH-1)
 	}
 
 	// Dot grid for the WPM line; sample i lives at dot-column 2i, with segment
@@ -123,7 +121,7 @@ func RenderResultGraph(perSec []metrics.PerSecond, width, chartH, visible int, t
 	var b strings.Builder
 	for cr := 0; cr < chartH; cr++ {
 		tick := cr == 0 || cr == chartH-1 || cr == midRow
-		b.WriteString(faint.Render(wpmAxisLabel(cr, chartH, midRow, maxWPM)))
+		b.WriteString(faint.Render(wpmAxisLabel(cr, chartH, midRow, loWPM, hiWPM)))
 		b.WriteString(faint.Render(axisPipe(true, tick)))
 		for cc := 0; cc < screenCols; cc++ {
 			switch {

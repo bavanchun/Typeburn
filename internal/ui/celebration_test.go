@@ -115,6 +115,36 @@ func TestApplyCelebration_InactiveNoop(t *testing.T) {
 	}
 }
 
+// The burst has nowhere to land unless the frame keeps at least one all-blank
+// row next to the panel, so the Result view always leaves a spacer. A denser
+// panel makes that row scarcer, which is exactly how this feature would go
+// silently dead: still called, never visible.
+func TestResultView_KeepsARowForTheCelebration(t *testing.T) {
+	for _, size := range [][2]int{{60, 20}, {61, 20}, {72, 24}, {80, 24}, {88, 24}, {120, 24}, {200, 50}} {
+		w, h := size[0], size[1]
+		for _, run := range []struct {
+			name     string
+			wpm, acc float64
+		}{{"two digits", 87, 96}, {"three digits at full accuracy", 100, 100}} {
+			m := ladderRun(run.wpm, run.acc, w, h).WithBest(true).WithRevealStart(1000)
+			m.nowMs = 1150
+
+			frame := strings.Split(stripANSI(m.View()), "\n")
+			if band := blankBand(frame); len(band) == 0 {
+				t.Errorf("%dx%d %s: no blank row for the celebration to burst into",
+					w, h, run.name)
+			}
+
+			settled := ladderRun(run.wpm, run.acc, w, h).WithBest(true).WithRevealStart(1000)
+			settled.nowMs = 1000 + celebrateMs + 100
+			if m.View() == settled.View() {
+				t.Errorf("%dx%d %s: new-best frame mid-burst is identical to the settled one",
+					w, h, run.name)
+			}
+		}
+	}
+}
+
 // An isBest result keeps the loop alive through the celebration window; an
 // ordinary result self-stops with the reveal.
 func TestResultCelebration_ExtendsActiveWindow(t *testing.T) {

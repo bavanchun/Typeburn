@@ -70,17 +70,58 @@ func TestRenderResultGraph_NoErrors_NoMarkers(t *testing.T) {
 func TestRenderResultGraph_DualAxisLabels(t *testing.T) {
 	out := stripANSI(renderSettled(graphSamples()))
 	lines := strings.Split(out, "\n")
-	// Top row: left label = max WPM (120), right label = max errors (2).
-	if !strings.Contains(lines[0], "120") {
-		t.Errorf("top row missing left max WPM label:\n%s", out)
+	// The WPM axis fits the observed 60..120 range with a tenth of headroom at
+	// each end, so the top tick is 126 and the bottom is 54 — not 0, which would
+	// leave the whole curve crammed into the top rows.
+	if !strings.Contains(lines[0], "126") {
+		t.Errorf("top row missing the fitted WPM ceiling:\n%s", out)
 	}
-	if !strings.HasSuffix(strings.TrimRight(lines[0], " "), "2") {
-		t.Errorf("top row missing right max-errors label:\n%s", out)
+	// The error axis is lifted to a nice number so a lone error does not sit at
+	// the ceiling; the run's own maximum is 2.
+	if !strings.HasSuffix(strings.TrimRight(lines[0], " "), "4") {
+		t.Errorf("top row missing the error-axis ceiling:\n%s", out)
 	}
-	// Bottom chart row carries the 0 baselines on both axes.
 	last := lines[len(lines)-3] // rows: chart..., baseline, x-labels
-	if !strings.Contains(last, "0") {
-		t.Errorf("bottom chart row missing 0 labels:\n%s", out)
+	if !strings.Contains(last, "54") {
+		t.Errorf("bottom chart row missing the fitted WPM floor:\n%s", out)
+	}
+	if !strings.HasSuffix(strings.TrimRight(last, " "), "0") {
+		t.Errorf("bottom chart row missing the error-axis zero:\n%s", out)
+	}
+}
+
+// A single error must not pin its marker to the top of the plot. Before the
+// nice-number ceiling the marker sat at errors/maxErr == 1, which put it on the
+// WPM axis's own ceiling and read as a speed spike on a run that never went
+// near it.
+func TestRenderResultGraph_LoneErrorDoesNotPinToTop(t *testing.T) {
+	ps := []metrics.PerSecond{
+		{Sec: 0, RawWPM: 80}, {Sec: 1, RawWPM: 82, Errors: 1},
+		{Sec: 2, RawWPM: 81}, {Sec: 3, RawWPM: 83},
+	}
+	lines := strings.Split(stripANSI(renderSettled(ps)), "\n")
+	if strings.Contains(lines[0], "x") {
+		t.Errorf("a single error was plotted on the top row:\n%s", strings.Join(lines, "\n"))
+	}
+}
+
+// The error axis ticks must never go up as they descend. Integer truncation
+// used to label a one-error run 1, 0, 0.
+func TestErrAxisLabel_Monotonic(t *testing.T) {
+	tick := func(cr, maxErr int) int {
+		v, err := strconv.Atoi(strings.TrimSpace(errAxisLabel(cr, 5, 2, maxErr)))
+		if err != nil {
+			t.Fatalf("non-numeric error tick at row %d: %v", cr, err)
+		}
+		return v
+	}
+	for raw := 1; raw <= 12; raw++ {
+		maxErr := errAxisCeiling(raw)
+		top, mid, bottom := tick(0, maxErr), tick(2, maxErr), tick(4, maxErr)
+		if top <= mid || mid <= bottom {
+			t.Errorf("maxErr=%d (ceiling %d): ticks %d/%d/%d are not descending",
+				raw, maxErr, top, mid, bottom)
+		}
 	}
 }
 
