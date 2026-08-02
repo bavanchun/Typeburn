@@ -12,6 +12,39 @@ import (
 // header + blank + blank-before-footer + footer = 4 rows.
 const fixedOverhead = 4
 
+// The word-stream window grows with the terminal instead of pinning to a fixed
+// three lines, so a tall terminal is used rather than padded. It stops at seven
+// because past that the eye stops tracking the caret's line.
+const (
+	minWordStreamRows = 3
+	maxWordStreamRows = 7
+)
+
+// codeStreamHeight gives Code mode every row the rest of the frame is not
+// using: the buffer is the user's own file, so showing as much of it as fits is
+// the point.
+func codeStreamHeight(termH int) int {
+	if rows := termH - fixedOverhead; rows > 0 {
+		return rows
+	}
+	return 1
+}
+
+// wordStreamHeight sizes the word-stream window from the terminal height. Words
+// and Quote generate far more text than any terminal can show, so without a
+// budget the stream renders every row it has and the cell buffer drops the
+// overflow — footer first, and eventually the caret itself.
+func wordStreamHeight(termH int) int {
+	rows := (termH - fixedOverhead) / 2
+	if rows < minWordStreamRows {
+		return minWordStreamRows
+	}
+	if rows > maxWordStreamRows {
+		return maxWordStreamRows
+	}
+	return rows
+}
+
 // View renders the full typing screen content as a string. The root app.Model
 // wraps this in lipgloss.Place for centering — View itself does not center.
 //
@@ -41,16 +74,14 @@ func (m TypingModel) View() string {
 	typed := m.eng.Typed()
 	ca := m.caretAnimState(states)
 
+	// Both branches window their stream to a height budget. Bubble Tea draws
+	// into a w×h cell buffer in altscreen, so anything past the budget is
+	// dropped without scrolling — it is not off-screen, it is gone.
 	var stream string
 	if m.mode == config.ModeCode {
-		// streamHeight = total height minus fixed overhead rows; clamp ≥1.
-		streamHeight := m.h - fixedOverhead
-		if streamHeight < 1 {
-			streamHeight = 1
-		}
-		stream = renderCodeStreamAnim(states, target, typed, cw, streamHeight, m.th, ca)
+		stream = renderCodeStreamAnim(states, target, typed, cw, codeStreamHeight(m.h), m.th, ca)
 	} else {
-		stream = renderWordStreamAnim(states, target, typed, cw, m.th, ca, m.wordCache)
+		stream = renderWordStreamAnim(states, target, typed, cw, wordStreamHeight(m.h), m.th, ca, m.wordCache)
 	}
 
 	footer := RenderFooter(TypingHints(), m.w, m.th)

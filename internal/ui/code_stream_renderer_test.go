@@ -5,6 +5,8 @@ import (
 	"strings"
 	"testing"
 
+	"charm.land/lipgloss/v2"
+
 	"github.com/bavanchun/Typeburn/v2/internal/theme"
 	"github.com/bavanchun/Typeburn/v2/internal/typing"
 )
@@ -112,6 +114,52 @@ func TestRenderCodeStream_Viewport(t *testing.T) {
 			t.Fatalf("short input must render exactly its rows, got %d: %q", len(rows), rows)
 		}
 	})
+}
+
+// TestRenderCodeStream_WrapsOnCellWidth asserts rows are measured in terminal
+// columns. --text takes whatever the user pastes, so a buffer of CJK or emoji
+// is ordinary input here — and counting its runes as one column each drew rows
+// at twice the width they were given, half of them off the right edge.
+func TestRenderCodeStream_WrapsOnCellWidth(t *testing.T) {
+	th := theme.Load("default", true)
+	const width = 20
+	for _, src := range []string{
+		strings.Repeat("函", 120),
+		strings.Repeat("🚀", 60),
+		"函数(x) 返回 a value\n\tprintln(\"你好\") 🚀\n",
+	} {
+		out := RenderCodeStream(statesWithCaret(len([]rune(src)), 3), runesOf(src), nil, width, 40, th)
+		for i, row := range strings.Split(strip(out), "\n") {
+			if w := lipgloss.Width(row); w > width {
+				t.Errorf("%.10q row %d is %d cells wide, width is %d", src, i, w, width)
+			}
+		}
+	}
+}
+
+// TestRenderCodeStream_ZeroWidthRunesTakeNoCell asserts runes that draw nothing
+// claim no column. A control character that took one left the row short and
+// made a caret sitting on it invisible.
+func TestRenderCodeStream_ZeroWidthRunesTakeNoCell(t *testing.T) {
+	th := theme.Load("default", true)
+	const width = 8
+	plain := runesOf("abcdefghijklmnop")
+	// A combining acute, a zero-width space and a control character.
+	marked := runesOf("a\u0301bcd\u200befg\x01hijklmnop")
+
+	rowsOf := func(r []rune) []string {
+		return strings.Split(strip(RenderCodeStream(statesWithCaret(len(r), 0), r, nil, width, 40, th)), "\n")
+	}
+	got, want := rowsOf(marked), rowsOf(plain)
+	if len(got) != len(want) {
+		t.Fatalf("zero-width runes changed the row count: %d vs %d", len(got), len(want))
+	}
+	for i := range want {
+		if lipgloss.Width(got[i]) != lipgloss.Width(want[i]) {
+			t.Errorf("row %d: %d cells with zero-width runes, %d without",
+				i, lipgloss.Width(got[i]), lipgloss.Width(want[i]))
+		}
+	}
 }
 
 func TestRenderCodeStream_LongLineWraps(t *testing.T) {
