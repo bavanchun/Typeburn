@@ -190,7 +190,21 @@ runs the suite before any golden is regenerated. A failing golden is a signal to
 investigate, never to regenerate.
 
 **Risk:** adding a required check blocks in-flight PRs until they re-run CI.
-**Mitigation:** expected and harmless; they re-run on push.
+**Mitigation was wrong, corrected during execution.** "They re-run on push" only
+holds for a check that *exists* on the branch. `govulncheck` is a new job, so a
+branch cut before this phase merged never reports that context at all — the PR
+does not go red, it waits forever. Re-running CI cannot fix it; only a rebase
+onto a `main` containing the job can.
+
+**Therefore the protection write is the last step of this phase, not part of the
+code change**, and happens only after this phase's own PR merges. Order: merge
+in-flight PRs → merge this phase → *then* add the required contexts. Any branch
+cut afterwards inherits the job.
+
+Required contexts are four, not three — the job matrix expands `Build & Test`
+into one context per OS:
+`Build & Test (ubuntu-latest)`, `Build & Test (macos-latest)`, `govulncheck`,
+`install.sh & release config`.
 
 ## Rollback
 
