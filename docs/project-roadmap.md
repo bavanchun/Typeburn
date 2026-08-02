@@ -4,9 +4,37 @@
 
 ## Current Release State
 
-**Public stable:** `v2.8.1` (2026-08-01). The Result screen adapts to the
-terminal it is drawn in; the self-updater renders an animated progress block
-driven by real download bytes and stops cleanly when interrupted.
+**Public stable:** `v2.9.0` (2026-08-02). An audit-remediation cycle closed
+three root causes: tests that only proved a component agreed with itself,
+untrusted input reaching allocation unbounded, and a typing viewport wired for
+only one of two code paths.
+
+---
+
+## v2.9.0 — Complete (2026-08-02)
+
+**Status:** SHIPPED. Nine phases.
+
+The audit's finding was not a list of bugs but three shapes of bug. Each phase
+closed one shape rather than one symptom, and the debt was tracked in ratchets
+asserted in both directions so an entry could only be deleted by the change
+that fixed it. Both ratchets reached empty and were removed.
+
+| Area | Outcome |
+|---|---|
+| Correctness harness | Frame-fits and metric-plausibility assertions against real rendered output; found the glyph defect the goldens had recorded as correct for three releases |
+| Typing viewport | 47 rows into a 24-row terminal → windowed; word-boundary wrapping; display-cell widths for CJK/emoji |
+| Metrics | No impossible result is computed or persisted; abandoned runs withheld visibly; strict-mode replay agrees with the engine |
+| Input bounds | Every untrusted input bounded before allocation; control characters can no longer create an unfinishable test |
+| Storage | Cross-process advisory lock (87–96 of 120 records → 120); corrupt files quarantined, never overwritten |
+| Result screen | Three-zone hero and comparison rail; panel 28 → 20 rows, ink density 13.9% → 34.2% |
+| Update | Ctrl-C leaves no lock; an abandoned update self-heals in one run |
+| Supply chain | `govulncheck` in CI under a documented stdlib policy; Dependabot; all CI jobs required |
+
+**Known gap:** the release shipped without the manual live-TUI pass the plan
+specified as a gate. Every measurement came from calling `View()` directly,
+which is sound for structure and silent on judgement. Defects of that class are
+fix-forward in v2.9.x.
 
 ---
 
