@@ -87,6 +87,16 @@ func TestDownloadVerified_ChecksumMismatch(t *testing.T) {
 	if got != "" {
 		t.Errorf("expected empty path on mismatch, got %q", got)
 	}
+	// Verification runs before anything is extracted, and a failed verification
+	// takes its own download with it: a payload that failed integrity must not
+	// survive anywhere on disk for a later step to pick up.
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, e := range entries {
+		t.Errorf("failed verification left %s behind", e.Name())
+	}
 }
 
 func TestDownloadTo_SizeCap(t *testing.T) {
