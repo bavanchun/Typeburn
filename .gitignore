@@ -21,8 +21,11 @@ vendor/
 .idea/
 .vscode/
 
-# Built binary (make build target)
-typeburn
+# Built binary from the README's `go build -o typeburn ./cmd/typeburn`.
+# Anchored: a bare `typeburn` matches any path component of that name at any
+# depth, which silently excluded new files under cmd/typeburn/ from `git add .`.
+# (`make build` writes to ./bin/, ignored above.)
+/typeburn
 
 # Dependencies
 node_modules/
