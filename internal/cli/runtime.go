@@ -119,6 +119,8 @@ func codeHintFor(err error) string {
 		return "text file too large"
 	case errors.Is(err, codetext.ErrBinary):
 		return "file is not text"
+	case errors.Is(err, codetext.ErrControl):
+		return "file has control characters that cannot be typed"
 	default:
 		return "could not read text file"
 	}

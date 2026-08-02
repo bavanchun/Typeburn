@@ -6,31 +6,21 @@ package app
 // fit. Values are the measurement only; ownership belongs in the plan.
 //
 // Scope note: per-screen size debt lives in the ui package's knownOverflow.
-// The entries here are the ones only the root can show — the Result panel's
-// height as the user meets it, the same height bleeding through a transition,
-// and the persistence toast, which is placed but never bounded and so spills
-// past a narrow terminal.
+// What is left here is the one thing only the root can show — the Result
+// panel's height as the user meets it, on its own, with the persistence toast
+// present, and bleeding through a transition. Every entry is a height; nothing
+// spills sideways any more.
 var knownAppOverflow = map[string]appOverflow{
-	"home@72x20":                   {Lines: 0, Width: 73},
-	"home@72x24":                   {Lines: 0, Width: 73},
-	"home@72x30":                   {Lines: 0, Width: 73},
-	"home@72x50":                   {Lines: 0, Width: 73},
 	"result/persist-notice@120x20": {Lines: 29, Width: 0},
 	"result/persist-notice@120x24": {Lines: 29, Width: 0},
 	"result/persist-notice@200x20": {Lines: 29, Width: 0},
 	"result/persist-notice@200x24": {Lines: 29, Width: 0},
-	"result/persist-notice@60x20":  {Lines: 29, Width: 78},
-	"result/persist-notice@60x24":  {Lines: 29, Width: 78},
-	"result/persist-notice@60x30":  {Lines: 0, Width: 78},
-	"result/persist-notice@60x50":  {Lines: 0, Width: 78},
-	"result/persist-notice@61x20":  {Lines: 29, Width: 78},
-	"result/persist-notice@61x24":  {Lines: 29, Width: 78},
-	"result/persist-notice@61x30":  {Lines: 0, Width: 78},
-	"result/persist-notice@61x50":  {Lines: 0, Width: 78},
-	"result/persist-notice@72x20":  {Lines: 29, Width: 78},
-	"result/persist-notice@72x24":  {Lines: 29, Width: 78},
-	"result/persist-notice@72x30":  {Lines: 0, Width: 78},
-	"result/persist-notice@72x50":  {Lines: 0, Width: 78},
+	"result/persist-notice@60x20":  {Lines: 29, Width: 0},
+	"result/persist-notice@60x24":  {Lines: 29, Width: 0},
+	"result/persist-notice@61x20":  {Lines: 29, Width: 0},
+	"result/persist-notice@61x24":  {Lines: 29, Width: 0},
+	"result/persist-notice@72x20":  {Lines: 29, Width: 0},
+	"result/persist-notice@72x24":  {Lines: 29, Width: 0},
 	"result/persist-notice@80x20":  {Lines: 29, Width: 0},
 	"result/persist-notice@80x24":  {Lines: 29, Width: 0},
 	"result/persist-notice@88x20":  {Lines: 29, Width: 0},
