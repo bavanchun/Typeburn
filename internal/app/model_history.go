@@ -52,6 +52,7 @@ type resultOutcome struct {
 	store  bool
 	isBest bool
 	notice string
+	ctx    ui.ResultContext
 }
 
 // decideOutcome resolves a finished run against the history already on disk.
@@ -59,13 +60,22 @@ type resultOutcome struct {
 // A run whose clock was cut back by trailing inactivity is shown but never
 // written, and never ranked. Its rates describe the burst the user typed before
 // they walked away, not a test they took, so a stored record of it would stand
-// as a personal best nobody could beat by typing.
+// as a personal best nobody could beat by typing. The comparison figures are
+// still resolved for it — the personal best and recent average are facts about
+// the history, not about this run — but its standing is withheld along with the
+// record, or the screen would report a place the run never earned.
 func decideOutcome(msg ui.ResultMsg, hist []storage.Record) resultOutcome {
-	if msg.Result.AFKTrimmed {
-		return resultOutcome{notice: afkNotice}
-	}
 	rec := buildRecord(msg)
-	return resultOutcome{record: rec, store: true, isBest: storage.IsNewBest(hist, rec)}
+	out := resultOutcome{record: rec, ctx: ui.ResultContextFor(hist, rec)}
+	if msg.Result.AFKTrimmed {
+		out.notice = afkNotice
+		out.record = storage.Record{}
+		out.ctx = out.ctx.Unranked()
+		return out
+	}
+	out.store = true
+	out.isBest = storage.IsNewBest(hist, rec)
+	return out
 }
 
 // handleResultMsg processes a completed test: persists the record, detects
@@ -99,6 +109,7 @@ func (m Model) handleResultMsg(msg ui.ResultMsg) Model {
 
 	m.result = ui.NewResult(msg, m.theme, m.keys).
 		WithBest(out.isBest).
+		WithContext(out.ctx).
 		WithUpdateHint(m.updateHint).
 		WithRevealStart(nowUTC().UnixMilli()).
 		SetSize(m.w, m.h)

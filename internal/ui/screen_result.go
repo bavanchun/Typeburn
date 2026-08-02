@@ -26,6 +26,12 @@ type ResultModel struct {
 	// Nil means no footer hint. Set via WithUpdateHint after NewResult.
 	updateHint *update.Result
 
+	// ctx holds the comparison figures the rail renders, resolved by the root
+	// from the history that was on disk before this run was written. Its zero
+	// value is the first-run state, so a directly constructed model renders the
+	// same thing a brand-new profile sees.
+	ctx ResultContext
+
 	w, h int
 	th   theme.Theme
 	km   config.Keymap

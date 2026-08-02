@@ -7,6 +7,7 @@ import (
 	"github.com/bavanchun/Typeburn/v2/internal/metrics"
 	"github.com/bavanchun/Typeburn/v2/internal/theme"
 	"github.com/bavanchun/Typeburn/v2/internal/ui"
+	"github.com/bavanchun/Typeburn/v2/internal/update"
 )
 
 // appCase builds a root model already sized to w×h and parked in the state
@@ -83,6 +84,23 @@ func appCases() []appCase {
 			m.screen = ScreenResult
 			m.result = ui.NewResult(appResultMsg(), m.theme, m.keys).SetSize(w, h)
 			m.persistErr = "could not write history.json: permission denied"
+			return m
+		}},
+		// Everything the Result screen can carry at once: the panel, an update
+		// hint, the footer, and a persistence notice on the terminal's last row.
+		// This is the configuration the panel's height budget is designed for,
+		// and the one a user who has an update pending actually meets.
+		{"result/notice+hint", func(w, h int) Model {
+			m := baseModel(w, h)
+			m.screen = ScreenResult
+			m.result = ui.NewResult(appResultMsg(), m.theme, m.keys).
+				WithContext(ui.ResultContext{HasHistory: true, PB: 111, Avg10: 96, Rank: 4, Total: 47}).
+				WithUpdateHint(&update.Result{Latest: "v2.9.0", UpgradeAvailable: true}).
+				SetSize(w, h)
+			// Short on purpose: the unbounded width of a long notice is separate
+			// debt, measured by the result/persist-notice case. This one is here
+			// to measure height with everything stacked.
+			m.persistErr = "not saved"
 			return m
 		}},
 		{"settings", func(w, h int) Model {
