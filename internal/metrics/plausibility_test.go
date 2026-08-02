@@ -108,13 +108,7 @@ type plausibilityCase struct {
 // knownImplausible lists cases whose Result is not yet believable. A listed
 // case that becomes plausible fails until its entry is deleted, and an entry no
 // case produces fails as stale, so the debt cannot quietly become permanent.
-var knownImplausible = map[string]bool{
-	// A Time run abandoned after a handful of keys: AFK trim removes the idle
-	// tail, leaving a duration of a few hundred milliseconds, and the rate is
-	// then extrapolated from it as though the user had kept that pace for a
-	// minute.
-	"time/afk-after-a-burst": true,
-}
+var knownImplausible = map[string]bool{}
 
 func plausibilityCases() []plausibilityCase {
 	return []plausibilityCase{

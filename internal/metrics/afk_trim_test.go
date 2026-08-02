@@ -22,9 +22,12 @@ func TestAFKTrim(t *testing.T) {
 		e.Apply('o', 5000)
 		// last keystroke at 5000; endMs=15000 → gap=10000ms > 7000ms → trim
 		log := e.Log()
-		trimmed, effectiveEnd := metrics.TrimAFK(log, config.ModeTime, 15000)
+		trimmed, effectiveEnd, didTrim := metrics.TrimAFK(log, config.ModeTime, 15000)
 		if effectiveEnd != 5000 {
 			t.Errorf("Time AFK: want effectiveEnd=5000, got %d", effectiveEnd)
+		}
+		if !didTrim {
+			t.Error("Time AFK: a moved endMs must be reported as trimmed")
 		}
 		// trimmed log should only contain keystrokes up to last active key
 		if len(trimmed) != len(log) {
@@ -41,9 +44,9 @@ func TestAFKTrim(t *testing.T) {
 		e.Apply('i', 2000)
 		// last key at 2000; endMs=9000 → gap=7000ms (not > 7000ms)
 		log := e.Log()
-		_, effectiveEnd := metrics.TrimAFK(log, config.ModeTime, 9000)
-		if effectiveEnd != 9000 {
-			t.Errorf("gap exactly 7s: want effectiveEnd=9000 (no trim), got %d", effectiveEnd)
+		_, effectiveEnd, didTrim := metrics.TrimAFK(log, config.ModeTime, 9000)
+		if effectiveEnd != 9000 || didTrim {
+			t.Errorf("gap exactly 7s: want effectiveEnd=9000 untrimmed, got %d trimmed=%v", effectiveEnd, didTrim)
 		}
 	})
 
@@ -53,9 +56,9 @@ func TestAFKTrim(t *testing.T) {
 		e.Apply('i', 2000)
 		log := e.Log()
 		// 10s gap but Words mode → no trim
-		_, effectiveEnd := metrics.TrimAFK(log, config.ModeWords, 12000)
-		if effectiveEnd != 12000 {
-			t.Errorf("Words mode: want effectiveEnd=12000 (no trim), got %d", effectiveEnd)
+		_, effectiveEnd, didTrim := metrics.TrimAFK(log, config.ModeWords, 12000)
+		if effectiveEnd != 12000 || didTrim {
+			t.Errorf("Words mode: want effectiveEnd=12000 untrimmed, got %d trimmed=%v", effectiveEnd, didTrim)
 		}
 	})
 
@@ -64,16 +67,16 @@ func TestAFKTrim(t *testing.T) {
 		e.Apply('t', 1000)
 		e.Apply('h', 2000)
 		log := e.Log()
-		_, effectiveEnd := metrics.TrimAFK(log, config.ModeQuote, 12000)
-		if effectiveEnd != 12000 {
-			t.Errorf("Quote mode: want effectiveEnd=12000 (no trim), got %d", effectiveEnd)
+		_, effectiveEnd, didTrim := metrics.TrimAFK(log, config.ModeQuote, 12000)
+		if effectiveEnd != 12000 || didTrim {
+			t.Errorf("Quote mode: want effectiveEnd=12000 untrimmed, got %d trimmed=%v", effectiveEnd, didTrim)
 		}
 	})
 
 	t.Run("Empty log: TrimAFK returns original endMs regardless of mode", func(t *testing.T) {
-		_, effectiveEnd := metrics.TrimAFK(nil, config.ModeTime, 5000)
-		if effectiveEnd != 5000 {
-			t.Errorf("empty log: want effectiveEnd=5000, got %d", effectiveEnd)
+		_, effectiveEnd, didTrim := metrics.TrimAFK(nil, config.ModeTime, 5000)
+		if effectiveEnd != 5000 || didTrim {
+			t.Errorf("empty log: want effectiveEnd=5000 untrimmed, got %d trimmed=%v", effectiveEnd, didTrim)
 		}
 	})
 
@@ -83,9 +86,9 @@ func TestAFKTrim(t *testing.T) {
 		e.Apply('i', 3000)
 		log := e.Log()
 		// last key at 3000; endMs=8000 → gap=5000ms < 7000ms
-		_, effectiveEnd := metrics.TrimAFK(log, config.ModeTime, 8000)
-		if effectiveEnd != 8000 {
-			t.Errorf("small gap: want effectiveEnd=8000, got %d", effectiveEnd)
+		_, effectiveEnd, didTrim := metrics.TrimAFK(log, config.ModeTime, 8000)
+		if effectiveEnd != 8000 || didTrim {
+			t.Errorf("small gap: want effectiveEnd=8000 untrimmed, got %d trimmed=%v", effectiveEnd, didTrim)
 		}
 	})
 
@@ -103,6 +106,9 @@ func TestAFKTrim(t *testing.T) {
 		// With AFK trim: endMs adjusted to 5000, duration = 5000-1000 = 4000ms
 		if r.DurationMs != 4000 {
 			t.Errorf("Compute with AFK trim: want DurationMs=4000, got %d", r.DurationMs)
+		}
+		if !r.AFKTrimmed {
+			t.Error("Compute must carry the trim forward: a caller cannot tell a trimmed run from a typed one otherwise")
 		}
 	})
 }

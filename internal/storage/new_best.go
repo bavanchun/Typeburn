@@ -3,6 +3,15 @@ package storage
 import "strconv"
 
 // EligibleForBest reports whether a record may participate in personal bests.
+//
+// Code runs are excluded because their target is whatever the user pasted, and
+// strict runs because their cursor cannot pass an error, which makes their
+// speed incomparable with a normal run's.
+//
+// A third exclusion is not expressible here and must not be added: a run cut
+// short by trailing inactivity is refused before it becomes a record at all, so
+// no stored record can be one. The gate lives with the only writer of history —
+// see handleResultMsg in the root model.
 func EligibleForBest(r Record) bool {
 	return r.Mode != "code" && !r.Strict
 }

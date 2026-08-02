@@ -114,6 +114,9 @@ func drive(
 				timerArmed = true
 			}
 
+			// Progress is a count in a single unit per mode — words for Time and
+			// Words, runes for Quote and Code — so the status line's "done/total"
+			// compares two comparable numbers in every mode.
 			done, total := session.Engine.Progress()
 			elapsed := nowMs - session.Engine.StartMs()
 			live := metrics.LiveWPM(session.Engine.Log(), elapsed)

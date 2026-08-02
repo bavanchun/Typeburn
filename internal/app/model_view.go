@@ -56,19 +56,46 @@ func (m Model) View() tea.View {
 		out = renderTransition(m.transition.fromFrame, out, p, noColor)
 	}
 
-	// Transient persistence-failure toast: overlay onto the frame's last row
-	// (normally blank padding) so the line count — and thus every other
-	// screen's layout — is unchanged. Cleared on the next keypress.
+	// Transient notice (a failed write, or a run withheld from history).
+	// Cleared on the next keypress.
 	if m.persistErr != "" && m.w > 0 && m.h > 0 {
-		lines := strings.Split(out, "\n")
-		notice := lipgloss.PlaceHorizontal(
-			m.w, lipgloss.Center, ui.PersistenceNotice(m.persistErr, m.theme),
-		)
-		lines[len(lines)-1] = notice
-		out = strings.Join(lines, "\n")
+		out = overlayNotice(out, ui.PersistenceNotice(m.persistErr, m.theme), m.w, m.h)
 	}
 
 	return altView(out)
+}
+
+// overlayNotice puts a one-line notice on the last row the terminal actually
+// shows, which is not the same as the frame's last line.
+//
+// Writing to the frame's last line is wrong in both directions. When the frame
+// is taller than the terminal that line is clipped away, so the notice is
+// invisible in exactly the situation that produced it. When the frame is
+// shorter, the last line belongs to the screen and overwriting it destroys
+// content the user needs.
+//
+// So the notice takes the chosen row only when that row is blank padding, and
+// is otherwise inserted above it, pushing the frame down by one. The one
+// exception is a frame that already exceeds the terminal: a pushed-down row
+// falls off the bottom regardless, and lengthening the frame further would
+// only widen the overflow.
+func overlayNotice(frame, notice string, w, h int) string {
+	lines := strings.Split(frame, "\n")
+	row := len(lines) - 1
+	if h-1 < row {
+		row = h - 1
+	}
+	if row < 0 {
+		return frame
+	}
+
+	placed := lipgloss.PlaceHorizontal(w, lipgloss.Center, notice)
+	if strings.TrimSpace(lines[row]) == "" || len(lines) > h {
+		lines[row] = placed
+	} else {
+		lines = append(lines[:row], append([]string{placed}, lines[row:]...)...)
+	}
+	return strings.Join(lines, "\n")
 }
 
 // composeScreen renders a single screen to its final placed frame. Home/Result/

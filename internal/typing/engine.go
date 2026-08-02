@@ -8,11 +8,17 @@ import (
 // Target is 0 for Extra positions (past end of target text).
 // Correct reflects whether the typed rune matched the target at that moment.
 // For backspace events, Typed is set to 0 (null rune) and Correct is false.
+//
+// Blocked marks a keystroke that was recorded but refused: in strict mode a
+// wrong key does not advance the cursor, so the rune never entered the typed
+// buffer. It is omitted from JSON when false so logs written before the field
+// existed decode to the non-strict meaning they were recorded with.
 type Keystroke struct {
 	TimeMs  int64 `json:"time_ms"`
 	Typed   rune  `json:"typed"`
 	Target  rune  `json:"target"`
 	Correct bool  `json:"correct"`
+	Blocked bool  `json:"blocked,omitempty"`
 }
 
 // Engine maintains the mutable typing state: target buffer, typed buffer,
@@ -20,30 +26,36 @@ type Keystroke struct {
 // (no byte indexing), making Engine correct for multi-byte Unicode input
 // such as "café" or CJK characters.
 type Engine struct {
-	target     []rune
-	typed      []rune
-	log        []Keystroke
-	startMs    int64 // 0 until first Apply call
-	mode       mode.Mode
-	wordTarget int // Words: N words to complete; Time: limit in ms; Quote: unused (0)
-	strict     bool
+	target  []rune
+	typed   []rune
+	log     []Keystroke
+	startMs int64 // 0 until first Apply call
+	mode    mode.Mode
+
+	// limit is what ends the run, and its unit depends on the mode: a word
+	// count for ModeWords, a duration in milliseconds for ModeTime, unused (0)
+	// for ModeQuote and ModeCode. It is deliberately not named for either unit,
+	// because reading it as the other one is how a 30-second run came to report
+	// its progress as 0 out of 30000 words.
+	limit  int
+	strict bool
 }
 
-// New creates an Engine for the given target text, mode, and wordTarget.
-// For ModeWords, wordTarget is the number of words to type.
-// For ModeTime, wordTarget is the time limit in milliseconds.
-// For ModeQuote, wordTarget is ignored (0).
-func New(target string, mode mode.Mode, wordTarget int) *Engine {
-	return NewStrict(target, mode, wordTarget, false)
+// New creates an Engine for the given target text, mode, and limit.
+// For ModeWords, limit is the number of words to type.
+// For ModeTime, limit is the time limit in milliseconds.
+// For ModeQuote and ModeCode, limit is ignored (0).
+func New(target string, mode mode.Mode, limit int) *Engine {
+	return NewStrict(target, mode, limit, false)
 }
 
 // NewStrict creates an Engine with optional strict (stop-on-error letter) mode.
-func NewStrict(target string, mode mode.Mode, wordTarget int, strict bool) *Engine {
+func NewStrict(target string, mode mode.Mode, limit int, strict bool) *Engine {
 	return &Engine{
-		target:     []rune(target),
-		mode:       mode,
-		wordTarget: wordTarget,
-		strict:     strict,
+		target: []rune(target),
+		mode:   mode,
+		limit:  limit,
+		strict: strict,
 	}
 }
 
@@ -54,6 +66,11 @@ func (e *Engine) StartMs() int64 { return e.startMs }
 // Apply records a printable rune keystroke at the given monotonic millisecond
 // timestamp. The first call sets startMs. Extra runes past the target length
 // are appended and classified as Extra by States().
+//
+// In strict mode no wrong rune advances the cursor — including one typed past
+// the end of the target, which is wrong by definition since there is nothing
+// left to match. Such a keystroke is logged as Blocked so replays agree with
+// the buffer this engine actually holds.
 func (e *Engine) Apply(r rune, nowMs int64) {
 	if e.startMs == 0 {
 		e.startMs = nowMs
@@ -69,13 +86,13 @@ func (e *Engine) Apply(r rune, nowMs int64) {
 	}
 	// pos >= len(e.target): extra rune — target stays 0, correct stays false
 
-	if e.strict && pos < len(e.target) && !correct {
-		// blocked: log the error, do NOT advance the typed buffer
+	if e.strict && !correct {
 		e.log = append(e.log, Keystroke{
 			TimeMs:  nowMs,
 			Typed:   r,
 			Target:  target,
 			Correct: false,
+			Blocked: true,
 		})
 		return
 	}
@@ -112,47 +129,6 @@ func (e *Engine) Backspace(nowMs int64) {
 	})
 }
 
-// States returns a CharState slice covering all target positions plus any extra
-// typed runes. The current cursor position is marked Current; positions behind
-// it are Correct/Incorrect/IncorrectSpace; positions ahead are Untyped.
-//
-// IncorrectSpace is assigned when the target rune is a space and the typed rune
-// is not (or vice versa), making word-boundary errors visually distinct.
-func (e *Engine) States() []CharState {
-	cursor := len(e.typed)
-	total := len(e.target)
-	if cursor > total {
-		total = cursor
-	}
-
-	states := make([]CharState, total)
-
-	for i := 0; i < total; i++ {
-		switch {
-		case i == cursor:
-			states[i] = Current
-		case i > cursor:
-			states[i] = Untyped
-		case i >= len(e.target):
-			// typed past end of target → Extra
-			states[i] = Extra
-		default:
-			typed := e.typed[i]
-			tgt := e.target[i]
-			if typed == tgt {
-				states[i] = Correct
-			} else if tgt == ' ' || typed == ' ' {
-				// wrong char at a space boundary — distinct visual class
-				states[i] = IncorrectSpace
-			} else {
-				states[i] = Incorrect
-			}
-		}
-	}
-
-	return states
-}
-
 // Log returns the full keystroke log in chronological order.
 // Backspace events have Typed==0.
 func (e *Engine) Log() []Keystroke {
@@ -177,21 +153,4 @@ func (e *Engine) ForwardKeystrokes() int {
 		}
 	}
 	return n
-}
-
-// Progress returns (done, total) for the current mode:
-//   - ModeWords / ModeTime: (completedWords, wordTarget)
-//   - ModeQuote:            (typedRunes, totalTargetRunes)
-func (e *Engine) Progress() (done, total int) {
-	switch e.mode {
-	case mode.ModeQuote:
-		typed := len(e.typed)
-		if typed > len(e.target) {
-			typed = len(e.target)
-		}
-		return typed, len(e.target)
-	default:
-		// Words and Time both report word progress toward wordTarget.
-		return countCompletedWords(e.typed, e.target), e.wordTarget
-	}
 }

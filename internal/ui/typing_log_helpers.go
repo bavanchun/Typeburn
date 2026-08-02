@@ -14,17 +14,11 @@ func liveWPMFromCount(forward int, elapsedMs int64) float64 {
 
 // typedFromLog reconstructs the current typed-rune slice by replaying the
 // keystroke log. Engine.typed is unexported; the log is the public API.
-// Backspace events (Typed==0) pop the last rune, mirroring Engine internals.
+//
+// The replay itself belongs to the typing package, which owns what a log means.
+// This file once carried its own copy of the loop, and when strict mode started
+// logging keystrokes it had refused, both copies reconstructed a buffer the
+// engine never held — the same defect twice, because the rule was written twice.
 func typedFromLog(log []typing.Keystroke) []rune {
-	var buf []rune
-	for _, k := range log {
-		if k.Typed == 0 {
-			if len(buf) > 0 {
-				buf = buf[:len(buf)-1]
-			}
-		} else {
-			buf = append(buf, k.Typed)
-		}
-	}
-	return buf
+	return typing.TypedFromLog(log)
 }
