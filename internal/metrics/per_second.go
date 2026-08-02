@@ -73,3 +73,31 @@ func bucketPerSecond(log []typing.Keystroke, startMs int64) []PerSecond {
 
 	return buckets
 }
+
+// consistencySamples returns the per-second raw-WPM values that describe a rate
+// the user actually sustained for a second.
+//
+// Only the last bucket can be short, and it is scaled to a full second like
+// every other one: a run ending 200 ms into its final second reports that
+// second at a fifth of its real speed. Fed to a variance measure, that lone
+// invented dip is indistinguishable from erratic typing — a perfectly even
+// typist scores far below the formula's maximum purely because their run did
+// not end on a second boundary. The graph still shows the partial bucket; only
+// the score refuses to treat it as a sample.
+//
+// A run shorter than one full second yields no samples, and Consistency reports
+// 0 for "no data" rather than inventing a score from a single partial bucket.
+func consistencySamples(buckets []PerSecond, durationMs int64) []float64 {
+	complete := len(buckets)
+	if durationMs < int64(complete)*1000 {
+		complete--
+	}
+	if complete < 0 {
+		complete = 0
+	}
+	out := make([]float64, complete)
+	for i := range out {
+		out[i] = buckets[i].RawWPM
+	}
+	return out
+}

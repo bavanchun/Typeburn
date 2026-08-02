@@ -6,10 +6,10 @@ import (
 
 // Complete reports whether the test is finished according to the active mode.
 //
-//   - ModeTime:  the caller signals completion by passing nowMs >= the time limit
-//     (stored in wordTarget as milliseconds). The engine itself does not track
-//     wall time; the caller (UI layer or test harness) drives the clock.
-//   - ModeWords: complete when the user has typed exactly wordTarget words.
+//   - ModeTime:  the caller signals completion by passing nowMs >= the time
+//     limit (limit, in milliseconds). The engine itself does not track wall
+//     time; the caller (UI layer or test harness) drives the clock.
+//   - ModeWords: complete when the user has typed exactly limit words.
 //     A word is considered typed when the trailing space has been entered OR
 //     when the last word in the sequence is fully typed (no trailing space needed).
 //   - ModeQuote / ModeCode: complete when the typed buffer exactly matches
@@ -18,10 +18,10 @@ import (
 func (e *Engine) Complete(nowMs int64) bool {
 	switch e.mode {
 	case mode.ModeTime:
-		return nowMs >= int64(e.wordTarget)
+		return nowMs >= int64(e.limit)
 
 	case mode.ModeWords:
-		return countCompletedWords(e.typed, e.target) >= e.wordTarget
+		return countCompletedWords(e.typed, e.target) >= e.limit
 
 	case mode.ModeQuote, mode.ModeCode:
 		return runesEqual(e.typed, e.target)
@@ -36,8 +36,10 @@ func (e *Engine) Complete(nowMs int64) bool {
 //   - Its trailing space has been typed (mid-sequence words), OR
 //   - It is the last word and the typed runes cover it entirely.
 //
-// Only the first wordTarget words are considered; extra typed runes beyond the
-// target are ignored for counting purposes.
+// Counting is position-based over the whole target: it measures how far the
+// cursor has advanced, not whether the runes it passed were correct. Typing
+// past the end of the target adds nothing, because there are no further target
+// words to complete.
 func countCompletedWords(typed, target []rune) int {
 	if len(typed) == 0 || len(target) == 0 {
 		return 0
@@ -45,38 +47,45 @@ func countCompletedWords(typed, target []rune) int {
 
 	completed := 0
 	inWord := false
-	wordStart := 0
 
 	for i, r := range target {
 		if r == ' ' {
 			if inWord {
-				// Word counts complete once typing has advanced past its
-				// trailing-space position (position-based progress; the char
-				// itself isn't re-checked here).
 				if i < len(typed) {
 					completed++
 				}
 				inWord = false
 			}
-		} else {
-			if !inWord {
-				wordStart = i
-				inWord = true
-			}
+			continue
 		}
-		_ = wordStart
+		inWord = true
 	}
 
 	// Last word: complete if all its runes are typed (no trailing space required).
-	if inWord {
-		// Find the end of the last word in target.
-		lastWordEnd := len(target)
-		if lastWordEnd <= len(typed) {
-			completed++
-		}
+	if inWord && len(target) <= len(typed) {
+		completed++
 	}
 
 	return completed
+}
+
+// countWords counts the space-separated words in a target text. It is the
+// denominator Progress reports for a timed run, whose word count is a property
+// of the generated text rather than a goal the user chose.
+func countWords(target []rune) int {
+	words := 0
+	inWord := false
+	for _, r := range target {
+		if r == ' ' {
+			inWord = false
+			continue
+		}
+		if !inWord {
+			words++
+			inWord = true
+		}
+	}
+	return words
 }
 
 // runesEqual reports whether a and b contain identical rune sequences.
