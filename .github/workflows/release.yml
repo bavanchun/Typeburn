@@ -85,6 +85,29 @@ jobs:
         with:
           go-version: "1.25.x"
           cache: true
+      # --release-notes is passed unconditionally below, so forgetting to update
+      # the file publishes the PREVIOUS release's notes under a new tag — and
+      # tags are immutable, so there is no fixing it afterwards. Assert the tag
+      # appears in the file's first heading before anything is published.
+      # ref_name is read via env, never interpolated into the script body.
+      - name: Verify release notes match the tag
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          heading=$(grep -m1 '^## ' .github/release-notes.md || true)
+          if [ -z "$heading" ]; then
+            echo "::error::.github/release-notes.md has no '## ' heading"
+            exit 1
+          fi
+          # Tags are vX.Y.Z; headings are '## [X.Y.Z] - ...'.
+          version=${TAG#v}
+          if ! printf '%s' "$heading" | grep -qF "$version"; then
+            echo "::error::release notes do not mention ${TAG}; first heading is: ${heading}"
+            exit 1
+          fi
+          echo "Release notes heading matches ${TAG}."
+
       - name: Verify Homebrew tap write permission
         if: ${{ !contains(github.ref_name, '-') }}
         env:
