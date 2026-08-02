@@ -20,10 +20,46 @@ const (
 	colConsW = 7
 )
 
+// History table geometry.
+//
+// historyIndentW is the gutter the selection bar occupies ("▎ "). The header
+// and both row forms use the same gutter, so a selected row's columns line up
+// with the header's instead of shifting a cell left.
+//
+// historyRowW is the width a rendered row occupies: the gutter, the five padded
+// columns with a space between each, and the two-cell star slot.
+// TestHistoryRow_MatchesTheDeclaredWidth holds it to the renderer.
+const (
+	historyRuleMaxW = 62
+	historyIndentW  = 2
+	historyRowW     = historyIndentW + colDateW + 1 + colModeW + 1 + colWPMW + 1 + colAccW + 1 + colConsW + 2
+)
+
+// historyRuleW sizes the rules above and below the table to the terminal.
+//
+// A constant 62 overflowed the 60-column minimum the product advertises, and
+// because History is centred with lipgloss.Place — which sizes the block from
+// its widest line — an over-wide rule does not just spill, it decentres every
+// other line on the screen. Two cells are held back so the rule never runs into
+// the terminal edge, and the rule never shrinks below the rows it brackets.
+func historyRuleW(termW int) int {
+	if termW <= 0 {
+		return historyRuleMaxW
+	}
+	w := termW - 2
+	if w > historyRuleMaxW {
+		w = historyRuleMaxW
+	}
+	if w < historyRowW {
+		w = historyRowW
+	}
+	return w
+}
+
 // renderHistoryHeader renders the UPPERCASE header row with border rules above
 // and below, styled in RoleTextMuted per mockups §5.
-func renderHistoryHeader(th theme.Theme) string {
-	sep := th.Style(theme.RoleBorder).Render(strings.Repeat("─", 62))
+func renderHistoryHeader(th theme.Theme, ruleW int) string {
+	sep := th.Style(theme.RoleBorder).Render(strings.Repeat("─", ruleW))
 	mutedStyle := th.Style(theme.RoleTextMuted)
 
 	header := fmt.Sprintf("  %-*s %-*s %-*s %-*s %-*s",
@@ -37,7 +73,9 @@ func renderHistoryHeader(th theme.Theme) string {
 }
 
 // renderHistoryRow renders a single history table row. Selected rows get the
-// ▎ accent bar and RoleSurfaceAlt background. Per-mode best rows get a ★ badge.
+// ▎ accent bar and RoleSurfaceAlt background; unselected rows leave the same
+// gutter blank so the columns do not move when the cursor lands on them.
+// Per-mode best rows get a ★ badge.
 func renderHistoryRow(r storage.Record, selected bool, isBestRow bool, th theme.Theme) string {
 	// Format each column value.
 	date := r.Time.Format("2006-01-02 15:04")
@@ -74,13 +112,20 @@ func renderHistoryRow(r storage.Record, selected bool, isBestRow bool, th theme.
 	consStyled := th.Style(theme.RoleTextPrimary).Render(fmt.Sprintf("%-*s", colConsW, cons))
 	dateStyled := th.Style(theme.RoleTextMuted).Render(fmt.Sprintf("%-*s", colDateW, date))
 	modeStyled := th.Style(theme.RoleTextMuted).Render(fmt.Sprintf("%-*s", colModeW, label))
-	return "   " + dateStyled + " " + modeStyled + " " + wpmStyled + " " + accStyled + " " + consStyled + star
+	return "  " + dateStyled + " " + modeStyled + " " + wpmStyled + " " + accStyled + " " + consStyled + star
 }
 
 // renderHistoryMeta renders the "showing X–Y of N" meta line in RoleTextFaint.
-func renderHistoryMeta(top, sel, total int, th theme.Theme) string {
+//
+// end is the exclusive end of the visible window, not the cursor. Reporting the
+// cursor made a screen showing fourteen rows say "showing 1–1 of 120", which
+// describes neither the selection nor the page.
+func renderHistoryMeta(top, end, total int, th theme.Theme) string {
 	from := top + 1
-	to := sel + 1
+	to := end
+	if to > total {
+		to = total
+	}
 	if to < from {
 		to = from
 	}

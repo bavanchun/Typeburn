@@ -7,6 +7,15 @@ import (
 	"github.com/bavanchun/Typeburn/v2/internal/theme"
 )
 
+// Settings block geometry. The rules above and below the rows are
+// settingsBlockW cells wide and each row is padded to the same width, so the
+// block reads as one column; settingsRowIndentW is the two cells every row
+// spends on its selection bar ("▎ ") or the matching blank indent.
+const (
+	settingsBlockW     = 44
+	settingsRowIndentW = 2
+)
+
 // settingRow is one row in the settings list: a label, a list of possible
 // string values, the current index, and a contextual help string.
 type settingRow struct {
