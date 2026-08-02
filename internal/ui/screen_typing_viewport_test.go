@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 
 	"github.com/bavanchun/Typeburn/v2/internal/config"
 	"github.com/bavanchun/Typeburn/v2/internal/theme"
@@ -38,9 +39,10 @@ func caretToken(m TypingModel, th theme.Theme) string {
 	return th.Style(theme.RoleCursorBg).Render(string(runeAtIndex(i, []rune(m.target), m.eng.Typed())))
 }
 
-// TestTypingView_CaretVisibleAtEveryKeystroke types a whole Time-mode target
-// one rune at a time and asserts the cursor is on screen after every single
-// one, at three sizes.
+// TestTypingView_CaretVisibleAtEveryKeystroke types a whole target one rune at
+// a time and asserts the cursor is on screen after every single one, at three
+// sizes. The window height is derived from the terminal height, so a pass at
+// 24 rows proves nothing about 32.
 //
 // Past roughly a screenful the stream used to run off the bottom of the cell
 // buffer, taking the footer and then the caret with it: the user carried on
@@ -73,19 +75,47 @@ func TestTypingView_CaretVisibleAtEveryKeystroke(t *testing.T) {
 }
 
 // TestTypingView_FitsAndKeepsItsFooter asserts the footer survives at every
-// size. The stream is what grows without bound, so the footer is the first
-// thing an unwindowed stream pushes out of the buffer.
+// size, in the default Time mode as well as Words. The stream is what grows
+// without bound, so the footer is the first thing an unwindowed stream pushes
+// out of the buffer — and Time 30 is what the app opens with.
 func TestTypingView_FitsAndKeepsItsFooter(t *testing.T) {
 	th := theme.Load("default", false)
-	for _, sz := range viewportSizes {
-		w, h := sz[0], sz[1]
-		m := longRunTyping(th, w, h)
-		lines := strings.Split(m.View(), "\n")
-		if len(lines) > h {
-			t.Errorf("%dx%d: frame is %d lines", w, h, len(lines))
+	models := map[string]func(theme.Theme, int, int) TypingModel{
+		"words": longRunTyping,
+		"time30": func(th theme.Theme, w, h int) TypingModel {
+			return newTypingWithSeed(config.ModeTime, 30, words.QuoteShort,
+				th, config.DefaultKeymap(), false, false, false, false, 42).SetSize(w, h)
+		},
+	}
+	for name, build := range models {
+		for _, sz := range viewportSizes {
+			w, h := sz[0], sz[1]
+			lines := strings.Split(build(th, w, h).View(), "\n")
+			if len(lines) > h {
+				t.Errorf("%s %dx%d: frame is %d lines", name, w, h, len(lines))
+			}
+			if last := stripANSI(lines[len(lines)-1]); !strings.Contains(last, "tab") {
+				t.Errorf("%s %dx%d: last line is not the footer: %q", name, w, h, last)
+			}
 		}
-		if !strings.Contains(stripANSI(lines[len(lines)-1]), "tab") {
-			t.Errorf("%dx%d: last line is not the footer: %q", w, h, stripANSI(lines[len(lines)-1]))
+	}
+}
+
+// TestTypingView_WideRuneCodeTargetFitsItsTerminal asserts a Code target made
+// entirely of double-width runes stays inside the terminal. --text and the
+// paste screen both accept whatever the user has, and a buffer of CJK or emoji
+// drew at twice the width it was given until rows were counted in cells.
+func TestTypingView_WideRuneCodeTargetFitsItsTerminal(t *testing.T) {
+	th := theme.Load("default", false)
+	for _, src := range []string{strings.Repeat("函", 120), strings.Repeat("🚀", 60)} {
+		for _, sz := range viewportSizes {
+			w, h := sz[0], sz[1]
+			m := NewTypingCode(src, th, config.DefaultKeymap(), false, false).SetSize(w, h)
+			for i, line := range strings.Split(stripANSI(m.View()), "\n") {
+				if got := lipgloss.Width(line); got > w {
+					t.Errorf("%.4q at %dx%d: line %d is %d cells wide", src, w, h, i, got)
+				}
+			}
 		}
 	}
 }
