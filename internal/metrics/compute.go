@@ -18,12 +18,23 @@ type Result struct {
 	CorrectChars   int // chars in Correct final state
 	IncorrectChars int // chars in Incorrect/IncorrectSpace final state (uncorrected)
 	ExtraChars     int // chars typed past target length
-	Errors         int // alias for IncorrectChars (uncorrected errors)
+
+	// Errors is every wrong key the run is charged for: the uncorrected errors
+	// left in the final state, plus every keystroke strict mode refused. A
+	// strict run has almost nothing wrong in its final state — the cursor never
+	// moves past a wrong key — so counting only the final state would report a
+	// run full of mistakes as error-free.
+	Errors int
 
 	DurationMs int64       // effective test duration (endMs - startMs, after AFK trim)
 	PerSecond  []PerSecond // per-second breakdown
 
-	KeyMisses []KeyMiss // per-key fumble tally (nil on empty/zero-duration logs)
+	// AFKTrimmed records that trailing inactivity cut the clock back to the last
+	// keystroke. Every rate below is then extrapolated from the burst before the
+	// user stopped, so such a run is displayed but never persisted or ranked.
+	AFKTrimmed bool
+
+	KeyMisses []KeyMiss // per-key fumble tally (nil when no key was ever missed)
 }
 
 // Compute derives all metrics from the keystroke log, mode, and caller-supplied
@@ -40,20 +51,26 @@ type Result struct {
 //   - A char typed wrong then corrected via backspace counts as Correct → 100%.
 //   - An uncorrected error counts as Incorrect → penalises accuracy.
 //   - Zero chars typed → Accuracy = 100, all others = 0.
+//
+// An empty log is the only run that reports perfect accuracy for free: nothing
+// was typed, so nothing was typed wrong. A run with no measurable duration —
+// every keystroke inside one millisecond, or an AFK trim that collapsed the
+// window onto the last keystroke — still reports the accuracy of what it
+// contains; only the rates, which have nothing to divide by, come back zero.
 func Compute(log []typing.Keystroke, mode mode.Mode, endMs int64) Result {
 	if len(log) == 0 {
 		return Result{Accuracy: 100, KeystrokeAccuracy: 100}
 	}
 
 	// Apply AFK trim (no-op for non-Time modes).
-	log, endMs = TrimAFK(log, mode, endMs)
+	log, endMs, afkTrimmed := TrimAFK(log, mode, endMs)
 
 	// startMs = first keystroke time (first entry in log).
 	startMs := log[0].TimeMs
 
 	durationMs := endMs - startMs
-	if durationMs <= 0 {
-		return Result{Accuracy: 100, KeystrokeAccuracy: 100}
+	if durationMs < 0 {
+		durationMs = 0
 	}
 
 	// Compute final char state by replaying the log.
@@ -71,24 +88,36 @@ func Compute(log []typing.Keystroke, mode mode.Mode, endMs int64) Result {
 		}
 	}
 
-	// Total forward keystrokes (non-backspace) for RawWPM and CPS.
-	var totalTyped int
-	var correctForward int
+	// Forward keystrokes (non-backspace) for RawWPM, CPS and keystroke accuracy.
+	// A strict-blocked keystroke counts here: the user pressed the key, and it
+	// was wrong. Only the reconstructed buffer above ignores it.
+	var totalTyped, correctForward, blocked int
 	for _, k := range log {
-		if k.Typed != 0 {
-			totalTyped++
-			if k.Correct {
-				correctForward++
-			}
+		if k.Typed == 0 {
+			continue
+		}
+		totalTyped++
+		if k.Correct {
+			correctForward++
+		}
+		if k.Blocked {
+			blocked++
 		}
 	}
 
-	minutes := float64(durationMs) / 60000.0
-	seconds := float64(durationMs) / 1000.0
-
-	netWPM := float64(correct) / 5.0 / minutes
-	rawWPM := float64(totalTyped) / 5.0 / minutes
-	cps := float64(totalTyped) / seconds
+	// Rates need a window long enough to extrapolate from. An AFK trim that cut
+	// the clock back onto a short burst leaves one that is not: the same five
+	// keys that read as a plausible pace over a second read as four-figure WPM
+	// over eighty milliseconds. The counts and accuracies below are still facts
+	// about what was typed and are reported either way.
+	var netWPM, rawWPM, cps float64
+	if durationMs >= minRateWindowMs {
+		minutes := float64(durationMs) / 60000.0
+		seconds := float64(durationMs) / 1000.0
+		netWPM = float64(correct) / 5.0 / minutes
+		rawWPM = float64(totalTyped) / 5.0 / minutes
+		cps = float64(totalTyped) / seconds
+	}
 
 	// Accuracy: 100 * correct / (correct + incorrect) on final state.
 	var accuracy float64
@@ -105,13 +134,10 @@ func Compute(log []typing.Keystroke, mode mode.Mode, endMs int64) Result {
 		keystrokeAccuracy = 100.0 * float64(correctForward) / float64(totalTyped)
 	}
 
-	// Per-second buckets and consistency.
+	// Per-second buckets and consistency. Every bucket is kept for the graph;
+	// consistency samples only the seconds that fully elapsed.
 	perSec := bucketPerSecond(log, startMs)
-	rawSamples := make([]float64, len(perSec))
-	for i, ps := range perSec {
-		rawSamples[i] = ps.RawWPM
-	}
-	cons := Consistency(rawSamples)
+	cons := Consistency(consistencySamples(perSec, durationMs))
 
 	return Result{
 		NetWPM:            netWPM,
@@ -123,9 +149,10 @@ func Compute(log []typing.Keystroke, mode mode.Mode, endMs int64) Result {
 		CorrectChars:      correct,
 		IncorrectChars:    incorrect,
 		ExtraChars:        extra,
-		Errors:            incorrect,
+		Errors:            incorrect + blocked,
 		DurationMs:        durationMs,
 		PerSecond:         perSec,
+		AFKTrimmed:        afkTrimmed,
 		KeyMisses:         KeyHeatmap(log),
 	}
 }
@@ -135,44 +162,20 @@ type charResult struct {
 	correct bool
 }
 
-// replayFinalState replays the keystroke log to determine the final typed rune
-// at each target position. Backspace events (Typed == 0) pop the last position.
-// Returns a slice of charResult indexed by target position, and the count of
-// extra runes typed past the target.
+// replayFinalState determines the final correctness of each target position
+// from the buffer typing.ReplayBuffer reconstructs, plus the count of extra
+// runes typed past the target (Target == 0 marks a position with nothing to
+// match). The reconstruction itself lives in the typing package so that this
+// and the UI's live replay cannot drift apart.
 func replayFinalState(log []typing.Keystroke) ([]charResult, int) {
-	// We reconstruct the typed buffer step by step.
-	type slot struct {
-		typed   rune
-		target  rune
-		correct bool
-		isExtra bool
-	}
-	var buf []slot
-
-	for _, k := range log {
-		if k.Typed == 0 {
-			// Backspace: pop last slot.
-			if len(buf) > 0 {
-				buf = buf[:len(buf)-1]
-			}
-			continue
-		}
-		buf = append(buf, slot{
-			typed:   k.Typed,
-			target:  k.Target,
-			correct: k.Correct,
-			isExtra: k.Target == 0, // target==0 means extra (past end)
-		})
-	}
-
 	var results []charResult
 	extraTyped := 0
-	for _, s := range buf {
-		if s.isExtra {
+	for _, k := range typing.ReplayBuffer(log) {
+		if k.Target == 0 {
 			extraTyped++
-		} else {
-			results = append(results, charResult{correct: s.correct})
+			continue
 		}
+		results = append(results, charResult{correct: k.Correct})
 	}
 	return results, extraTyped
 }

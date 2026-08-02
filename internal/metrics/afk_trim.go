@@ -16,11 +16,17 @@ const afkThresholdMs int64 = 7000 // strictly greater than this triggers AFK tri
 // ModeWords and ModeQuote are never trimmed, even with long gaps — the test
 // ends by completion event, not by time, so idle gaps are intentional pauses.
 //
-// Returns the (possibly unchanged) log and the effective endMs to use for
-// metric computation. The log itself is never modified; only endMs changes.
-func TrimAFK(log []typing.Keystroke, m mode.Mode, endMs int64) ([]typing.Keystroke, int64) {
+// Returns the (possibly unchanged) log, the effective endMs to use for metric
+// computation, and whether endMs was actually moved. The log itself is never
+// modified; only endMs changes.
+//
+// The trimmed flag matters downstream: once the clock is cut back to the last
+// keystroke, every rate is extrapolated from the burst the user typed before
+// they stopped, not from the test they sat through. Such a run is shown but not
+// recorded, so the caller has to be able to tell.
+func TrimAFK(log []typing.Keystroke, m mode.Mode, endMs int64) ([]typing.Keystroke, int64, bool) {
 	if m != mode.ModeTime {
-		return log, endMs
+		return log, endMs, false
 	}
 
 	// Find the last forward keystroke (non-backspace).
@@ -34,13 +40,13 @@ func TrimAFK(log []typing.Keystroke, m mode.Mode, endMs int64) ([]typing.Keystro
 
 	if lastKeyMs < 0 {
 		// No forward keystrokes at all — nothing to trim.
-		return log, endMs
+		return log, endMs, false
 	}
 
 	gap := endMs - lastKeyMs
 	if gap > afkThresholdMs {
-		return log, lastKeyMs
+		return log, lastKeyMs, true
 	}
 
-	return log, endMs
+	return log, endMs, false
 }
