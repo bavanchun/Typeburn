@@ -167,15 +167,15 @@ A test that passes at 24 rows proves nothing about 50.
 
 ## Success Criteria
 
-- [ ] Typing fits `w×h` at every harness size, every mode — `knownOverflow` typing entries deleted
-- [ ] Caret on screen at every keystroke index, verified at 3 sizes
-- [ ] No line ends mid-word; over-long word still splits; both tested
-- [ ] Code mode frames byte-identical to pre-change **for ASCII input** (wide-rune frames change by design)
-- [ ] Footer visible at 80×24 in Time mode
-- [ ] A 120-CJK-rune and a 60-emoji Code target both fit `m.w`; the CJK fixture entry leaves `knownOverflow`
-- [ ] Zero-width/control runes consume no layout cell
-- [ ] 3× `tab` leaves exactly one live tick loop
-- [ ] `go test ./... -race -count=1` green; files under 200 LOC
+- [x] Typing fits `w×h` at every harness size, every mode — `knownOverflow` typing entries deleted
+- [x] Caret on screen at every keystroke index, verified at 3 sizes
+- [x] No line ends mid-word; over-long word still splits; both tested
+- [x] Code mode frames byte-identical to pre-change **for ASCII input** (wide-rune frames change by design)
+- [x] Footer visible at 80×24 in Time mode
+- [x] A 120-CJK-rune and a 60-emoji Code target both fit `m.w`; the CJK fixture entry leaves `knownOverflow`
+- [x] Zero-width/control runes consume no layout cell
+- [x] 3× `tab` leaves exactly one live tick loop
+- [x] `go test ./... -race -count=1` green; files under 200 LOC
 
 ## Rollback
 
