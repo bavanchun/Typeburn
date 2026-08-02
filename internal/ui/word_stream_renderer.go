@@ -84,20 +84,25 @@ func RenderWordStream(
 		width = 40
 	}
 	tokens := buildWordTokens(states, target, typed, th)
-	return wrapTokens(tokens, states, target, typed, width)
+	rows, _ := wrapTokens(tokens, states, target, typed, width)
+	return strings.Join(rows, "\n")
 }
 
 // wrapTokens assembles the styled rune tokens into wrapped lines using a hard
 // per-cell wrap. Width is accounted from the raw runes (one cell each) so the
 // ANSI escapes in the styled tokens do not distort line length.
+//
+// It returns the rows and the index of the row holding the caret (-1 when no
+// cell is Current), so a caller can window the rows around the caret.
 func wrapTokens(
 	tokens []string,
 	states []typing.CharState,
 	target []rune,
 	typed []rune,
 	width int,
-) string {
+) ([]string, int) {
 	var lines []string
+	caretRow := -1
 	var lineBuilder strings.Builder
 	lineWidth := 0 // rune width of current line (raw, no ANSI)
 
@@ -120,6 +125,9 @@ func wrapTokens(
 			flush()
 		}
 
+		if states[i] == typing.Current {
+			caretRow = len(lines) // the caret lands in the row being built now
+		}
 		lineBuilder.WriteString(tok)
 		lineWidth += cellW
 
@@ -134,5 +142,5 @@ func wrapTokens(
 		lines = append(lines, lineBuilder.String())
 	}
 
-	return strings.Join(lines, "\n")
+	return lines, caretRow
 }

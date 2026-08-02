@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"strings"
+
 	"github.com/bavanchun/Typeburn/v2/internal/theme"
 	"github.com/bavanchun/Typeburn/v2/internal/typing"
 )
@@ -58,7 +60,8 @@ func renderWordStreamAnim(
 		copy(tokens, base)
 		applyCaretOverrides(tokens, states, target, typed, ca, th)
 	}
-	return wrapTokens(tokens, states, target, typed, width)
+	rows, _ := wrapTokens(tokens, states, target, typed, width)
+	return strings.Join(rows, "\n")
 }
 
 // applyCaretOverrides re-Renders the cursor cell and the ≤2 cells behind it with
