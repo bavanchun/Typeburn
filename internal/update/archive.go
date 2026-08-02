@@ -16,6 +16,31 @@ import (
 // bomb). Same order of magnitude as the download cap.
 const decompressCap = 60 << 20 // 60 MiB
 
+// errDecompressCap reports that an archive expanded past decompressCap.
+var errDecompressCap = fmt.Errorf("update: archive decompresses beyond the %d-byte cap", decompressCap)
+
+// capReader bounds the total bytes read from a stream and reports the overrun
+// as errDecompressCap. A tar reader decompresses every member it walks past,
+// not only the one that is kept, so the bound has to sit on the whole
+// decompressed stream — a small archive padded with unwanted members would
+// otherwise expand without limit.
+type capReader struct {
+	r    io.Reader
+	left int64
+}
+
+func (c *capReader) Read(p []byte) (int, error) {
+	if c.left <= 0 {
+		return 0, errDecompressCap
+	}
+	if int64(len(p)) > c.left {
+		p = p[:c.left]
+	}
+	n, err := c.r.Read(p)
+	c.left -= int64(n)
+	return n, err
+}
+
 // extractBinary extracts exactly wantMember from the archive at archivePath and
 // writes it (mode 0o755) into destDir, returning the written path. destDir is
 // the install directory so the atomic-replace swap is a same-filesystem rename. Type
@@ -71,7 +96,7 @@ func extractTarGz(archivePath, wantMember, dest string) error {
 	}
 	defer gz.Close()
 
-	tr := tar.NewReader(gz)
+	tr := tar.NewReader(&capReader{r: gz, left: decompressCap + 1})
 	for {
 		hdr, err := tr.Next()
 		if err == io.EOF {
