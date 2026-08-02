@@ -1,0 +1,7 @@
+[
+  {"time_ms": 1000, "typed": 97, "target": 97, "correct": true},
+  {"time_ms": 1100, "typed": 98, "target": 98, "correct": true},
+  {"time_ms": 1200, "typed": 120, "target": 99, "correct": false},
+  {"time_ms": 1300, "typed": 0, "target": 99, "correct": false},
+  {"time_ms": 1400, "typed": 99, "target": 99, "correct": true}
+]
