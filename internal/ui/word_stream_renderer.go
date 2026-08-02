@@ -69,10 +69,11 @@ func buildWordTokens(states []typing.CharState, target, typed []rune, th theme.T
 // RenderWordStream renders the typing word-stream as a multi-line string.
 //
 // Each rune in target is styled according to its CharState. Extra typed runes
-// (past the target length) are appended at the end. Wrapping is a hard
-// character-cell wrap at `width` (rune-counted, not byte-counted, since styled
-// tokens carry ANSI escapes). This is the static, animation-free render used by
-// non-typing callers and golden tests.
+// (past the target length) are appended at the end. Rows are wrapped on word
+// boundaries at `width` terminal cells (see wrapTokens). This is the static,
+// animation-free, unwindowed render used by non-typing callers and golden
+// tests; the typing screen goes through renderWordStreamAnim, which windows the
+// rows to the height it has.
 func RenderWordStream(
 	states []typing.CharState,
 	target []rune,
@@ -86,61 +87,4 @@ func RenderWordStream(
 	tokens := buildWordTokens(states, target, typed, th)
 	rows, _ := wrapTokens(tokens, states, target, typed, width)
 	return strings.Join(rows, "\n")
-}
-
-// wrapTokens assembles the styled rune tokens into wrapped lines using a hard
-// per-cell wrap. Width is accounted from the raw runes (one cell each) so the
-// ANSI escapes in the styled tokens do not distort line length.
-//
-// It returns the rows and the index of the row holding the caret (-1 when no
-// cell is Current), so a caller can window the rows around the caret.
-func wrapTokens(
-	tokens []string,
-	states []typing.CharState,
-	target []rune,
-	typed []rune,
-	width int,
-) ([]string, int) {
-	var lines []string
-	caretRow := -1
-	var lineBuilder strings.Builder
-	lineWidth := 0 // rune width of current line (raw, no ANSI)
-
-	flush := func() {
-		lines = append(lines, lineBuilder.String())
-		lineBuilder.Reset()
-		lineWidth = 0
-	}
-
-	for i, tok := range tokens {
-		r := runeAtIndex(i, target, typed)
-		// One terminal cell per rune (ASCII/Latin). CJK double-width is not
-		// handled — deferred (roadmap m5, "CJK width support if quotes added").
-		cellW := 1
-
-		// Hard wrap: if this rune would overflow the line, break before it.
-		// There is no scan-back to the last space, so a word wider than the
-		// line is split between runes here.
-		if lineWidth+cellW > width && lineWidth > 0 {
-			flush()
-		}
-
-		if states[i] == typing.Current {
-			caretRow = len(lines) // the caret lands in the row being built now
-		}
-		lineBuilder.WriteString(tok)
-		lineWidth += cellW
-
-		// If we just wrote a space at the end of a word and the line is full,
-		// break here so the next word starts fresh.
-		if r == ' ' && lineWidth >= width {
-			flush()
-		}
-	}
-
-	if lineBuilder.Len() > 0 {
-		lines = append(lines, lineBuilder.String())
-	}
-
-	return lines, caretRow
 }

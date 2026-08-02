@@ -44,7 +44,13 @@ func (m TypingModel) applyText(text string) (TypingModel, tea.Cmd) {
 
 	var cmds []tea.Cmd
 	if firstKey {
-		cmds = append(cmds, tickCmd())
+		// Start the timer chain only if none is running: the root already
+		// bootstraps one when the screen opens, so an unconditional start here
+		// would leave two loops ticking for the rest of the test.
+		var tick tea.Cmd
+		if m, tick = m.armTickLoop(); tick != nil {
+			cmds = append(cmds, tick)
+		}
 	}
 	// Bootstrap the frame loop ONLY on the idle→active edge: returning it per
 	// keystroke would multiply overlapping tea.Tick timers that never self-stop.
