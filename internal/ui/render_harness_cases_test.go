@@ -106,6 +106,25 @@ func screenCases() []screenCase {
 			m.revealStartMs, m.nowMs = 0, 1<<40
 			return m.View()
 		}},
+		{"result/ranked", func(th theme.Theme, w, h int) string {
+			m := NewResult(harnessResult(), th, km).
+				WithContext(ResultContext{HasHistory: true, PB: 111, Avg10: 96, Rank: 4, Total: 47}).
+				SetSize(w, h)
+			m.revealStartMs, m.nowMs = 0, 1<<40
+			return m.View()
+		}},
+		// Mid-reveal is a geometry of its own: the WPM is still counting up and
+		// the chart is only partly drawn. Every settled case has revealDone true
+		// by construction, so without this entry no frame-fits assertion sees the
+		// arrangement the user actually looks at for the first half-second.
+		{"result/mid-reveal", func(th theme.Theme, w, h int) string {
+			m := NewResult(harnessResult(), th, km).
+				WithContext(ResultContext{HasHistory: true, PB: 111, Avg10: 96, Rank: 4, Total: 47}).
+				WithBest(true).SetSize(w, h)
+			m = m.WithRevealStart(1000)
+			m.nowMs = 1000 + 150
+			return m.View()
+		}},
 		{"settings", func(th theme.Theme, w, h int) string {
 			return NewSettings(set, th, km).SetSize(w, h).View()
 		}},

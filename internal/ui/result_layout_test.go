@@ -13,6 +13,7 @@ import (
 	"github.com/bavanchun/Typeburn/v2/internal/config"
 	"github.com/bavanchun/Typeburn/v2/internal/metrics"
 	"github.com/bavanchun/Typeburn/v2/internal/theme"
+	"github.com/bavanchun/Typeburn/v2/internal/update"
 )
 
 // update rewrites the recorded baselines instead of comparing against them.
@@ -113,7 +114,7 @@ func TestResultBaselines(t *testing.T) {
 // size before it has one.
 func TestLayoutFor_NeverDegenerate(t *testing.T) {
 	for w := -10; w <= 400; w++ {
-		lay := layoutFor(w)
+		lay := layoutFor(w, 40)
 		if lay.InnerW < 1 {
 			t.Fatalf("termW=%d: InnerW=%d, want >= 1", w, lay.InnerW)
 		}
@@ -125,9 +126,9 @@ func TestLayoutFor_NeverDegenerate(t *testing.T) {
 
 // Wider terminals must never yield a narrower panel.
 func TestLayoutFor_Monotonic(t *testing.T) {
-	prev := layoutFor(1)
+	prev := layoutFor(1, 40)
 	for w := 2; w <= 400; w++ {
-		cur := layoutFor(w)
+		cur := layoutFor(w, 40)
 		if cur.PanelW < prev.PanelW {
 			t.Fatalf("termW=%d: PanelW %d < %d at termW=%d", w, cur.PanelW, prev.PanelW, w-1)
 		}
@@ -139,7 +140,7 @@ func TestLayoutFor_Monotonic(t *testing.T) {
 // layout claims — otherwise centring math in later phases is built on a lie.
 func TestLayoutFor_MatchesRenderedWidth(t *testing.T) {
 	for _, w := range baselineWidths {
-		lay := layoutFor(w)
+		lay := layoutFor(w, 40)
 		panel := settledPanel(t, shortRunResult(), w, true)
 		for i, line := range strings.Split(panel, "\n") {
 			if got := lipgloss.Width(line); got != lay.PanelW {
@@ -176,7 +177,7 @@ func TestLayoutFor_MatchesRenderedWidth(t *testing.T) {
 // forever is how a 200-column screen ended up holding 35 columns of content.
 func TestLayoutFor_CapsContentWidth(t *testing.T) {
 	for w := 60; w <= 400; w++ {
-		if got := layoutFor(w).InnerW; got > resultMaxContentW {
+		if got := layoutFor(w, 40).InnerW; got > resultMaxContentW {
 			t.Fatalf("termW=%d: InnerW=%d exceeds cap %d", w, got, resultMaxContentW)
 		}
 	}
@@ -225,6 +226,53 @@ func TestResultView_PanelIsCentredOnScreen(t *testing.T) {
 		if diff := left - right; diff > 1 || diff < -1 {
 			t.Errorf("termW=%d: left margin %d vs right %d (panel %d) — not centred on screen",
 				w, left, right, panelW)
+		}
+	}
+}
+
+// The panel has to leave the terminal four rows: a blank spacer, the update
+// hint, the footer, and the row a persistence notice takes. This is the budget
+// the whole layout is designed around, asserted with everything present at once.
+func TestResultPanel_FitsTheHeightBudget(t *testing.T) {
+	hint := &update.Result{Latest: "v2.9.0", UpgradeAvailable: true}
+	for _, size := range [][2]int{{60, 20}, {61, 20}, {72, 24}, {80, 24}, {88, 24}, {120, 24}, {200, 50}} {
+		w, h := size[0], size[1]
+		for _, run := range []struct {
+			name     string
+			wpm, acc float64
+		}{
+			{"two digits", 87, 96},
+			{"three digits at full accuracy", 100, 100},
+		} {
+			m := ladderRun(run.wpm, run.acc, w, h).WithUpdateHint(hint)
+			lay := layoutFor(w, h)
+
+			panel := strings.Split(m.renderPanel(), "\n")
+			if len(panel) != lay.PanelRows() {
+				t.Errorf("%dx%d %s: panel has %d rows, layout claims %d",
+					w, h, run.name, len(panel), lay.PanelRows())
+			}
+			if len(panel) > h-4 {
+				t.Errorf("%dx%d %s: panel is %d rows, budget is %d", w, h, run.name, len(panel), h-4)
+			}
+			for i, line := range panel {
+				if got := lipgloss.Width(line); got != lay.PanelW {
+					t.Errorf("%dx%d %s: panel line %d width %d, want %d",
+						w, h, run.name, i, got, lay.PanelW)
+				}
+			}
+			// The frame fills the terminal exactly, and its last row is blank —
+			// which is what lets the root write a persistence notice onto the
+			// bottom row instead of inserting one and pushing the frame off the
+			// screen.
+			frame := strings.Split(stripANSI(m.View()), "\n")
+			if len(frame) != h {
+				t.Errorf("%dx%d %s: frame is %d rows, want %d", w, h, run.name, len(frame), h)
+			}
+			if strings.TrimSpace(frame[len(frame)-1]) != "" {
+				t.Errorf("%dx%d %s: last row is not blank, a notice would push the frame over: %q",
+					w, h, run.name, frame[len(frame)-1])
+			}
 		}
 	}
 }

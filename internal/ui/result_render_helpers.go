@@ -74,6 +74,44 @@ func accColorRole(acc float64) theme.Role {
 	}
 }
 
+// Cell arithmetic shared by the Result panel's rows. Every row is emitted at an
+// exact width so the bordered panel can never wrap a line and break its own
+// frame: the width the layout reports and the width that gets rendered are the
+// same number.
+
+// padCell pads s to exactly w display cells, cutting it if it is already wider.
+func padCell(s string, w int) string {
+	got := lipgloss.Width(s)
+	if got == w {
+		return s
+	}
+	if got < w {
+		return s + strings.Repeat(" ", w-got)
+	}
+	return cutCells(stripANSI(s), w)
+}
+
+// cutCells truncates s to at most w display cells. Result labels and values are
+// ASCII plus single-cell glyphs, so a rune cut is a cell cut.
+func cutCells(s string, w int) string {
+	if w <= 0 {
+		return ""
+	}
+	r := []rune(s)
+	if len(r) <= w {
+		return s
+	}
+	return string(r[:w])
+}
+
+// maxInt returns the larger of a and b.
+func maxInt(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
 // injectBorderTitle replaces the visual centre of the top border line with a
 // styled title string. It operates on the raw string representation of a
 // lipgloss-rendered panel and modifies only the first line (the top border).

@@ -40,15 +40,58 @@ func axisPipe(left, tick bool) string {
 	return "│"
 }
 
-// wpmAxisLabel renders the left Y-axis WPM tick (top=max, mid=max/2, bottom=0).
-func wpmAxisLabel(cr, chartH, midRow int, maxWPM float64) string {
+// wpmAxisRange widens the observed WPM range by a tenth at each end and returns
+// the axis bounds.
+//
+// Scaling from zero wastes the plot: a run that lived between 55 and 85 wpm drew
+// its whole curve in the top two of five rows and left the rest blank, which
+// reads as missing data rather than as a stable pace. A run that never varied
+// still needs a non-zero span, hence the floor.
+func wpmAxisRange(lo, hi float64) (float64, float64) {
+	pad := (hi - lo) * 0.1
+	if pad <= 0 {
+		pad = hi * 0.1
+	}
+	if pad < 1 {
+		pad = 1
+	}
+	lo, hi = lo-pad, hi+pad
+	if lo < 0 {
+		lo = 0
+	}
+	if hi <= lo {
+		hi = lo + 1
+	}
+	return lo, hi
+}
+
+// errAxisCeiling lifts the error scale to a nice number.
+//
+// Without it, the single second that happens to hold the run's maximum sits at
+// errors/maxErr == 1 and pins its marker to the top row — floating at the WPM
+// axis's ceiling on a run that never went near it, so a lone typo reads as a
+// speed spike. The floor also keeps the axis labels monotonic: maxErr of 1
+// truncated to the ticks 1, 0, 0.
+func errAxisCeiling(maxErr int) int {
+	if maxErr <= 0 {
+		return 0
+	}
+	if maxErr < 4 {
+		return 4
+	}
+	return maxErr
+}
+
+// wpmAxisLabel renders the left Y-axis WPM tick (top, midpoint, bottom) for the
+// fitted range.
+func wpmAxisLabel(cr, chartH, midRow int, loWPM, hiWPM float64) string {
 	switch {
 	case cr == 0:
-		return fmt.Sprintf("%4.0f", maxWPM)
+		return fmt.Sprintf("%4.0f", hiWPM)
 	case cr == chartH-1:
-		return "   0"
+		return fmt.Sprintf("%4.0f", loWPM)
 	case cr == midRow:
-		return fmt.Sprintf("%4.0f", maxWPM/2)
+		return fmt.Sprintf("%4.0f", (loWPM+hiWPM)/2)
 	default:
 		return strings.Repeat(" ", 4)
 	}
