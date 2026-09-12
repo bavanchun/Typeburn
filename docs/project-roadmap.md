@@ -55,7 +55,7 @@ fix-forward in v2.9.x.
 | **Keybindings** | ✅ | Per-screen central keymap (Home/Typing/Result/Settings/History); Vim-style navigation |
 | **Error handling** | ✅ | Allow-continue + backspace only; no stop-on-error mode |
 | **Resize handling** | ✅ | Graceful degraded notice (<60 cols or <20 rows); auto-resume |
-| **Testing** | ✅ | go test -race -count=1 GREEN; teatest golden files; smoke tests |
+| **Testing** | ✅ | go test -race -count=1 GREEN; baseline render fixtures; smoke tests |
 | **CI/CD** | ✅ | GitHub Actions (ubuntu + macos); build → vet → gofmt → test |
 
 ### Shipped Phases
@@ -71,7 +71,7 @@ fix-forward in v2.9.x.
 | 7 | Settings persistence | ~700 | ✅ Complete |
 | 8 | History persistence | ~800 | ✅ Complete |
 | 9 | Polish (resize, NO_COLOR) | ~600 | ✅ Complete |
-| 10 | Tests, teatest, CI | ~300 | ✅ Complete |
+| 10 | Tests, smoke harness, CI | ~300 | ✅ Complete |
 
 **Total codebase:** ~7500 LOC (internal/ + main.go + tests)
 
@@ -375,7 +375,7 @@ fix-forward in v2.9.x.
 
 
 ### Next (Active)
-1. **Gather user feedback** — the active post-v2.6.0 item and a strategic
+1. **Gather user feedback** — the active post-v2.9.0 item and a strategic
    (not technical) decision: choose the channel (GitHub Discussions, issue
    template, README call-out) and what to ask (Vim motions? more themes?
    Result-screen impressions?) before committing any feature work.
@@ -411,12 +411,14 @@ the remaining entries are historical planning ideas, not the current roadmap.
 
 ## Conclusion
 
-**Typeburn v2.5.1 is the current public stable release.** Post-1.0 work has
+**Typeburn v2.9.0 is the current public stable release.** Post-1.0 work has
 been additive or corrective: v2.0.0 added a professional scriptable CLI,
 v2.1.x added opt-in update checks plus audited defect cleanup, v2.2.0 added
 per-key error heatmaps, v2.3.0 added the self-update command, v2.4.0/v2.4.1
 added update UX and animations, and v2.5.0 added Strict typing and
 punctuation/numbers toggles. v2.5.1 fixed forward the immutable v2.5.0 Go
-module-channel defect by migrating the module path to `/v2`.
+module-channel defect by migrating the module path to `/v2`. v2.6.0 redesigned
+the Result screen, v2.7.0 animated the update CLI, v2.8.0/v2.8.1 made the Result
+panel responsive, and v2.9.0 closed the three root causes the audit surfaced.
 
 M1 (timer re-arm) and M2 (new-best precision) — the identified correctness bugs — were fixed in v1.0 (d6369de) and v1.0.1 respectively. v1.4.0 fixed a Settings live-apply bug (changes were persisted but not applied in-session) and improved the wide-terminal typing layout. Remaining backlog is additive or cosmetic.

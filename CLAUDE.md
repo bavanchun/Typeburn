@@ -20,7 +20,7 @@ go test ./internal/metrics/ -run TestCompute -count=1
 go test ./internal/version/ -run TestResolve_LdflagsWin -v
 ```
 
-`go test ./... -race -count=1`, `go vet ./...`, and an empty `gofmt -l .` are exactly what CI enforces — run all three before considering work done. UI tests use `teatest` golden files; pure packages are table-driven with real data (no mocks).
+`go test ./... -race -count=1`, `go vet ./...`, and an empty `gofmt -l .` are exactly what CI enforces — run all three before considering work done. UI tests drive `Model.Update` directly with synthetic `tea.KeyPressMsg`/`tea.WindowSizeMsg` and diff rendered output against baseline fixtures in `internal/ui/testdata/` (`teatest` is not used — it targets bubbletea v1); pure packages are table-driven with real data (no mocks).
 
 ## Architecture
 

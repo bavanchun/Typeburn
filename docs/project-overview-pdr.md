@@ -116,7 +116,7 @@ the Result screen around a comparison rail.
 - ✅ Metrics match spec (WPM/accuracy/consistency formulas verified)
 - ✅ Persistence atomic (no partial writes; corrupt files → defaults)
 - ✅ Degraded mode single chokepoint (no partial paint below 60×20)
-- ✅ All 5 screens + 3 modes tested via teatest + manual smoke
+- ✅ All 5 screens + 3 modes tested via direct-Update screen tests + manual smoke
 - ✅ NO_COLOR + mono theme render correctly
 
 ---
@@ -137,7 +137,7 @@ the Result screen around a comparison rail.
 - **UI Framework:** Bubble Tea v2.0.7 (Elm-style state machine, Cursed Renderer)
 - **Styling:** Lip Gloss v2.0.4 (ANSI color + attributes)
 - **Storage:** atomic JSON (XDG-compliant, gofmt-checked)
-- **Testing:** go test + teatest (golden-file rendering)
+- **Testing:** go test + baseline-fixture render diffs
 - **CI/CD:** GitHub Actions (ubuntu-latest, macos-latest)
 
 ---
