@@ -4,7 +4,7 @@ description: >-
   Close the three structural root causes behind the audit's findings, plus the
   Result A2 redesign, the CLI/update hardening, and the supply-chain gaps.
   Restructured after red-team.
-status: in-progress
+status: done
 priority: P1
 effort: "8-10d"
 tags: [correctness, ui, metrics, storage, cli, ci]
@@ -133,13 +133,13 @@ assigned in the ownership table below.
 |---|-------|--------|------------|-------|
 | 1 | [Correctness Harness And Glyph Fix](./phase-01-start.md) | Done | — | A |
 | 8 | [Supply Chain And CI Gates](./phase-08-p8.md) | Done | — | A |
-| 2 | [Typing Viewport, Wrapping, Display Width](./phase-02-p2.md) | Pending | 1 | B |
-| 3 | [Metrics And Typing Correctness](./phase-03-p3.md) | Pending | 1 | B |
-| 4 | [Input Bounds And Layout Overflows](./phase-04-p4.md) | Pending | 1 | C |
-| 5 | [Storage Integrity](./phase-05-p5.md) | Pending | 1 | C |
-| 7 | [CLI And Update Hardening](./phase-07-p7.md) | Pending | — | C |
-| 6 | [Result A2 Redesign](./phase-06-p6.md) | Pending | 1, 3 | D |
-| 9 | [Verify, Docs, Release](./phase-09-p9.md) | Pending | all | E |
+| 2 | [Typing Viewport, Wrapping, Display Width](./phase-02-p2.md) | Done | 1 | B |
+| 3 | [Metrics And Typing Correctness](./phase-03-p3.md) | Done | 1 | B |
+| 4 | [Input Bounds And Layout Overflows](./phase-04-p4.md) | Done | 1 | C |
+| 5 | [Storage Integrity](./phase-05-p5.md) | Done | 1 | C |
+| 7 | [CLI And Update Hardening](./phase-07-p7.md) | Done | — | C |
+| 6 | [Result A2 Redesign](./phase-06-p6.md) | Done | 1, 3 | D |
+| 9 | [Verify, Docs, Release](./phase-09-p9.md) | Done | all | E |
 
 Groups run in order; phases within a group run concurrently.
 **A = {1, 8} → B = {2, 3} → C = {4, 5, 7} → D = {6} → E = {9}.**

@@ -426,7 +426,7 @@ No circular imports; pure packages have zero UI dependencies.
 ### Testing
 
 - Pure functions (metrics, word gen) tested via `go test` with table-driven tests
-- UI screens tested via `teatest.TestModel()` (drives keyboard input, captures rendered frames)
+- UI screens tested by calling `Model.Update` with synthetic `tea.KeyPressMsg`/`tea.WindowSizeMsg` and comparing `View()` output against baseline fixtures
 - Golden files in `internal/ui/*_test.go` verify rendered output matches baseline
 - `-race` flag verifies no goroutine leaks or data races
 

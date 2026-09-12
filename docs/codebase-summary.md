@@ -460,7 +460,7 @@ does **not** enforce the ceiling, so it holds only as far as it is swept by hand
 
 - **Unit tests:** metrics, typing, words, config, storage, theme (table-driven, no mocks, real data)
 - **Integration tests:** smoke_test.go (full Home→Typing→Result flow)
-- **UI tests:** teatest golden-file tests per screen (screen_home_test.go, screen_typing_test.go, etc.)
+- **UI tests:** per-screen tests drive `Model.Update` with synthetic key/resize messages (screen_home_test.go, screen_typing_test.go, etc.); rendered output is diffed against baseline fixtures in `internal/ui/testdata/`
 - **Race detection:** `go test ./... -race -count=1` — GREEN; no goroutine leaks.
   This says nothing about cross-process safety: `-race` instruments shared memory
   within one process, and two `typeburn` processes share none. Concurrent history

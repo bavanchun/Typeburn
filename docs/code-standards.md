@@ -127,7 +127,7 @@ monkeytype/
   }
   ```
 - **No mocks:** Use real instances (no mock Engines, mock storage). Tests drive actual code paths.
-- **Golden files:** teatest captures rendered output; baseline stored in `_test.go` or separate file
+- **Golden files:** `View()` output is captured at fixed sizes and diffed against baselines in `internal/ui/testdata/` (e.g. `result_baseline_{color,nocolor}_{60,80,120,200}.txt`)
 - **Race detection:** All tests must pass `-race` flag (`-count=1` to avoid flakiness)
 
 ### Constants & Magic Numbers
@@ -341,7 +341,7 @@ func TestFunctionName(t *testing.T) {
 }
 ```
 
-### Integration Test (teatest)
+### Screen Test (direct Update drive)
 
 ```go
 func TestScreenHome_SelectMode(t *testing.T) {
@@ -396,5 +396,5 @@ func TestScreenHome_SelectMode(t *testing.T) {
 - **Rune safety:** Always iterate over []rune for Unicode-correct handling
 - **Pure logic:** metrics, typing, words packages have zero UI imports
 - **Theme system:** All color references via role-based theme.Style()
-- **Test coverage:** Table-driven unit tests + teatest golden files + race detection
+- **Test coverage:** Table-driven unit tests + baseline-fixture render diffs + race detection
 - **Persistence:** Atomic writes (temp+fsync+rename) + XDG paths + corrupt-file safety
